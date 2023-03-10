@@ -1,9 +1,9 @@
-const CGA_START:u32 = 0xb8000;
+const vga_buffer:*mut u8 = 0xb8000 as *mut u8;
 
 #[allow(dead_code)]
 pub struct CGAScreen{
-    max_cows:u32,
-    max_rows:u32,
+    pub max_cows:u32,
+    pub max_rows:u32,
 }
 
 #[allow(dead_code)]
@@ -12,24 +12,31 @@ impl CGAScreen{
         Self {max_cows: cows, max_rows:rows,}
     }
 
-    pub fn set_pos(x:u32, y:u32){
-
-    }
-
-    pub fn get_pos(x:&mut u32, y:&mut u32){
-        // TODO
-        *x = 1;
-        *y = 1;
-    }
-
-    pub fn putchar(c:char, attr:u8){
-
-    }
     
     // this function should be the only one that "directly touches"
     // the memory by address. 
     // and since it's unsafe, it shouldn't be public
-    fn show(&self, x:u32, y:u32, c:char, attr:u8){
+    //
+    // fn show(&self, x:u32, y:u32, c:char, attr:u8){
+    //
+    // }
+    pub fn test(&self){
+        let mut r = 0;
+        let mut c = 0;
+
+        while r<self.max_rows {
+            while c<self.max_cows {
+                let index:u32 = r*self.max_cows + c;
+                unsafe {
+                    *vga_buffer.offset(index as isize * 2) = index as u8;
+                    *vga_buffer.offset(index as isize * 2 + 1) = index as u8;
+                }
+                c+=1;
+            }
+            r+=1;
+            c=0;
+        }
+
 
     }
 

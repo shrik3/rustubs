@@ -3,4 +3,4 @@ Cargo.lock
 *.iso
 *.o
 /isofiles/boot/kernel
-
+kernel

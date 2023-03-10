@@ -7,9 +7,24 @@ edition = "2021"
 
 [dependencies]
 
+
+[build]
+target = "x86_64-rustubs"
+
+[lib]
+crate-type = ["staticlib"]
+
 [profile.dev]
 panic = "abort"
+debug = 1
+lto = true
 
 [profile.release]
 panic = "abort"
-
+#opt-level = 0
+opt-level = 3
+debug = 0
+overflow-checks = false
+lto = true
+codegen-units = 1
+debug-assertions = false
