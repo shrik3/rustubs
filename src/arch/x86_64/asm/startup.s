@@ -17,7 +17,7 @@
 ;   Constants
 ;
 
-; stack for the main function
+; stack for the main function (renamed to _entry())
 STACKSIZE: equ 65536
 
 ; video memory base address
@@ -59,8 +59,8 @@ pagetable_end:  equ 0x200000
 [GLOBAL _ZdlPvm]
 
 ; functions from the C parts of the system
-[EXTERN main]
-[EXTERN guardian]
+[EXTERN _entry]
+;[EXTERN guardian]
 
 ; addresses provided by the compiler
 [EXTERN ___BSS_START__]
@@ -204,7 +204,7 @@ fill_tables3_done:
 ;   system start, part 2 (in 64-bit Long Mode)
 ;
 ;   This code clears the BSS segment and initializes IDT and PICs. Then the
-;   constructors of global C++ objects are called, and finally main() is run.
+;   constructors of global C++ objects are called, and finally _entry() is run.
 ;
 
 longmode_start:
@@ -234,7 +234,7 @@ clear_bss:
 	;mov cr4, rax
 
 	call   _init   ; call constructors of global objects
-	call   main    ; call the OS kernel's C / C++ part
+	call   _entry  ; call the OS kernel's C / C++ part
 	call   _fini   ; call destructors
 	cli            ; Usually we should not get here.
 	hlt
@@ -279,7 +279,7 @@ wrapper_body:
 
 	; pass interrupt number as the first parameter
 	mov    rdi, rax
-	call   guardian
+;	call   guardian
 
 	; restore volatile registers
 	pop    r11
