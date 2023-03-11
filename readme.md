@@ -1,6 +1,6 @@
 # The rust port of OOStuBS [WIP]
 
-This is a tool bare metal operation system implemented in Rust. Apologies for my
+This is a toy bare metal operation system implemented in Rust. Apologies for my
 shitty code, I'm a rust beginner.
 
 The project is based on the OOStuBS, an OS exercise project used in some German
