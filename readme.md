@@ -9,17 +9,17 @@ Universities. This one in perticular, is based on the TU Dresden version
 
 
 **Status**  
-[X] - Basic code structure
-[X] - Build minimal iso image
-[X] - bootable using grub
-[X] - Setting up CGA display, print something (hello world)
-[ ] - Provide "printf" support
-[ ] - Keyboard controller and input handler
-[ ] - Interrupt handler
-[ ] - Timer Interrupt
-[ ] - Threading
-[ ] - Scheduler
-[ ] - Synchronization Primitives
+[X] - Basic code structure  
+[X] - Build minimal iso image  
+[X] - bootable using grub  
+[X] - Setting up CGA display, print something (hello world)  
+[ ] - Provide "printf" support  
+[ ] - Keyboard controller and input handler  
+[ ] - Interrupt handler  
+[ ] - Timer Interrupt  
+[ ] - Threading  
+[ ] - Scheduler  
+[ ] - Synchronization Primitives  
 
 **Dependencies**  
 - cargo / rustc (nightly)
