@@ -15,7 +15,7 @@ bootdisk.iso : kernel
 # Link the rust library against the objects from asm code (currently only the startup.o),
 # later we'll use wildcards
 kernel : rust_kernel startup.o
-	ld -static -e startup -T sections -o ./kernel startup.o target/x86_64-rustubs/debug/librustubs.a
+	ld -static -e startup -T ./src/arch/x86_64/linker.ld -o ./kernel startup.o target/x86_64-rustubs/debug/librustubs.a
 
 # install xbuild first. (cargo install xbuild)
 # Compile the rust part: note that the the cargo crate is of type [staticlib], if you don't 
