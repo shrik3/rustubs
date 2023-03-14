@@ -28,8 +28,6 @@ VPATH = $(sort $(dir $(ASM_SOURCES)))
 LINKER_SCRIPT = ./src/arch/$(ARCH)/linker.ld
 
 # include --release flag to build optimized code
-# FIXME make the rust core work
-# CARGO_XBUILD_FLAG = -Z build-std=core,alloc
 CARGO_XBUILD_FLAG = 
 ifneq ($(CARGO_XBUILD_FLAG), --release)
 	RUST_BUILD = debug

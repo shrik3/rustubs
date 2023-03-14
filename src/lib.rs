@@ -3,6 +3,7 @@
 mod arch;
 mod machine;
 use core::panic::PanicInfo;
+use core::{mem, ptr};
 use machine::cgascr::CGAScreen;
 
 #[panic_handler]
