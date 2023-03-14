@@ -88,4 +88,4 @@ test:
 	@echo $(ASMOBJ_PREFIXED)
 
 
-.PHONY: clean qemu
+.PHONY: clean qemu test
