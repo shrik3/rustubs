@@ -10,29 +10,34 @@
 # TODO replace hardcoded values with variables
 # TODO there can be more options of grub-mkrescue 
 # TODO put the startup.s elsewhere (I don't like it in the root dir)
+# TODO maybe put the bootdisk.iso in the build dir too .. 
 
 # verbose for testing; VERBOSE=@ to turn off..
 VERBOSE=@
 BUILD = build
 ARCH = x86_64
-ASM_SOURCES = $(shell find ./src -name "*.s")
-ASM_OBJECTS = $(patsubst %.s,_%.o, $(notdir $(ASM_SOURCES)))
 ASM = nasm
 ASMOBJFORMAT = elf64
+LINKER_SCRIPT = ./src/arch/$(ARCH)/linker.ld
+CARGO_XBUILD_FLAGS = 
 
+
+# ---------- No need to edit below this line --------------
+# ---------- If you have to, something is wrong -----------
+ASM_SOURCES = $(shell find ./src -name "*.s")
+ASM_OBJECTS = $(patsubst %.s,_%.o, $(notdir $(ASM_SOURCES)))
 # I don't like this style... but what can I do?
 ASMOBJ_PREFIXED = $(addprefix $(BUILD)/,$(ASM_OBJECTS))
 # Setting directories to look for missing source files
 VPATH = $(sort $(dir $(ASM_SOURCES)))
 
-LINKER_SCRIPT = ./src/arch/$(ARCH)/linker.ld
 
-# include --release flag to build optimized code
-CARGO_XBUILD_FLAG = 
-ifneq ($(CARGO_XBUILD_FLAG), --release)
-	RUST_BUILD = debug
-else
+
+# the logic here is so cursed
+ifeq (--release, $(findstring NT-5.1,$(CARGO_XBUILD_FLAGS)))
 	RUST_BUILD = release
+else
+	RUST_BUILD = debug
 endif
 		
 RUST_OBJECT = target/$(ARCH)-rustubs/$(RUST_BUILD)/librustubs.a

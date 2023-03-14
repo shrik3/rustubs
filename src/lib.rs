@@ -3,7 +3,6 @@
 mod arch;
 mod machine;
 use core::panic::PanicInfo;
-use core::{mem, ptr};
 use machine::cgascr::CGAScreen;
 
 #[panic_handler]
@@ -18,6 +17,7 @@ pub extern "C" fn _entry() -> ! {
     // scr.show(0,79,'X',0x0f);
     // scr.show(24,0,'X',0x0f);
     // scr.show(24,79,'X',0x0f);
-    scr.test();
+    // scr.test();
+    scr.setpos(10, 10);
     loop {}
 }

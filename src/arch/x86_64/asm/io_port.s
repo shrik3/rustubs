@@ -11,10 +11,10 @@
 
 ; EXPORTED FUNCTIONS
 
-[GLOBAL outb]
-[GLOBAL outw]
-[GLOBAL inb]
-[GLOBAL inw]
+[GLOBAL _outb]
+[GLOBAL _outw]
+[GLOBAL _inb]
+[GLOBAL _inw]
 
 ; FUNCTION IMPLEMENTATIONS
 
@@ -24,7 +24,7 @@
 ;
 ;       C prototype: void outb (int port, int value);
 
-outb:
+_outb:
 	push   rbp
 	mov    rbp, rsp
 	mov    rdx, rdi
@@ -37,7 +37,7 @@ outb:
 ;
 ;       C prototype: void outw (int port, int value);
 
-outw:
+_outw:
 	push   rbp
 	mov    rbp, rsp
 	mov    rdx, rdi
@@ -50,7 +50,7 @@ outw:
 ;
 ;      C prototype: unsigned char inb (int port);
 
-inb:
+_inb:
 	push   rbp
 	mov    rbp, rsp
 	mov    rdx, rdi
@@ -62,7 +62,7 @@ inb:
 ;
 ;      C prototype: unsigned short inw (int port);
 
-inw:
+_inw:
 	push   rbp
 	mov    rbp, rsp
 	mov    rdx, rdi
