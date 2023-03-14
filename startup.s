@@ -109,7 +109,7 @@ startup:
 	cli              ; disable interrupts
 	lgdt   [gdt_80]  ; set new segment descriptors
 
-	; global data segment
+    ; global data segment
 	mov    eax, 3 * 0x8
     ; 0x8 is the length of each entry
     ; these registers point to 4th entry the GDT (see also the code there)
@@ -279,7 +279,9 @@ wrapper_body:
 
 	; pass interrupt number as the first parameter
 	mov    rdi, rax
-;	call   guardian
+    ; call the interrupt handler wrapper here.
+    ; TODO implement it in rust then uncomment the line
+    ;call   guardian
 
 	; restore volatile registers
 	pop    r11
