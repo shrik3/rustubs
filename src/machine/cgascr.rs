@@ -1,4 +1,5 @@
 use crate::arch::x86_64::io_port::*;
+use crate::arch::x86_64::misc::*;
 
 const CGA_BUFFER_START:*mut u8 = 0xb8000 as *mut u8;
 const IR_PORT:u16 = 0x3d4;
@@ -44,10 +45,14 @@ impl CGAScreen{
         
         // set lower byte
         outb(IR_PORT, 15 as u8);
+        delay();
         outb(DR_PORT, offset as u8);
+        delay();
         // set higher byte
         outb(IR_PORT, 14 as u8);
+        delay();
         outb(DR_PORT, (offset >> 8) as u8);
+        delay();
 
     }
 

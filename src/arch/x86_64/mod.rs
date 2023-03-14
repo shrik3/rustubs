@@ -3,3 +3,4 @@ pub mod pic;
 pub mod pit;
 pub mod plugbox;
 pub mod cpu;
+pub mod misc;
