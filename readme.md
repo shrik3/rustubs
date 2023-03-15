@@ -13,7 +13,7 @@ Universities. This one in perticular, is based on the TU Dresden version
 [X] - Build minimal iso image  
 [X] - bootable using grub  
 [X] - Setting up CGA display, print something (hello world)  
-[ ] - Provide "printf" support  
+[X] - Provide "printf" support  
 [ ] - Keyboard controller and input handler  
 [ ] - Interrupt handler  
 [ ] - Timer Interrupt  
