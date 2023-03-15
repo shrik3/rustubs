@@ -12,12 +12,17 @@ fn panic(_info: &PanicInfo) -> ! {
 
 #[no_mangle]
 pub extern "C" fn _entry() -> ! {
-    let scr = CGAScreen::new(25,80);
-    // scr.show(0,0,'X',0x0f);
-    // scr.show(0,79,'X',0x0f);
-    // scr.show(24,0,'X',0x0f);
-    // scr.show(24,79,'X',0x0f);
-    // scr.test();
-    scr.setpos(10, 10);
+    let mut scr = CGAScreen::new();
+    scr.show_coners();
+    scr.setattr(0x1f);
+    scr.clear();
+    scr.show_coners();
+
+    scr.print("--RuStuBs--\n");
+    scr.print("    _._     _,-'\"\"`-._     ~Meow\n");
+    scr.print("   (,-.`._,'(       |\\`-/|\n");
+    scr.print("       `-.-' \\ )-`( , o o)\n");
+    scr.print("             `-    \\`_`\"'-\n");
+    scr.print("it works!\n");
     loop {}
 }
