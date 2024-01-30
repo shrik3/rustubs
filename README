@@ -1,3 +1,12 @@
+# License & Copyright:
+
+This project aims for a total rewrite TU Dresden OS Group's tutorial OS
+"OOStuBS". However this is in its very early stage and is using some
+boilerplates from the lecture e.g. the startup assembly code.
+
+This project will adapt GPL when the dependencies are sorted out (hopefully very
+soon). Untill then all rights are reserverd.
+
 # The rust port of OOStuBS [WIP]
 
 This is a toy bare metal operation system implemented in Rust. Apologies for my
