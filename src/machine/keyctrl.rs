@@ -17,37 +17,37 @@ use crate::arch::x86_64::io_port::*;
 // set_led(char led,bool on)
 // set_repeat_rate(int speed,int delay)
 pub struct KeyboardController {
-    code: u8,
-    prefix: u8,
-    gather: Key,
-    leds: u8,
+	code: u8,
+	prefix: u8,
+	gather: Key,
+	leds: u8,
 
-    // two ports for keyboard controller
-    ctrl_port: u16,
-    data_port: u16,
-    // status register bits
+	// two ports for keyboard controller
+	ctrl_port: u16,
+	data_port: u16,
+	// status register bits
 }
 
 impl KeyboardController {
+	pub fn new() -> Self {
+		Self {
+			code: 0,
+			prefix: 9,
+			gather: Key::new(),
+			leds: 0,
+			ctrl_port: 0x64,
+			data_port: 0x60,
+		}
+	}
 
-    pub fn new() -> Self {
-        Self {
-            code: 0,
-            prefix: 9,
-            gather: Key::new(),
-            leds: 0,
-            ctrl_port: 0x64,
-            data_port: 0x60,
-        }
-    }
+	pub fn key_hit(&mut self) -> Key {
+		todo!();
+		// for debugging only
+		let mut invalid: Key = Key::new();
+		invalid.set_raw(0xff);
 
-    pub fn key_hit(&mut self) -> Key {
-        // for debugging only
-        let mut invalid:Key = Key::new();
-        invalid.set_raw(0xff);
-
-        let status = inb(self.ctrl_port);
-
-        // TODO here
-    }
+		let status = inb(self.ctrl_port);
+		return Key::new();
+		// TODO here
+	}
 }

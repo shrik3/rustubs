@@ -3,7 +3,7 @@
 // asm code goes to asm/misc.s
 
 extern "C" {
-    fn _delay();
+	fn _delay();
 }
 
 #[inline(always)]
@@ -11,7 +11,7 @@ extern "C" {
 // delays for several cycles. Used to fill sequantial IO commands
 // (for devices to react)
 pub fn delay() {
-    unsafe {
-        _delay();
-    }                
+	unsafe {
+		_delay();
+	}
 }
