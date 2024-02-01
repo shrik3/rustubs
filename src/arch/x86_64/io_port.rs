@@ -1,5 +1,9 @@
 use core::arch::asm;
 
+// put a few cycles of delay after IO ops
+use super::misc::delay;
+
+#[inline(always)]
 pub fn inw(p: u16) -> u16 {
 	let result: u16;
 	unsafe {
@@ -8,9 +12,11 @@ pub fn inw(p: u16) -> u16 {
 			out("ax") result
 		)
 	}
+	delay();
 	result
 }
 
+#[inline(always)]
 pub fn inb(p: u16) -> u8 {
 	let result: u8;
 	unsafe {
@@ -19,9 +25,11 @@ pub fn inb(p: u16) -> u8 {
 			out("al") result
 		)
 	}
+	delay();
 	result
 }
 
+#[inline(always)]
 pub fn outb(p: u16, val: u8) {
 	unsafe {
 		asm!("out dx, al",
@@ -29,8 +37,10 @@ pub fn outb(p: u16, val: u8) {
 			in("al") val,
 		)
 	}
+	delay();
 }
 
+#[inline(always)]
 pub fn outw(p: u16, val: u16) {
 	unsafe {
 		asm!("out dx, ax",
@@ -38,4 +48,5 @@ pub fn outw(p: u16, val: u16) {
 			in("ax") val,
 		)
 	}
+	delay();
 }
