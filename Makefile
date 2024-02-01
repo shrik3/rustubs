@@ -42,16 +42,16 @@ RUST_OBJECT = target/$(ARCH)-rustubs/$(RUST_BUILD)/librustubs.a
 
 all: bootdisk.iso
 
-bootdisk.iso : kernel
-	$(VERBOSE) cp kernel isofiles/boot/
+bootdisk.iso : $(BUILD)/kernel
+	$(VERBOSE) cp $< isofiles/boot/
 	$(VERBOSE) grub-mkrescue -d /usr/lib/grub/i386-pc --locales=en@piglatin --themes=none -o bootdisk.iso isofiles
 
 # Note: explicitly tell the linker to use startup: as the entry point (we have no main here)
-kernel : rust_kernel startup.o $(ASMOBJ_PREFIXED)
-	$(VERBOSE) ld -static -e startup -T $(LINKER_SCRIPT) -o ./kernel $(BUILD)/startup.o $(ASMOBJ_PREFIXED) $(RUST_OBJECT)
+$(BUILD)/kernel : rust_kernel startup.o $(ASMOBJ_PREFIXED)
+	$(VERBOSE) ld -static -e startup -T $(LINKER_SCRIPT) -o $@ $(BUILD)/startup.o $(ASMOBJ_PREFIXED) $(RUST_OBJECT)
 
 # Note: this target works when the VPATH is set correctly
-$(BUILD)/_%.o : %.s
+$(BUILD)/_%.o : %.s | $(BUILD)
 	@echo "ASM		$@"
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
 	$(VERBOSE) $(ASM) -f $(ASMOBJFORMAT) -o $@ $<
@@ -64,9 +64,14 @@ rust_kernel:
 	 cargo xbuild --target $(ARCH)-rustubs.json $(CARGO_XBUILD_FLAG)
 
 # need nasm
-startup.o:
+# TODO make this arch dependent
+startup.o: startup.s | $(BUILD)
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
 	nasm -f elf64 -o $(BUILD)/startup.o startup.s
+
+.PHONY: $(BUILD)
+$(BUILD):
+	@mkdir -p $@
 
 clean:
 	cargo clean
