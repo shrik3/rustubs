@@ -20,8 +20,6 @@ ASM = nasm
 ASMOBJFORMAT = elf64
 LINKER_SCRIPT = ./src/arch/$(ARCH)/linker.ld
 CARGO_XBUILD_FLAGS = 
-
-
 # ---------- No need to edit below this line --------------
 # ---------- If you have to, something is wrong -----------
 ASM_SOURCES = $(shell find ./src -name "*.s")
@@ -46,7 +44,7 @@ all: bootdisk.iso
 
 bootdisk.iso : kernel
 	$(VERBOSE) cp kernel isofiles/boot/
-	$(VERBOSE) grub-mkrescue /usr/lib/grub/i386-pc -o bootdisk.iso isofiles
+	$(VERBOSE) grub-mkrescue -d /usr/lib/grub/i386-pc --locales=en@piglatin --themes=none -o bootdisk.iso isofiles
 
 # Note: explicitly tell the linker to use startup: as the entry point (we have no main here)
 kernel : rust_kernel startup.o $(ASMOBJ_PREFIXED)
