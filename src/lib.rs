@@ -7,6 +7,9 @@ mod io;
 mod machine;
 use core::panic::PanicInfo;
 use machine::cgascr::CGAScreen;
+use machine::interrupt;
+use arch::x86_64::interrupt::pic_8259;
+use arch::x86_64::interrupt::pic_8259::PicDeviceInt;
 
 #[cfg(not(test))]
 #[panic_handler]
@@ -25,5 +28,9 @@ pub extern "C" fn _entry() -> ! {
 	println!("       `-.-' \\ )-`( , o o)");
 	println!("             `-    \\`_`\"'-");
 	println!("it works!");
+	
+	// testing interrupt/PIC
+	pic_8259::allow(PicDeviceInt::KEYBOARD);
+	interrupt::interrupt_enable();	
 	loop {}
 }

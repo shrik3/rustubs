@@ -60,7 +60,7 @@ pagetable_end:  equ 0x200000
 
 ; functions from the C parts of the system
 [EXTERN _entry]
-;[EXTERN guardian]
+[EXTERN guardian]
 
 ; addresses provided by the compiler
 [EXTERN ___BSS_START__]
@@ -281,7 +281,7 @@ wrapper_body:
 	mov    rdi, rax
     ; call the interrupt handler wrapper here.
     ; TODO implement it in rust then uncomment the line
-    ;call   guardian
+    call   guardian
 
 	; restore volatile registers
 	pop    r11
