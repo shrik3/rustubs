@@ -1,4 +1,4 @@
-use crate::arch::x86_64::io_port::*;
+use crate::machine::device_io::*;
 use crate::arch::x86_64::misc::*;
 use core::{fmt, ptr, slice, str};
 
