@@ -1,5 +1,5 @@
-use crate::machine::device_io::*;
 use crate::arch::x86_64::misc::*;
+use crate::machine::device_io::*;
 use core::{fmt, ptr, slice, str};
 
 // TODO this is a "hard copy" of the c code, making little use
@@ -35,6 +35,8 @@ pub struct CGAScreen {
 	cursor_r: usize,
 	cursor_c: usize,
 	attr: u8,
+	iport: IOPort,
+	dport: IOPort,
 }
 
 #[allow(dead_code)]
@@ -47,6 +49,8 @@ impl CGAScreen {
 			cursor_r: 0,
 			cursor_c: 0,
 			attr: 0x0f,
+			iport: IOPort::new(IR_PORT),
+			dport: IOPort::new(DR_PORT),
 		}
 	}
 
@@ -161,34 +165,31 @@ impl CGAScreen {
 		// io ports for instruction register and data register
 		let offset = self.cal_offset(row, col);
 		// set lower byte
-		outb(IR_PORT, 15 as u8);
+		self.iport.outb(15 as u8);
 		delay();
-		outb(DR_PORT, offset as u8);
-		delay();
+		self.dport.outb(offset as u8);
 		// set higher byte
-		outb(IR_PORT, 14 as u8);
-		delay();
-		outb(DR_PORT, (offset >> 8) as u8);
-		delay();
+		self.iport.outb(14 as u8);
+		self.dport.outb((offset >> 8) as u8);
 		self.cursor_r = row;
 		self.cursor_c = col;
 	}
 
 	pub fn getpos_xy(&self, row: &mut u32, col: &mut u32) {
-		let offset = Self::getpos_offset();
+		let offset = self.getpos_offset();
 		*row = offset % MAX_COLS as u32;
 		*col = offset / MAX_COLS as u32;
 	}
 
 	#[allow(arithmetic_overflow)]
-	pub fn getpos_offset() -> u32 {
+	pub fn getpos_offset(&self) -> u32 {
 		// read higher byte
-		outb(IR_PORT, 14 as u8);
-		let mut offset = inb(DR_PORT);
+		self.iport.outb(14 as u8);
+		let mut offset = self.dport.inb();
 		offset = offset << 8;
 		// read lower byte
-		outb(IR_PORT, 15 as u8);
-		offset += inb(DR_PORT);
+		self.iport.outb(15 as u8);
+		offset += self.dport.inb();
 		offset as u32
 	}
 
