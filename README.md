@@ -1,5 +1,4 @@
-[![builds.sr.ht status](https://builds.sr.ht/~shrik3.svg)](https://builds.sr.ht/~shrik3?search=)
-
+[![builds.sr.ht status](https://builds.sr.ht/~shrik3/rustubs/commits/master/x86_64.yml.svg)](https://builds.sr.ht/~shrik3/rustubs/commits/master/x86_64.yml?)
 # License & Copyright:
 
 This project aims for a total rewrite TU Dresden OS Group's tutorial OS
@@ -83,3 +82,6 @@ https://en.wikipedia.org/wiki/X86_assembly_language#Syntax
 
 naming conventions  
 https://rust-lang.github.io/api-guidelines/naming.html
+
+Makefile Cheatsheet:  
+https://devhints.io/makefile
