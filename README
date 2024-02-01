@@ -16,19 +16,29 @@ The project is based on the OOStuBS, an OS exercise project used in some German
 Universities. This one in perticular, is based on the TU Dresden version
 (Operating System Construction), led by my Professor Dr. Horst Schirmeier.
 
+**Status / Roadmap**
+[X] - Basic code structure  
+[X] - Build minimal iso image  
+[X] - bootable using grub  
+[X] - Setting up CGA display, print something (hello world)  
+[X] - Provide "printf" support  
+[ ] - Intigrate print into rust println! etc.
+[ ] - asm! Wrappers for basic instructions
+[ ] - Keyboard controller and input handler  
+[ ] - Interrupt handler  
+[ ] - Timer Interrupt  
+[ ] - Threading  
+[ ] - Scheduler (single CPU)
+[ ] - Synchronization Primitives  
 
-**Status**
-[X] - Basic code structure
-[X] - Build minimal iso image
-[X] - bootable using grub
-[X] - Setting up CGA display, print something (hello world)
-[X] - Provide "printf" support
-[ ] - Keyboard controller and input handler
-[ ] - Interrupt handler
-[ ] - Timer Interrupt
-[ ] - Threading
-[ ] - Scheduler
-[ ] - Synchronization Primitives
+Beyond the original StuBS
+[ ] - Better paging: PMA and pagefault handler
+[ ] - user heap and mmap
+[ ] - Upperhalf Kernel
+[ ] - Address Space for each Process
+[ ] - in memory FS
+[ ] - aarch64 support
+[ ] - user library
 
 **Dependencies**
 - cargo / rustc (nightly)
@@ -55,3 +65,13 @@ I feel necessary to go through the painful part.
 **Your code sucks**
 Yes. I'm a rust beginner.
 
+**Helper docs**
+
+x86_64 calling conventions  
+https://aaronbloomfield.github.io/pdr/book/x86-64bit-ccc-chapter.pdf
+
+Rust inline asm  
+https://rust-lang.github.io/rfcs/2873-inline-asm.html
+
+asm Syntax : (we use nasm in assembly and .intel_syntax noprefix in rust asm)  
+https://en.wikipedia.org/wiki/X86_assembly_language#Syntax
