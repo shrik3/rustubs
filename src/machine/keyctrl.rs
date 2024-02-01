@@ -15,27 +15,23 @@ use crate::machine::device_io::*;
 // reboot()
 // set_led(char led,bool on)
 // set_repeat_rate(int speed,int delay)
+
 pub struct KeyboardController {
 	code: u8,
 	prefix: u8,
 	gather: Key,
 	leds: u8,
-
-	// two ports for keyboard controller
-	ctrl_port: u16,
-	data_port: u16,
-	// status register bits
 }
 
 impl KeyboardController {
+	const CTRL_PORT:u16 =  0x64;
+	const DATA_PORT:u16 =  0x60;
 	pub fn new() -> Self {
 		Self {
 			code: 0,
 			prefix: 9,
 			gather: Key::new(),
 			leds: 0,
-			ctrl_port: 0x64,
-			data_port: 0x60,
 		}
 	}
 
@@ -45,8 +41,12 @@ impl KeyboardController {
 		let mut invalid: Key = Key::new();
 		invalid.set_raw(0xff);
 
-		let status = inb(self.ctrl_port);
+		let status = inb(Self::CTRL_PORT);
 		return Key::new();
 		// TODO here
+	}
+
+	pub fn reboot(&mut self)  {
+		todo!();
 	}
 }
