@@ -1,0 +1,23 @@
+image: archlinux
+packages:
+  - mtools
+  - rustup
+  - nasm
+  - grub
+  - libisoburn
+
+sources:
+  - https://git.sr.ht/~shrik3/rustubs
+tasks:
+  - setup: |
+      cd rustubs
+      rustup default nightly
+      rustup component add rust-src
+      cargo install cargo-xbuild
+  - build: |
+      cd rustubs
+      mkdir build
+      make
+      
+artifacts:
+   - rustubs/bootdisk.iso
