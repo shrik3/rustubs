@@ -1,7 +1,10 @@
 use crate::arch::x86_64::io_port::*;
 use crate::arch::x86_64::misc::*;
-use core::{ptr, slice, str};
+use core::{fmt, ptr, slice, str};
 
+// TODO this is a "hard copy" of the c code, making little use
+// of the rust features. May rework this into cleaner code...
+//
 // I would consider these cga parameters constant.
 // the scroll() and clear() works with the assumption
 // that the CGAScreen memory buffer is 64-bit aligned
@@ -27,15 +30,15 @@ const IR_PORT: u16 = 0x3d4;
 const DR_PORT: u16 = 0x3d5;
 
 #[allow(dead_code)]
-pub struct CGAScreen<'a> {
-	pub cga_mem: &'a mut [u8],
+pub struct CGAScreen {
+	pub cga_mem: &'static mut [u8],
 	cursor_r: usize,
 	cursor_c: usize,
 	attr: u8,
 }
 
 #[allow(dead_code)]
-impl<'a> CGAScreen<'a> {
+impl CGAScreen {
 	pub fn new() -> Self {
 		Self {
 			cga_mem: unsafe {
@@ -52,6 +55,7 @@ impl<'a> CGAScreen<'a> {
 		col + row * MAX_COLS
 	}
 
+	#[inline(always)]
 	pub fn show(&self, row: usize, col: usize, c: char, attr: u8) {
 		let index = self.cal_offset(row, col);
 
@@ -62,6 +66,7 @@ impl<'a> CGAScreen<'a> {
 	}
 
 	pub fn putchar(&mut self, ch: char) {
+		// TODO use match syntax.
 		if ch == '\n' {
 			self.cursor_r += 1;
 			self.cursor_c = 0;
@@ -79,6 +84,7 @@ impl<'a> CGAScreen<'a> {
 		self.setpos(self.cursor_r, self.cursor_c);
 	}
 
+	#[inline(always)]
 	fn _check_scroll(&mut self) {
 		if self.cursor_r >= MAX_ROWS {
 			self.scroll(1);
@@ -186,12 +192,8 @@ impl<'a> CGAScreen<'a> {
 		offset as u32
 	}
 
-	// Sanity Check of the cgascreen
-	pub fn test(&self) {
-		// TODO
-	}
-
 	pub fn show_coners(&self) {
+		// TODO replace hardcoded
 		self.show(0, 0, 0xda as char, self.attr);
 		self.show(0, 79, 0xbf as char, self.attr);
 		self.show(24, 0, 0xc0 as char, self.attr);
@@ -206,5 +208,12 @@ impl<'a> CGAScreen<'a> {
 
 	pub fn setattr(&mut self, attr: u8) {
 		self.attr = attr;
+	}
+}
+
+impl fmt::Write for CGAScreen {
+	fn write_str(&mut self, s: &str) -> fmt::Result {
+		self.print(s);
+		Ok(())
 	}
 }
