@@ -18,43 +18,47 @@ Universities. This one in perticular, is based on the TU Dresden version
 (Operating System Construction), led by my Professor Dr. Horst Schirmeier.
 
 **Status / Roadmap**
-[X] - Basic code structure  
-[X] - Build minimal iso image  
-[X] - bootable using grub  
-[X] - Setting up CGA display, print something (hello world)  
-[X] - Provide "printf" support  
-[X] - Intigrate print into rust println! etc.
-[.] - asm! Wrappers for basic instructions
-[.] - Keyboard controller and input handler  
-[.] - Interrupt handler  
-[ ] - Timer Interrupt  
-[ ] - Threading  
-[ ] - Scheduler (single CPU)
-[ ] - Synchronization Primitives  
+- [X] Basic code structure
+- [X] Build minimal iso image
+- [X] bootable using grub
+- [X] Setting up CGA display, print something (hello world)
+- [X] Intigrate print into rust println! etc.
+- [ ] asm! Wrappers for basic instructions
+- [ ] Keyboard controller and input handler
+- [ ] Interrupt handler (WIP)
+- [ ] Timer Interrupt
+- [ ] Threading
+- [ ] Scheduler (single CPU)
+- [ ] Synchronization Primitives
 
 Beyond the original StuBS
-[ ] - Task Descriptor structures
-[ ] - Paging: PMA and paging structures
-[ ] - Paging: pagefault handler
-[ ] - user heap and mmap
-[ ] - Upperhalf Kernel
-[ ] - Address Space for each Process
-[ ] - in memory FS
-[ ] - user library
-[ ] - syscall
-[ ] - aarch64 support
+- [ ] Task Descriptor structures
+- [ ] Paging: PMA and paging structures
+- [ ] Paging: pagefault handler
+- [ ] user heap and mmap
+- [ ] Upperhalf Kernel
+- [ ] Address Space for each Process
+- [ ] in memory FS
+- [ ] user library
+- [ ] syscall
+- [ ] aarch64 support
 
-**Dependencies**
+## Build
+
+Please take a look at the CI manifest:
+`.builds/x86_64.yml`
+
+**>general dependencies:**
 - cargo / rustc (nightly)
 - xbuild for crossbuild
 - basics: nasm, make, glibc, ld etc.
 - xorriso and grub (to create bootable image)
 - qemu-system-x86_64 (optionly for simulation)
 
-**Before building**
+**before building**
 - You may need to add the rust sources component by `rustup component add  rust-src`
 
-**How to build**
+**build and run**
 - simply run `make`, you will get `bootdisk.iso`, which you can use to boot a
   bare metal
 - use `make qemu` to load and test the iso image with qemu
