@@ -89,3 +89,9 @@ https://rust-lang.github.io/api-guidelines/naming.html
 
 Makefile Cheatsheet:  
 https://devhints.io/makefile
+
+AT Keyboard Controller:  
+https://homepages.cwi.nl/~aeb/linux/kbd/scancodes-8.html
+
+PS/2 Keyboard Controller:  
+https://wiki.osdev.org/PS/2_Keyboard

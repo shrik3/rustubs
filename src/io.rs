@@ -1,11 +1,12 @@
 use crate::machine::cgascr::CGAScreen;
+use crate::machine::keyctrl::KeyboardController;
 use core::fmt;
 use lazy_static::lazy_static;
 use spin::Mutex;
 // TODO I want my own locking primitive for practice, instead of stock spin lock
 lazy_static! {
-	// TODO perhaps remove the 'a lifetime from the struc defs
 	pub static ref CGASCREEN_GLOBAL: Mutex<CGAScreen> = Mutex::new(CGAScreen::new());
+	pub static ref KBCTL_GLOBAL: Mutex<KeyboardController> = Mutex::new(KeyboardController::new());
 }
 
 #[macro_export]
