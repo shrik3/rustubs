@@ -22,23 +22,26 @@ Universities. This one in perticular, is based on the TU Dresden version
 [X] - bootable using grub  
 [X] - Setting up CGA display, print something (hello world)  
 [X] - Provide "printf" support  
-[ ] - Intigrate print into rust println! etc.
-[ ] - asm! Wrappers for basic instructions
-[ ] - Keyboard controller and input handler  
-[ ] - Interrupt handler  
+[X] - Intigrate print into rust println! etc.
+[.] - asm! Wrappers for basic instructions
+[.] - Keyboard controller and input handler  
+[.] - Interrupt handler  
 [ ] - Timer Interrupt  
 [ ] - Threading  
 [ ] - Scheduler (single CPU)
 [ ] - Synchronization Primitives  
 
 Beyond the original StuBS
-[ ] - Better paging: PMA and pagefault handler
+[ ] - Task Descriptor structures
+[ ] - Paging: PMA and paging structures
+[ ] - Paging: pagefault handler
 [ ] - user heap and mmap
 [ ] - Upperhalf Kernel
 [ ] - Address Space for each Process
 [ ] - in memory FS
-[ ] - aarch64 support
 [ ] - user library
+[ ] - syscall
+[ ] - aarch64 support
 
 **Dependencies**
 - cargo / rustc (nightly)
@@ -75,3 +78,6 @@ https://rust-lang.github.io/rfcs/2873-inline-asm.html
 
 asm Syntax : (we use nasm in assembly and .intel_syntax noprefix in rust asm)  
 https://en.wikipedia.org/wiki/X86_assembly_language#Syntax
+
+naming conventions  
+https://rust-lang.github.io/api-guidelines/naming.html
