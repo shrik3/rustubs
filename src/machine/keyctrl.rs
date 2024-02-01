@@ -1,9 +1,8 @@
 use self::super::kbd_defs::*;
 use self::super::key::*;
-use crate::arch::x86_64::io_port::*;
+use crate::machine::device_io::*;
 
-// this is the driver for keyboard controller
-// not to confuse with the keyboard module.
+// this is the driver for keyboard controller not to confuse with the keyboard module.
 // The later is an abstraction
 // This one serves a the HW driver
 
