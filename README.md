@@ -1,3 +1,5 @@
+[![builds.sr.ht status](https://builds.sr.ht/~shrik3.svg)](https://builds.sr.ht/~shrik3?search=)
+
 # License & Copyright:
 
 This project aims for a total rewrite TU Dresden OS Group's tutorial OS
