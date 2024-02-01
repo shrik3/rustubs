@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+
 #![no_std]
 #![no_main]
 mod arch;
