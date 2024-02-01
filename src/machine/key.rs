@@ -1,10 +1,11 @@
 use self::super::kbd_defs::*;
+use bitflags::bitflags;
 use core::convert;
 
 pub struct Key {
 	asc: u8,
 	scan: u8,
-	modi: u8,
+	modi: Modifiers,
 	rawcode: u8, // this field not necessary, remove after testing
 }
 
@@ -24,17 +25,33 @@ impl convert::Into<u8> for Key {
 	}
 }
 
+bitflags! {
+	pub struct Modifiers:u8 {
+		const NONE			= 0;
+		const SHIFT			= 1 << 0;
+		const ALT_LEFT		= 1 << 1;
+		const ALT_RIGHT		= 1 << 2;
+		const CTRL_LEFT		= 1 << 3;
+		const CTRL_RIGHT	= 1 << 4;
+		const CAPSLOCK		= 1 << 5;
+		const NUMLOCK		= 1 << 6;
+		const SCROLL_LOCK	= 1 << 7;
+	}
+}
+
 #[allow(dead_code)]
 impl Key {
 	pub fn new() -> Self {
 		Self {
 			asc: 0,
 			scan: 0,
-			modi: 0,
+			modi: Modifiers::NONE,
 			rawcode: 0,
 		}
 	}
-
+	pub fn decode(&mut self) {
+		// decode  key
+	}
 	pub fn valid(self) -> bool {
 		self.scan != 0
 	}
@@ -65,100 +82,19 @@ impl Key {
 		self.scan
 	}
 
-	// reading the state of SHIFT, ALT, CTRL etc.
-	pub fn shift(&self) -> bool {
-		self.modi & (Mbit::Shift as u8) != 0
-	}
-	pub fn alt_left(&self) -> bool {
-		self.modi & (Mbit::AltLeft as u8) != 0
-	}
-	pub fn alt_right(&self) -> bool {
-		self.modi & (Mbit::AltRight as u8) != 0
-	}
-	pub fn ctrl_left(&self) -> bool {
-		self.modi & (Mbit::CtrlLeft as u8) != 0
-	}
-	pub fn ctrl_right(&self) -> bool {
-		self.modi & (Mbit::CtrlRight as u8) != 0
-	}
-	pub fn caps_lock(&self) -> bool {
-		self.modi & (Mbit::CapsLock as u8) != 0
-	}
-	pub fn num_lock(&self) -> bool {
-		self.modi & (Mbit::NumLock as u8) != 0
-	}
-	pub fn scroll_lock(&self) -> bool {
-		self.modi & (Mbit::ScrollLock as u8) != 0
-	}
-	pub fn alt(&self) -> bool {
-		self.alt_left() | self.alt_right()
-	}
-	pub fn ctrl(&self) -> bool {
-		self.ctrl_left() | self.ctrl_right()
+	// TODO the setters and getters should not be their own functions....
+
+	#[inline(always)]
+	pub fn mod_contains(&self, modi: Modifiers) -> bool {
+		self.modi.contains(modi)
 	}
 
-	// setting/clearing states of SHIFT, ALT, CTRL etc.
-	pub fn set_shift(&mut self, pressed: bool) {
-		self.modi = if pressed {
-			self.modi | Mbit::Shift as u8
+	#[inline(always)]
+	pub fn mod_set(&mut self, modi: Modifiers, pressed: bool) {
+		if pressed {
+			self.modi.insert(modi);
 		} else {
-			self.modi & !(Mbit::Shift as u8)
-		}
-	}
-
-	pub fn set_alt_left(&mut self, pressed: bool) {
-		self.modi = if pressed {
-			self.modi | Mbit::AltLeft as u8
-		} else {
-			self.modi & !(Mbit::AltLeft as u8)
-		}
-	}
-
-	pub fn set_alt_right(&mut self, pressed: bool) {
-		self.modi = if pressed {
-			self.modi | Mbit::AltRight as u8
-		} else {
-			self.modi & !(Mbit::AltRight as u8)
-		}
-	}
-
-	pub fn set_ctrl_left(&mut self, pressed: bool) {
-		self.modi = if pressed {
-			self.modi | Mbit::CtrlLeft as u8
-		} else {
-			self.modi & !(Mbit::CtrlLeft as u8)
-		}
-	}
-
-	pub fn set_ctrl_right(&mut self, pressed: bool) {
-		self.modi = if pressed {
-			self.modi | Mbit::CtrlRight as u8
-		} else {
-			self.modi & !(Mbit::CtrlRight as u8)
-		}
-	}
-
-	pub fn set_caps_lock(&mut self, pressed: bool) {
-		self.modi = if pressed {
-			self.modi | Mbit::CapsLock as u8
-		} else {
-			self.modi & !(Mbit::CapsLock as u8)
-		}
-	}
-
-	pub fn set_num_lock(&mut self, pressed: bool) {
-		self.modi = if pressed {
-			self.modi | Mbit::NumLock as u8
-		} else {
-			self.modi & !(Mbit::NumLock as u8)
-		}
-	}
-
-	pub fn set_scroll_lock(&mut self, pressed: bool) {
-		self.modi = if pressed {
-			self.modi | Mbit::ScrollLock as u8
-		} else {
-			self.modi & !(Mbit::ScrollLock as u8)
+			self.modi.remove(modi);
 		}
 	}
 }
