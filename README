@@ -22,7 +22,7 @@ Universities. This one in perticular, is based on the TU Dresden version
 [X] - bootable using grub  
 [X] - Setting up CGA display, print something (hello world)  
 [X] - Provide "printf" support  
-[ ] - Intigrate print into rust println! etc.
+[X] - Intigrate print into rust println! etc.
 [ ] - asm! Wrappers for basic instructions
 [ ] - Keyboard controller and input handler  
 [ ] - Interrupt handler  
