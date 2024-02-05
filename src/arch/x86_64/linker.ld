@@ -71,4 +71,5 @@ SECTIONS
       *(".debug_aranges")
    }
 */
+    PROVIDE (KERNEL_END = .);
 }

@@ -5,6 +5,7 @@
 mod arch;
 mod io;
 mod machine;
+mod defs;
 use arch::x86_64::interrupt::pic_8259;
 use arch::x86_64::interrupt::pic_8259::PicDeviceInt;
 use core::panic::PanicInfo;
