@@ -5,11 +5,11 @@
 mod arch;
 mod io;
 mod machine;
+use arch::x86_64::interrupt::pic_8259;
+use arch::x86_64::interrupt::pic_8259::PicDeviceInt;
 use core::panic::PanicInfo;
 use machine::cgascr::CGAScreen;
 use machine::interrupt;
-use arch::x86_64::interrupt::pic_8259;
-use arch::x86_64::interrupt::pic_8259::PicDeviceInt;
 
 #[cfg(not(test))]
 #[panic_handler]
@@ -28,9 +28,17 @@ pub extern "C" fn _entry() -> ! {
 	println!("       `-.-' \\ )-`( , o o)");
 	println!("             `-    \\`_`\"'-");
 	println!("it works!");
-	
+
 	// testing interrupt/PIC
-	pic_8259::allow(PicDeviceInt::KEYBOARD);
-	interrupt::interrupt_enable();	
-	loop {}
+	// pic_8259::allow(PicDeviceInt::KEYBOARD);
+	// interrupt::interrupt_enable();
+	//
+	// busy loop query keyboard
+	loop {
+		// let code = io::KBCTL_GLOBAL.lock().simple_read();
+		io::KBCTL_GLOBAL.lock().fetch_key();
+		if let Some(k) = io::KBCTL_GLOBAL.lock().consume_key() {
+			println! {"caught key: {:?}", k}
+		}
+	}
 }
