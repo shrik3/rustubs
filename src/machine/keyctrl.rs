@@ -56,11 +56,11 @@ impl Prefix {
 
 impl KeyState {
 	pub fn new() -> Self {
-		return Self {
+		Self {
 			modi: Modifiers::NONE,
 			prefix: Prefix::NONE,
 			scan: None,
-		};
+		}
 	}
 
 	pub fn toggle_capslock(&mut self) {
@@ -174,7 +174,7 @@ impl KeyboardController {
 		// TODO maybe there is a path which leads to invalid SR, e.g. timeout?
 		Some(StatusReg::from_bits_truncate(self.cport.inb()))
 	}
-	
+
 	// this should be called by the interrupt handler prologue
 	pub fn fetch_key(&mut self) {
 		// I'd like to see if this panics....
@@ -185,12 +185,12 @@ impl KeyboardController {
 		}
 		self.update_state(self.dport.inb());
 	}
-	
+
 	// this should be called by the "epilogue"
-	pub fn consume_key(&mut self) -> Option<Key>{
+	pub fn consume_key(&mut self) -> Option<Key> {
 		let res = self.gather.clone();
 		self.gather = None;
-		return res
+		res
 	}
 
 	pub fn decode_key(&mut self) {

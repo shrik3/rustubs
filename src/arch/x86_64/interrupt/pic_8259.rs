@@ -38,9 +38,9 @@ pub fn forbid(interrupt: u8) {
 pub fn is_masked(interrupt: u8) -> bool {
 	if interrupt < 8 {
 		let val = inb(IMR1);
-		return val & (interrupt) != 0;
+		val & (interrupt) != 0
 	} else {
 		let val = inb(IMR2);
-		return val & (interrupt - 8) != 0;
+		val & (interrupt - 8) != 0
 	}
 }
