@@ -46,7 +46,7 @@ SECTIONS
       *(".note.*")
    }
 
-   .bss : 
+   .bss :
    {
       ___BSS_START__ = .;
       *(".bss")
@@ -71,5 +71,6 @@ SECTIONS
       *(".debug_aranges")
    }
 */
-    PROVIDE (KERNEL_END = .);
+	. = ALIGN(4096);
+	PROVIDE (___KERNEL_END__ = .);
 }
