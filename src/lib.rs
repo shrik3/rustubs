@@ -35,6 +35,12 @@ pub extern "C" fn _entry() -> ! {
 	// interrupt::interrupt_enable();
 	//
 	// busy loop query keyboard
+	let mut framemap = mm::pma::FMap::new();
+	framemap.init();
+	println!("Bitmap starting from : {:p}", framemap.bm.as_ptr());
+	println!("Skip first {} bytes", framemap.skip_byte);
+
+
 	loop {
 		// let code = io::KBCTL_GLOBAL.lock().simple_read();
 		io::KBCTL_GLOBAL.lock().fetch_key();
