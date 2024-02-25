@@ -9,11 +9,18 @@ edition = "2021"
 spin = "0.9.8"
 bitflags = "2.4.2"
 
+[dependencies.bit-vec]
+version = "0.6.3"
+default-features = false
 
 [dependencies.num_enum]
 version = "0.7.2"
 default-features = false
 
+# rebuild components, instead of using the prebuilt ones.
+# see https://os.phil-opp.com/heap-allocation/#the-allocator-interface
+# [unstable]
+# build-std = ["core", "compiler_builtins", "alloc"]
 
 [dependencies.lazy_static]
 version = "1.4"
