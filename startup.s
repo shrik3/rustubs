@@ -23,8 +23,9 @@ STACKSIZE: equ 65536
 ; video memory base address
 CGA: equ 0xB8000
 
-; 256 GB maximum RAM size for page table
-MAX_MEM: equ 254
+; 512 GB maximum RAM size for page table
+; DON'T MODIFY THIS UNLESS YOU UPDATE THE setup_paging accordingly
+MAX_MEM: equ 512
 
 ; Multiboot constants
 MULTIBOOT_PAGE_ALIGN     equ   1<<0
@@ -165,36 +166,21 @@ setup_paging:
 	or     eax, 0xf
 	mov    dword [pml4+0], eax
 	mov    dword [pml4+4], 0
-
-	; PDPE (Page Directory Pointer Entry / 2nd level) for currently 16 GB
-	mov    eax, pd
-	or     eax, 0x7           ; address of the first table (3rd level) with flags
+	; PDPE flags
+	mov    eax, 0x0 | 0x87    ; start-address bytes bit [30:31] + flags
+	mov    ebx, 0             ; start-address bytes bit [32:38]
 	mov    ecx, 0
 fill_tables2:
-	cmp    ecx, MAX_MEM       ; reference MAX_MEM tables
+	; fill one single PDP table, with 1G pages, 512 PDPE maps to 512 GB
+	cmp    ecx, MAX_MEM
 	je     fill_tables2_done
-	mov    dword [pdp + 8*ecx + 0], eax
-	mov    dword [pdp + 8*ecx + 4], 0
-	add    eax, 0x1000        ; tables are sized 4 kB each
+	mov    dword [pdp + 8*ecx + 0], eax ; low bytes
+	mov    dword [pdp + 8*ecx + 4], ebx ; high bytes
+	add    eax, 0x40000000      		; 1G per page
+	adc    ebx, 0             ; overflow? -> increment higher-order half of the address
 	inc    ecx
 	ja     fill_tables2
 fill_tables2_done:
-
-	; PDE (Page Directory Entry / 3rd level)
-	mov    eax, 0x0 | 0x87    ; start-address bytes 0..3 (=0) + flags
-	mov    ebx, 0             ; start-address bytes 4..7 (=0)
-	mov    ecx, 0
-fill_tables3:
-	cmp    ecx, 512*MAX_MEM   ; fill MAX_MEM tables with 512 entries each
-	je     fill_tables3_done
-	mov    dword [pd + 8*ecx + 0], eax ; low bytes
-	mov    dword [pd + 8*ecx + 4], ebx ; high bytes
-	add    eax, 0x200000      ; 2 MB per page
-	adc    ebx, 0             ; overflow? -> increment higher-order half of the address
-	inc    ecx
-	ja     fill_tables3
-fill_tables3_done:
-
 	; set base pointer to PML4
 	mov    eax, pml4
 	mov    cr3, eax
@@ -532,8 +518,5 @@ pml4:
 	alignb 4096
 
 pdp:
-	resb   MAX_MEM*8
+	resb   4096
 	alignb 4096
-
-pd:
-	resb   MAX_MEM*4096
