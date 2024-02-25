@@ -1,0 +1,45 @@
+
+
++------------+
+| PML4 Entry |
++------------+
+
+
+0 		PRESENT
+1 		R/W  (1 == writable)
+2 		U/S  (1 == user accessable)
+3 		PWD  (write-through)
+4 		PCD  (cache disable)
+5 		A 	 (Accessed)
+6   	IGN
+7 		RES0
+8:10 	IGN
+11 		R 	(ign, or restart for HLAT paging)
+M-1:12 	next level table PA[M:12]
+51:M 	RES0
+62:52 	IGN
+63 		XD 	(execute disable (if EFER.NXE=1)) otherwise RES0
+
+
++------------+
+| PDPT ENtry | (level 3) with 1GiB Page (requires PS=1)
++------------+
+
+0 		PRESENT
+1 		R/W  (1 == writable)
+2 		U/S  (1 == user accessable)
+3 		PWD  (write-through)
+4 		PCD  (cache disable)
+5 		A 	 (Accessed)
+6 		D 	 (Dirty)
+7 		PS 	 (must be 1)*
+8 		G 	 (Global, if CR4.PGE=1), otherwise INR
+10:9 	IGR
+11 		R 	(ign, or restart for HLAT paging)
+12 		PAT (indirectly determines memory type)
+29:13 	RES0
+M-1:30 	PA[M-1:30]
+51:M 	RES0
+52:58 	IGN
+59:62 	Protection key
+63 		XD 	(execute disable (if EFER.NXE=1)) otherwise RES0
