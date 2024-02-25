@@ -3,9 +3,11 @@
 #![no_std]
 #![no_main]
 mod arch;
+mod defs;
+mod ds;
 mod io;
 mod machine;
-mod defs;
+mod mm;
 use arch::x86_64::interrupt::pic_8259;
 use arch::x86_64::interrupt::pic_8259::PicDeviceInt;
 use core::panic::PanicInfo;
@@ -28,8 +30,6 @@ pub extern "C" fn _entry() -> ! {
 	println!("   (,-.`._,'(       |\\`-/|");
 	println!("       `-.-' \\ )-`( , o o)");
 	println!("             `-    \\`_`\"'-");
-	println!("it works!");
-
 	// testing interrupt/PIC
 	// pic_8259::allow(PicDeviceInt::KEYBOARD);
 	// interrupt::interrupt_enable();
