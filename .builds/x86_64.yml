@@ -18,6 +18,6 @@ tasks:
       cd rustubs
       mkdir build
       make
-      
+
 artifacts:
    - rustubs/bootdisk.iso
