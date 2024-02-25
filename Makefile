@@ -1,16 +1,16 @@
 # this is an prototype makefile with hardcodings..
 # Forgive the ugly code, but this make more sense
-# for those (me included) who are not sure about 
+# for those (me included) who are not sure about
 # the building process.
 # TODO reorganize...
 # TODO add dependencies (.d) if necessary but I don't think so...
-#	 the librustubs is cargo self-contained), others are asm code, 
+#	 the librustubs is cargo self-contained), others are asm code,
 #	 for which dep files are not needed
 #	 And .. I don't think I'll add c/c++ files to this project..
 # TODO replace hardcoded values with variables
-# TODO there can be more options of grub-mkrescue 
+# TODO there can be more options of grub-mkrescue
 # TODO put the startup.s elsewhere (I don't like it in the root dir)
-# TODO maybe put the bootdisk.iso in the build dir too .. 
+# TODO maybe put the bootdisk.iso in the build dir too ..
 
 # verbose for testing; VERBOSE=@ to turn off..
 VERBOSE=@
@@ -19,7 +19,7 @@ ARCH = x86_64
 ASM = nasm
 ASMOBJFORMAT = elf64
 LINKER_SCRIPT = ./src/arch/$(ARCH)/linker.ld
-CARGO_XBUILD_FLAGS = 
+CARGO_XBUILD_FLAGS =
 # ---------- No need to edit below this line --------------
 # ---------- If you have to, something is wrong -----------
 ASM_SOURCES = $(shell find ./src -name "*.s")
@@ -37,7 +37,7 @@ ifeq (--release, $(findstring NT-5.1,$(CARGO_XBUILD_FLAGS)))
 else
 	RUST_BUILD = debug
 endif
-		
+
 RUST_OBJECT = target/$(ARCH)-rustubs/$(RUST_BUILD)/librustubs.a
 
 all: bootdisk.iso
@@ -58,7 +58,7 @@ $(BUILD)/_%.o : %.s | $(BUILD)
 
 
 # install xbuild first. (cargo install xbuild)
-# Compile the rust part: note that the the cargo crate is of type [staticlib], if you don't 
+# Compile the rust part: note that the the cargo crate is of type [staticlib], if you don't
 # define this, the linker will have troubles, especially when we use a "no_std" build
 rust_kernel:
 	 cargo xbuild --target $(ARCH)-rustubs.json $(CARGO_XBUILD_FLAG)
@@ -80,7 +80,7 @@ clean:
 	rm -f kernel
 	rm -f isofiles/boot/kernel
 	rm -f build/*
-	
+
 qemu: bootdisk.iso
 	qemu-system-x86_64 -drive file=./bootdisk.iso,format=raw -k en-us
 
