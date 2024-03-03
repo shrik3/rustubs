@@ -99,7 +99,7 @@ impl CGAScreen {
 	pub fn scroll(&self, lines: u32) {
 		// TODO
 		// sanity check
-		if lines >= MAX_COLS as u32 {
+		if lines >= MAX_ROWS as u32 {
 			self.clear();
 		}
 
