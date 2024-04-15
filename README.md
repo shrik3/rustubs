@@ -23,13 +23,24 @@ Universities. This one in perticular, is based on the TU Dresden version
 - [X] bootable using grub
 - [X] Setting up CGA display, print something (hello world)
 - [X] Intigrate print into rust println! etc.
-- [ ] asm! Wrappers for basic instructions
-- [ ] Keyboard controller and input handler
-- [ ] Interrupt handler (WIP)
-- [ ] Timer Interrupt
+- [X] Keyboard controller and input handler
+- [?] Interrupt handler (WIP)
+    - linked list for plugbox
+    - implement plugbox
+    - interrupt handler code for kbd
+    - input buffer
+- [ ] intrrupt sync
+    - split upper/lower half of handlers
 - [ ] Threading
+    - stack allocator (could be trivial)
+    - define context
+    - implement switch/toc code
 - [ ] Scheduler (single CPU)
+    - DS
+- [ ] Timer Interrupt
 - [ ] Synchronization Primitives
+    - implement waiting/wakeup
+- [ ] asm! Wrappers for basic instructions
 
 Beyond the original StuBS
 - [ ] Task Descriptor structures
