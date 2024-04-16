@@ -54,10 +54,6 @@ pagetable_end:  equ 0x200000
 ; functions provided by us
 [GLOBAL startup]
 [GLOBAL idt]
-[GLOBAL __cxa_pure_virtual]
-[GLOBAL _ZdlPv]
-[GLOBAL _ZdlPvj]
-[GLOBAL _ZdlPvm]
 
 ; functions from the C parts of the system
 [EXTERN _entry]
@@ -66,10 +62,6 @@ pagetable_end:  equ 0x200000
 ; addresses provided by the compiler
 [EXTERN ___BSS_START__]
 [EXTERN ___BSS_END__]
-[EXTERN __init_array_start]
-[EXTERN __init_array_end]
-[EXTERN __fini_array_start]
-[EXTERN __fini_array_end]
 
 [SECTION .text]
 
@@ -219,9 +211,7 @@ clear_bss:
 	;or rax, 3 << 9		;set CR4.OSFXSR and CR4.OSXMMEXCPT at the same time
 	;mov cr4, rax
 
-	call   _init   ; call constructors of global objects
 	call   _entry  ; call the OS kernel's C / C++ part
-	call   _fini   ; call destructors
 	cli            ; Usually we should not get here.
 	hlt
 
@@ -378,55 +368,12 @@ reprogram_pics:
 	ret
 
 ;
-; Run constructors of global objects
-;
-
-_init:
-	mov    rbx, __init_array_start
-_init_loop:
-	cmp    rbx, __init_array_end
-	je     _init_done
-	mov    rax, [rbx]
-	call   rax
-	add    rbx, 8
-	ja     _init_loop
-_init_done:
-	ret
-
-;
-; Run destructors of global objects
-;
-
-_fini:
-	mov    rbx, __fini_array_start
-_fini_loop:
-	cmp    rbx, __fini_array_end
-	je     _fini_done
-	mov    rax, [rbx]
-	call   rax
-	add    rbx, 8
-	ja     _fini_loop
-_fini_done:
-	ret
-
-;
 ; Short delay for in/out instructions
 ;
 
 delay:
 	jmp    .L2
 .L2:
-	ret
-
-;
-; Functions for the C++ compiler. These labels must be defined for the linker;
-; since OOStuBS does not release/free any memory, they may be empty, however.
-;
-
-__cxa_pure_virtual: ; a "virtual" method without implementation was called
-_ZdlPv:             ; void operator delete(void*)
-_ZdlPvj:            ; void operator delete(void*, unsigned int) for g++ 6.x
-_ZdlPvm:            ; void operator delete(void*, unsigned long) for g++ 6.x
 	ret
 
 [SECTION .data]
