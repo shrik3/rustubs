@@ -18,7 +18,8 @@ BUILD = build
 ARCH = x86_64
 ASM = nasm
 ASMOBJFORMAT = elf64
-LINKER_SCRIPT = ./src/arch/$(ARCH)/linker.ld
+LINKER_SCRIPT = ./compiler/$(ARCH)-linker.ld
+CARGO_XBUILD_TARGET = ./compiler/$(ARCH)-rustubs.json
 CARGO_XBUILD_FLAGS =
 # ---------- No need to edit below this line --------------
 # ---------- If you have to, something is wrong -----------
@@ -61,13 +62,13 @@ $(BUILD)/_%.o : %.s | $(BUILD)
 # Compile the rust part: note that the the cargo crate is of type [staticlib], if you don't
 # define this, the linker will have troubles, especially when we use a "no_std" build
 rust_kernel:
-	 cargo xbuild --target $(ARCH)-rustubs.json $(CARGO_XBUILD_FLAG)
+	 cargo xbuild --target $(CARGO_XBUILD_TARGET) $(CARGO_XBUILD_FLAG)
 
 # need nasm
 # TODO make this arch dependent
-startup.o: startup.s | $(BUILD)
+startup.o: boot/startup-$(ARCH).s | $(BUILD)
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
-	nasm -f elf64 -o $(BUILD)/startup.o startup.s
+	nasm -f elf64 -o $(BUILD)/startup.o boot/startup-$(ARCH).s
 
 .PHONY: $(BUILD)
 $(BUILD):
