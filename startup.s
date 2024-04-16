@@ -39,21 +39,16 @@ MULTIBOOT_HEADER_FLAGS   equ   MULTIBOOT_PAGE_ALIGN | MULTIBOOT_MEMORY_INFO
 MULTIBOOT_HEADER_CHKSUM  equ   -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
 MULTIBOOT_EAX_MAGIC      equ   0x2badb002
 
-; memory for the page table
-
-[GLOBAL pagetable_start]
-pagetable_start:  equ 0x103000
-
-[GLOBAL pagetable_end]
-pagetable_end:  equ 0x200000
 
 ;
 ;   System
 ;
 
-; functions provided by us
+; exported symbols
 [GLOBAL startup]
 [GLOBAL idt]
+[GLOBAL pml4]
+[GLOBAL pdp]
 
 ; functions from the C parts of the system
 [EXTERN _entry]
@@ -146,10 +141,8 @@ init_longmode:
 	jmp    2 * 0x8 : longmode_start
 
 ;
-;   Generation of a (provisional) page table with a page size of 2 MB, which
-;   maps the first MAX_MEM GB directly to physical memory. Currently, the
-;   system must not have more memory.
-;   All of this is necessary because Long Mode mandates a working page table.
+; Provisional identical page mapping, using 1G huge page (therefore only 2 table
+; levels needed)
 ;
 
 setup_paging:
@@ -203,6 +196,7 @@ clear_bss:
 	fninit         ; activate FPU
 
 	; init SSE
+	; NOTE: must NOT use sse target features for rust compiler, if sse not enabled here.
 	;mov rax, cr0
 	;and rax, ~(1 << 2)	;clear coprocessor emulation CR0.EM
 	;or rax, 1 << 1		;set coprocessor monitoring  CR0.MP
@@ -220,6 +214,7 @@ clear_bss:
 ;
 
 ; template for header for each interrupt-handling routine
+; TODO: vectors should have their dedicated place
 %macro wrapper 1
 wrapper_%1:
 	push   rbp
@@ -433,22 +428,6 @@ idt_descr:
 
 [SECTION .bss]
 
-[GLOBAL MULTIBOOT_FLAGS]
-[GLOBAL MULTIBOOT_LOWER_MEM]
-[GLOBAL MULTIBOOT_UPPER_MEM]
-[GLOBAL MULTIBOOT_BOOTDEVICE]
-[GLOBAL MULTIBOOT_CMDLINE]
-[GLOBAL MULTIBOOT_MODULES_COUNT]
-[GLOBAL MULTIBOOT_MODULES_ADDRESS]
-
-MULTIBOOT_FLAGS:            resd 1
-MULTIBOOT_LOWER_MEM:        resd 1
-MULTIBOOT_UPPER_MEM:        resd 1
-MULTIBOOT_BOOTDEVICE:       resd 1
-MULTIBOOT_CMDLINE:          resd 1
-MULTIBOOT_MODULES_COUNT:    resd 1
-MULTIBOOT_MODULES_ADDRESS:  resd 1
-
 global init_stack:data (init_stack.end - init_stack)
 init_stack:
 	resb STACKSIZE
@@ -456,9 +435,6 @@ init_stack:
 
 [SECTION .global_pagetable]
 
-[GLOBAL pml4]
-[GLOBAL pdp]
-[GLOBAL pd]
 
 pml4:
 	resb   4096
