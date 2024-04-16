@@ -7,20 +7,22 @@ project, an minimal operating system used in several German universities for
 tutorial purposes. These code are available in public, but the Copyright status
 is not clear.
 
+This project **will adapt a copy-left license** (presumably EUPL-1.2). As soon
+as I do a total clean-room rewrite of the borrowed code. **As for now, all
+rights are reserverd**. I'm sorry for this, but I need to stay on the safe side
+before everything is sorted out.
+
+To be specific: 
 ```
-startup.s
-Makefile
-arch/x86_64/linker.ld
+./boot/startup-x86_64.s
+    Copyright 1998-2002  Institut für Verteilte Systeme (IVS), Otto-von-Guericke-Universität Magdeburg
+    Copyright 2002-2019  Lehrstuhl für Informatik 4, Friedrich-Alexander-Universität Erlangen-Nürnberg
+
+rest of the code:
+    Copyright 2023-2024 Tianhao Wang <shrik3@mailbox.org>
 ```
 
-This project **will adapt a copy-left license** (presumably EUPL-1.2). I'll try
-to either ask for permission to distribute the copied code under a copy-left
-license, or do a clean-room rewrite.
-
-Untill then, all rights are reserverd to the original authors of OOStuBS
-(although unclear). Redistribution of the above files MUST include this notice.
-
-# The rust port of OOStuBS [WIP]
+# RuStuBS: a rust tutorial operating system inspired by OOStuBS.
 
 This is a toy bare metal operation system implemented in Rust. Apologies for my
 shitty code, I'm a rust beginner.
