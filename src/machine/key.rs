@@ -21,18 +21,23 @@ impl convert::Into<u8> for Key {
 	}
 }
 
+// Technically the *Lock are special keys, instead of Modifiers
+// but we don't need another type FWIW.
+// Mask bits[2:0] to get the leds.
 bitflags! {
 	#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 	pub struct Modifiers:u8 {
 		const NONE			= 0;
-		const SHIFT			= 1 << 0;
-		const ALT_LEFT		= 1 << 1;
-		const ALT_RIGHT		= 1 << 2;
-		const CTRL_LEFT		= 1 << 3;
-		const CTRL_RIGHT	= 1 << 4;
-		const CAPSLOCK		= 1 << 5;
-		const NUMLOCK		= 1 << 6;
-		const SCROLL_LOCK	= 1 << 7;
+		// lock states
+		const SCROLL_LOCK	= 1 << 0;
+		const NUMLOCK		= 1 << 1;
+		const CAPSLOCK		= 1 << 2;
+		// modifiers
+		const SHIFT			= 1 << 3;
+		const ALT_LEFT		= 1 << 4;
+		const ALT_RIGHT		= 1 << 5;
+		const CTRL_LEFT		= 1 << 6;
+		const CTRL_RIGHT	= 1 << 7;
 	}
 }
 

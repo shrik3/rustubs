@@ -14,6 +14,8 @@ use core::panic::PanicInfo;
 use machine::cgascr::CGAScreen;
 use machine::interrupt;
 
+use crate::machine::key::Modifiers;
+
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
@@ -40,7 +42,7 @@ pub extern "C" fn _entry() -> ! {
 	println!("Bitmap starting from : {:p}", framemap.bm.as_ptr());
 	println!("Skip first {} bytes", framemap.skip_byte);
 
-
+	use crate::machine::device_io::IOPort;
 	loop {
 		// let code = io::KBCTL_GLOBAL.lock().simple_read();
 		io::KBCTL_GLOBAL.lock().fetch_key();

@@ -1,4 +1,5 @@
 use self::super::key::*;
+use crate::io::*;
 use crate::machine::device_io::*;
 use bitflags::bitflags;
 use core::cmp;
@@ -24,7 +25,6 @@ use super::key::Modifiers;
 // set_repeat_rate(int speed,int delay)
 
 pub struct KeyboardController {
-	leds: Led,
 	keystate: KeyState,
 	gather: Option<Key>, // if not collected timely it will be overwritten
 	cport: IOPort,
@@ -63,23 +63,14 @@ impl KeyState {
 		}
 	}
 
-	pub fn toggle_capslock(&mut self) {
-		self.modi.toggle(Modifiers::CAPSLOCK);
-	}
-
-	pub fn toggle_numlock(&mut self) {
-		self.modi.toggle(Modifiers::NUMLOCK);
-	}
-
-	pub fn toggle_scroll_lock(&mut self) {
-		self.modi.toggle(Modifiers::SCROLL_LOCK);
+	pub fn get_leds(&self) -> u8 {
+		return self.modi.bits() & 0b111;
 	}
 }
 
 impl KeyboardController {
 	pub fn new() -> Self {
 		Self {
-			leds: Led::NONE,
 			keystate: KeyState::new(),
 			cport: IOPort::new(Defs::CTRL),
 			dport: IOPort::new(Defs::DATA),
@@ -87,24 +78,31 @@ impl KeyboardController {
 		}
 	}
 
-	// Led and lock state are toggled together, to prevent out-of-sync
 	// TODO: rollback lock state if setting led fails
 	fn toggle_lock(&mut self, lock: Modifiers) {
-		let led = match lock {
-			Modifiers::SCROLL_LOCK => Some(Led::SCROLL_LOCK),
-			Modifiers::CAPSLOCK => Some(Led::CAPS_LOCK),
-			Modifiers::NUMLOCK => Some(Led::NUM_LOCk),
-			_ => None,
-		};
-		if let Some(led) = led {
-			self.keystate.modi.toggle(lock);
-			self.toggle_led(led);
-		}
+		self.keystate.modi.toggle(lock);
+		self.update_led();
 	}
-
-	fn toggle_led(&mut self, led: Led) {
-		self.leds.toggle(led);
-		todo!("toggle keyboard led: ");
+	// in some corner cases, e.g. keyboard control I/O may fail, while the
+	// CAPSLOCK is set and the uppcase table is used for key decoding. So we
+	// never set the leds explicitly, instead we update the leds from the
+	// current keyboard state i.e. keystate.modi
+	fn update_led(&self) {
+		let leds = self.keystate.get_leds();
+		// TODO perhaps disable interrupts here
+		// TODO set a timeout. The ACK reply may never come
+		// 1. write command
+		unsafe {self.__block_until_cmd_buffer_empty();}
+		self.dport.outb(Cmd::SetLed as u8);
+		// 2. wait for ack
+		let ack = unsafe { self.__block_for_ack() };
+		if !ack {
+			return;
+		}
+		// 3. write leds
+		self.dport.outb(leds);
+		// 4. wait for ack: we will ignore this ack because there is nothing we
+		//    can do if the ack doesn't arive
 	}
 
 	pub fn update_state(&mut self, code: u8) {
@@ -124,7 +122,7 @@ impl KeyboardController {
 		// the prefix should have been comsumed at this point so clear it
 		self.keystate.prefix = Prefix::NONE;
 	}
-
+	// TODO: need a rewrite for the toggle_lock and toggle_led
 	fn press_event(&mut self) -> bool {
 		let mut should_decode_ascii = false;
 		let code = self.keystate.scan.unwrap();
@@ -145,6 +143,17 @@ impl KeyboardController {
 				}
 			}
 			Defs::C_SCRLOCK => self.toggle_lock(Modifiers::SCROLL_LOCK),
+			Defs::C_DEL => {
+				if self
+					.keystate
+					.modi
+					.contains(Modifiers::CTRL_LEFT | Modifiers::ALT_LEFT)
+				{
+					unsafe {
+						self.reboot();
+					}
+				}
+			}
 			_ => {
 				should_decode_ascii = true;
 			}
@@ -233,12 +242,34 @@ impl KeyboardController {
 		});
 	}
 
-	pub fn set_repeat_rate_delay() {
+	pub fn cycle_repeat_rate() {
 		todo!();
 	}
 
-	pub fn reboot(&mut self) {
+	pub fn cycle_deley() {
 		todo!();
+	}
+
+	/// unsafe: this function could block forever as it doesn't emply
+	/// timeout.
+	/// wait until the next OUTB; return true if get an ACK message
+	unsafe fn __block_for_ack(&self) -> bool {
+		loop {
+			// if let Some(f)
+			let s = self.read_status().unwrap();
+			if s.contains(StatusReg::OUTB) {
+				break;
+			}
+		}
+		let msg = self.cport.inb();
+		return msg == Msg::ACK as u8;
+	}
+
+	unsafe fn __block_until_cmd_buffer_empty(&self) {
+		loop {
+			let s = self.read_status().unwrap();
+			if !s.contains(StatusReg::INB) {break;};
+		}
 	}
 }
 
@@ -270,23 +301,30 @@ impl KeyboardController {
 	}
 }
 
+// for whatever reason the PS/2 keyboard controls the "shutdown"...
+// TODO use a "target feature" for machine functions like this.
+// TODO "reboot controler" needs better abstraction, maybe a trait.
+impl KeyboardController {
+	pub unsafe fn reboot(&self) {
+		// what ever magic it is, tell BIOS this is an intentional reset and don't
+		// run memory test
+		println!("reboot...");
+		*(0x472 as *mut u16) = 0x1234;
+		self.__block_until_cmd_buffer_empty();
+		self.cport.outb(Cmd::CpuReset as u8);
+	}
+}
+
 enum Cmd {
 	// these commands are sent through DATA port
 	SetLed = 0xed,
 	ScanCode = 0xf0, // Get or set current scancode set
 	SetSpeed = 0xf3,
+	CpuReset = 0xfe,
 }
 
 bitflags! {
-pub struct Led:u8 {
-	const NONE			= 0;
-	const SCROLL_LOCK	= 1<<0;
-	const NUM_LOCk		= 1<<1;
-	const CAPS_LOCK		= 1<<2;
-}
-}
-
-bitflags! {
+#[derive(Debug)]
 pub struct StatusReg:u8 {
 	const NONE			= 0;
 	const OUTB			= 1 << 0;	// output buffer full (can read)
