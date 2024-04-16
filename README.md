@@ -1,12 +1,24 @@
 [![builds.sr.ht status](https://builds.sr.ht/~shrik3/rustubs/commits/master/x86_64.yml.svg)](https://builds.sr.ht/~shrik3/rustubs/commits/master/x86_64.yml?)
+
 # License & Copyright:
 
-This project aims for a total rewrite TU Dresden OS Group's tutorial OS
-"OOStuBS". However this is in its very early stage and is using some
-boilerplates from the lecture e.g. the startup assembly code.
+The following list of files contain code copied or derived from the OOStuBS
+project, an minimal operating system used in several German universities for
+tutorial purposes. These code are available in public, but the Copyright status
+is not clear.
 
-This project will adapt GPL when the dependencies are sorted out (hopefully very
-soon). Untill then all rights are reserverd.
+```
+startup.s
+Makefile
+arch/x86_64/linker.ld
+```
+
+This project **will adapt a copy-left license** (presumably EUPL-1.2). I'll try
+to either ask for permission to distribute the copied code under a copy-left
+license, or do a clean-room rewrite.
+
+Untill then, all rights are reserverd to the original authors of OOStuBS
+(although unclear). Redistribution of the above files MUST include this notice.
 
 # The rust port of OOStuBS [WIP]
 
