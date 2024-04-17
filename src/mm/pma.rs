@@ -15,8 +15,8 @@ pub struct FMap {
 	pub skip_byte: usize,
 }
 
-pub enum PMAError{
-	DoubleFree
+pub enum PMAError {
+	DoubleFree,
 }
 
 impl FMap {
@@ -34,25 +34,25 @@ impl FMap {
 	/// return : index to the bitmap u8 , bit mask to retrive the bit.
 	fn locate_bit(addr: usize) -> Option<(usize, u8)> {
 		if addr >= Mem::PHY_TOP {
-			return None
+			return None;
 		}
 		let pn = addr >> Mem::PAGE_SHIFT;
 		let idx = pn / 8;
-		let mask:u8 = 1 << (pn % 8);
+		let mask: u8 = 1 << (pn % 8);
 		Some((idx, mask))
 	}
 
 	pub fn alloc_frame(&mut self) -> usize {
 		for i in self.skip_byte..self.bm.len() {
 			if self.bm[i] == 0xff {
-				continue
+				continue;
 			}
 			todo!()
 		}
 		0
 	}
 
-	pub fn dealloc_frame(&mut self) -> Result<(),PMAError>{
+	pub fn dealloc_frame(&mut self) -> Result<(), PMAError> {
 		Ok(())
 	}
 

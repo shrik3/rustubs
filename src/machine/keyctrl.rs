@@ -92,7 +92,9 @@ impl KeyboardController {
 		// TODO perhaps disable interrupts here
 		// TODO set a timeout. The ACK reply may never come
 		// 1. write command
-		unsafe {self.__block_until_cmd_buffer_empty();}
+		unsafe {
+			self.__block_until_cmd_buffer_empty();
+		}
 		self.dport.outb(Cmd::SetLed as u8);
 		// 2. wait for ack
 		let ack = unsafe { self.__block_for_ack() };
@@ -188,7 +190,9 @@ impl KeyboardController {
 	pub fn fetch_key(&mut self) {
 		// mask keyboard interrupts when polling.
 		let was_masked = Self::is_int_masked();
-		if !was_masked {Self::disable_keyboard_int();}
+		if !was_masked {
+			Self::disable_keyboard_int();
+		}
 
 		// I'd like to see if this panics....
 		let sr = self.read_status().unwrap();
@@ -197,7 +201,9 @@ impl KeyboardController {
 			return;
 		}
 		self.update_state(self.dport.inb());
-		if !was_masked {Self::enable_keyboard_int();}
+		if !was_masked {
+			Self::enable_keyboard_int();
+		}
 	}
 
 	// this should be called by the "epilogue"
@@ -273,7 +279,9 @@ impl KeyboardController {
 	unsafe fn __block_until_cmd_buffer_empty(&self) {
 		loop {
 			let s = self.read_status().unwrap();
-			if !s.contains(StatusReg::INB) {break;};
+			if !s.contains(StatusReg::INB) {
+				break;
+			};
 		}
 	}
 }

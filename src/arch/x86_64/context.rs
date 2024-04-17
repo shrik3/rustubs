@@ -13,7 +13,7 @@ pub struct Context {
 }
 
 /// prepare the thread (coroutine) for the first execution
-pub unsafe fn settle(){
+pub unsafe fn settle() {
 	todo!()
 	// it will be something like this...
 	// void **sp = (void**)tos;
@@ -23,6 +23,6 @@ pub unsafe fn settle(){
 	// regs->rsp = sp;
 }
 
-pub unsafe fn switch(ctx_curr:usize, ctx_next:usize){
+pub unsafe fn switch(ctx_curr: usize, ctx_next: usize) {
 	todo!()
 }
