@@ -159,3 +159,6 @@ https://wiki.osdev.org/PS/2_Keyboard
 
 TU Dresden OSC labs (the baseline for this project):  
 https://tu-dresden.de/ing/informatik/sya/professur-fuer-betriebssysteme/studium/vorlesungen/betriebssystembau/lab-tasks
+
+Unwinding the stack the hard way  
+https://lesenechal.fr/en/linux/unwinding-the-stack-the-hard-way
