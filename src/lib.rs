@@ -25,6 +25,10 @@ fn panic(info: &PanicInfo) -> ! {
 
 #[no_mangle]
 pub extern "C" fn _entry() -> ! {
+	// init code
+	pic_8259::init();
+	pic_8259::allow(PicDeviceInt::KEYBOARD);
+	interrupt::interrupt_enable();
 	io::set_attr(0x1f);
 	io::clear();
 	println!("--RuStuBs--");
@@ -32,9 +36,6 @@ pub extern "C" fn _entry() -> ! {
 	println!("   (,-.`._,'(       |\\`-/|");
 	println!("       `-.-' \\ )-`( , o o)");
 	println!("             `-    \\`_`\"'-");
-	// testing interrupt/PIC
-	// pic_8259::allow(PicDeviceInt::KEYBOARD);
-	// interrupt::interrupt_enable();
 	//
 	// busy loop query keyboard
 	let mut framemap = mm::pma::FMap::new();

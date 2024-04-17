@@ -187,7 +187,6 @@ clear_bss:
 
 	; initialize IDT and PICs
 	call   setup_idt
-	call   reprogram_pics
 
 	fninit         ; activate FPU
 
@@ -293,51 +292,6 @@ setup_idt:
 	lidt   [idt_descr]
 	ret
 
-;
-; Reprogram the PICs (programmable interrupt controllers) to have all 15
-; hardware interrupts in sequence in the IDT.
-;
-
-reprogram_pics:
-	mov    al, 0x11   ; ICW1: 8086 mode with ICW4
-	out    0x20, al
-	call   delay
-	out    0xa0, al
-	call   delay
-	mov    al, 0x20   ; ICW2 master: IRQ # offset (32)
-	out    0x21, al
-	call   delay
-	mov    al, 0x28   ; ICW2 slave: IRQ # offset (40)
-	out    0xa1, al
-	call   delay
-	mov    al, 0x04   ; ICW3 master: slaves with IRQs
-	out    0x21, al
-	call   delay
-	mov    al, 0x02   ; ICW3 slave: connected to master's IRQ2
-	out    0xa1, al
-	call   delay
-	mov    al, 0x03   ; ICW4: 8086 mode and automatic EOI
-	out    0x21, al
-	call   delay
-	out    0xa1, al
-	call   delay
-
-	mov    al, 0xff   ; Mask/disable hardware interrupts
-	out    0xa1, al   ; in the PICs. Only interrupt #2, which
-	call   delay      ; serves for cascading both PICs, is
-	mov    al, 0xfb   ; allowed.
-	out    0x21, al
-
-	ret
-
-;
-; Short delay for in/out instructions
-;
-
-delay:
-	jmp    .L2
-.L2:
-	ret
 
 [SECTION .data]
 
