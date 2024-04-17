@@ -25,10 +25,10 @@ SECTIONS
 
     .bss :
     {
-        ___BSS_START__ = .;
+        PROVIDE (___BSS_START__ = .);
         *(".bss")
         *(".bss.*")
-        ___BSS_END__ = .;
+        PROVIDE (___BSS_END__ = .);
     }
 
     /* global page table for 64-bit long mode */
