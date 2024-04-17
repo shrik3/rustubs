@@ -18,8 +18,8 @@ BUILD = build
 ARCH = x86_64
 ASM = nasm
 ASMOBJFORMAT = elf64
-LINKER_SCRIPT = ./compiler/$(ARCH)-linker.ld
-CARGO_XBUILD_TARGET = ./compiler/$(ARCH)-rustubs.json
+LINKER_SCRIPT = ./defs/$(ARCH)-linker.ld
+CARGO_XBUILD_TARGET = ./defs/$(ARCH)-rustubs.json
 CARGO_XBUILD_FLAGS =
 # ---------- No need to edit below this line --------------
 # ---------- If you have to, something is wrong -----------
