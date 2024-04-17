@@ -31,10 +31,8 @@ ASMOBJ_PREFIXED = $(addprefix $(BUILD)/,$(ASM_OBJECTS))
 VPATH = $(sort $(dir $(ASM_SOURCES)))
 
 
-
-# the logic here is so cursed
-ifeq (--release, $(findstring NT-5.1,$(CARGO_XBUILD_FLAGS)))
-	RUST_BUILD = release
+ifneq ($(filter --release,$(CARGO_XBUILD_FLAGS)),)  
+    RUST_BUILD = release
 else
 	RUST_BUILD = debug
 endif
@@ -62,7 +60,7 @@ $(BUILD)/_%.o : %.s | $(BUILD)
 # Compile the rust part: note that the the cargo crate is of type [staticlib], if you don't
 # define this, the linker will have troubles, especially when we use a "no_std" build
 rust_kernel:
-	 cargo xbuild --target $(CARGO_XBUILD_TARGET) $(CARGO_XBUILD_FLAG)
+	 cargo xbuild --target $(CARGO_XBUILD_TARGET) $(CARGO_XBUILD_FLAGS)
 
 # need nasm
 # TODO make this arch dependent
