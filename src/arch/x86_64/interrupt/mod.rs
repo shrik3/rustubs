@@ -4,8 +4,11 @@ use crate::io::*;
 use core::arch::asm;
 
 #[no_mangle]
+#[cfg(target_arch = "x86_64")]
 extern "C" fn guardian(slot: u16) {
+	interrupt_disable();
 	println!("interrupt received {:x}", slot);
+	interrupt_enable();
 }
 
 #[inline(always)]
