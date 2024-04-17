@@ -45,7 +45,6 @@ pub extern "C" fn _entry() -> ! {
 
 	use crate::machine::device_io::IOPort;
 	loop {
-		// let code = io::KBCTL_GLOBAL.lock().simple_read();
 		io::KBCTL_GLOBAL.lock().fetch_key();
 		if let Some(k) = io::KBCTL_GLOBAL.lock().consume_key() {
 			println! {"caught key: {:?}", k}
