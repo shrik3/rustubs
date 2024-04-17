@@ -49,7 +49,7 @@ MULTIBOOT_EAX_MAGIC      equ   0x2badb002
 
 ; functions from the C parts of the system
 [EXTERN _entry]
-[EXTERN guardian]
+[EXTERN interrupt_gate]
 
 ; addresses provided by the compiler
 [EXTERN ___BSS_START__]
@@ -242,12 +242,9 @@ wrapper_body:
 
 	; the generated wrapper only gives us 8 bits, mask the rest
 	and    rax, 0xff
-
-	; pass interrupt number as the first parameter
+	; call the interrupt handling code with interrupt number as parameter
 	mov    rdi, rax
-    ; call the interrupt handler wrapper here.
-    ; TODO implement it in rust then uncomment the line
-    call   guardian
+    call   interrupt_gate
 
 	; restore volatile registers
 	pop    r11
