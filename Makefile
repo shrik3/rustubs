@@ -59,7 +59,7 @@ $(BUILD)/_%.o : %.s | $(BUILD)
 # install xbuild first. (cargo install xbuild)
 # Compile the rust part: note that the the cargo crate is of type [staticlib], if you don't
 # define this, the linker will have troubles, especially when we use a "no_std" build
-rust_kernel:
+rust_kernel: check
 	 cargo xbuild --target $(CARGO_XBUILD_TARGET) $(CARGO_XBUILD_FLAGS)
 
 # need nasm
@@ -71,6 +71,11 @@ startup.o: boot/startup-$(ARCH).s | $(BUILD)
 .PHONY: $(BUILD)
 $(BUILD):
 	@mkdir -p $@
+
+.PHONY: check
+check:
+	@echo "---CHECKING FORMATTING---"
+	@cargo fmt --all -- --check -l
 
 clean:
 	cargo clean
