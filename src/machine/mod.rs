@@ -4,6 +4,5 @@ pub mod interrupt;
 pub mod key;
 pub mod keyctrl;
 pub mod mem;
-pub mod plugbox;
 
 // TODO: this module *should* be arch independent.
