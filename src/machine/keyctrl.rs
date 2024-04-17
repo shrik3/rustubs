@@ -186,6 +186,10 @@ impl KeyboardController {
 
 	// this should be called by the interrupt handler prologue
 	pub fn fetch_key(&mut self) {
+		// mask keyboard interrupts when polling.
+		let was_masked = Self::is_int_masked();
+		if !was_masked {Self::disable_keyboard_int();}
+
 		// I'd like to see if this panics....
 		let sr = self.read_status().unwrap();
 		// ignore mouse events
@@ -193,6 +197,7 @@ impl KeyboardController {
 			return;
 		}
 		self.update_state(self.dport.inb());
+		if !was_masked {Self::enable_keyboard_int();}
 	}
 
 	// this should be called by the "epilogue"
