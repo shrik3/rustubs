@@ -12,6 +12,8 @@ SECTIONS
 
     .data :
     {
+		*(".data.idt")
+		*(".data.vectors")
         *(".data")
         *(".data$")
     }
