@@ -2,9 +2,6 @@ use crate::arch::x86_64::misc::*;
 use crate::machine::device_io::*;
 use core::{fmt, ptr, slice, str};
 
-// TODO this is a "hard copy" of the c code, making little use
-// of the rust features. May rework this into cleaner code...
-//
 // I would consider these cga parameters constant.
 // the scroll() and clear() works with the assumption
 // that the CGAScreen memory buffer is 64-bit aligned
@@ -14,6 +11,7 @@ use core::{fmt, ptr, slice, str};
 // For each character, it takes 2 byte in the buffer
 // (one for char and one for attribute)
 // Therefore the MAX_COLS should be a multiple of 4
+
 const MAX_COLS: usize = 80;
 const MAX_ROWS: usize = 25;
 const CGA_BUFFER_START: *mut u8 = 0xb8000 as *mut u8;
@@ -42,7 +40,7 @@ pub struct CGAScreen {
 #[allow(dead_code)]
 impl CGAScreen {
 	pub fn new() -> Self {
-		Self {
+		let cga = Self {
 			cga_mem: unsafe {
 				slice::from_raw_parts_mut(CGA_BUFFER_START, 2 * MAX_COLS * MAX_ROWS)
 			},
@@ -51,7 +49,9 @@ impl CGAScreen {
 			attr: 0x0f,
 			iport: IOPort::new(IR_PORT),
 			dport: IOPort::new(DR_PORT),
-		}
+		};
+		cga.init_cursor();
+		return cga;
 	}
 
 	#[inline(always)]
@@ -173,6 +173,24 @@ impl CGAScreen {
 		self.dport.outb((offset >> 8) as u8);
 		self.cursor_r = row;
 		self.cursor_c = col;
+	}
+
+	// make cursor blink (is this necessary??)
+	pub fn init_cursor(&self) {
+		self.iport.outb(0x0a);
+		delay();
+		let mut d = self.dport.inb();
+		delay();
+		d = d & 0xc0;
+		d = d | 0xe;
+		self.dport.outb(d);
+		delay();
+		self.iport.outb(0x0b);
+		delay();
+		let mut d = self.dport.inb();
+		d = d & 0xe0;
+		d = d | 0xf;
+		self.dport.outb(d);
 	}
 
 	pub fn getpos_xy(&self, row: &mut u32, col: &mut u32) {

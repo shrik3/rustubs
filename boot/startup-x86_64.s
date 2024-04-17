@@ -9,7 +9,7 @@
 ;*----------------------------------------------------------------------------*
 ;* The 'startup' function is the entry point for the whole system. Switching  *
 ;* to 32-bit Protected Mode has already been done (by a boot loader that runs *
-;* before). Here we prepare everything to be able to start running C++ code   *
+;* before). Here we prepare everything to be able to start running rust code  *
 ;* in 64-bit Long Mode as quickly as possible.                                *
 ;******************************************************************************
 
@@ -19,9 +19,6 @@
 
 ; stack for the main function (renamed to _entry())
 STACKSIZE: equ 65536
-
-; video memory base address
-CGA: equ 0xB8000
 
 ; 512 GB maximum RAM size for page table
 ; DON'T MODIFY THIS UNLESS YOU UPDATE THE setup_paging accordingly
@@ -191,7 +188,6 @@ clear_bss:
 	; initialize IDT and PICs
 	call   setup_idt
 	call   reprogram_pics
-	call   setup_cursor
 
 	fninit         ; activate FPU
 
@@ -295,34 +291,6 @@ setup_idt:
 	jge    .loop
 
 	lidt   [idt_descr]
-	ret
-
-;
-; make cursor blink (GRUB disables this)
-;
-
-setup_cursor:
-	mov al, 0x0a
-	mov dx, 0x3d4
-	out dx, al
-	call delay
-	mov dx, 0x3d5
-	in al, dx
-	call delay
-	and al, 0xc0
-	or al, 14
-	out dx, al
-	call delay
-	mov al, 0x0b
-	mov dx, 0x3d4
-	out dx, al
-	call delay
-	mov dx, 0x3d5
-	in al, dx
-	call delay
-	and al, 0xe0
-	or al, 15
-	out dx, al
 	ret
 
 ;
