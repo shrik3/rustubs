@@ -1,0 +1,26 @@
+-----------------------------------------------------------
+    Attributions for derived works
+-----------------------------------------------------------
+files:
+    ./boot/{multiboot.s, startup-x86_64.s}
+    ./defs/x86_64-linker.ld
+
+Attribution:
+    intermezzOS/kernel: Apache2/MIT
+    Copyright (c) 2016 intermezzOS Developers
+
+source:
+    https://github.com/intermezzOS/kernel
+
+-----------------------------------------------------------
+
+
+-----------------------------------------------------------
+    Attributions for Inspirations
++----------------------------------------------------------
+OOStuBS
+Institut für Verteilte Systeme (IVS),
+    Otto-von-Guericke-Universität Magdeburg
+Lehrstuhl für Informatik 4,
+    Friedrich-Alexander-Universität Erlangen-Nürnberg
++----------------------------------------------------------
