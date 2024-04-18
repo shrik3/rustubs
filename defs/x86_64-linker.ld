@@ -1,8 +1,30 @@
+/* defs for Multiboot headers */
+MB_MAGIC = 0x1badb002;
+MB_FLAGS = 0x3;
+MB_CHKSUM = 0x100000000 - (MB_MAGIC + MB_FLAGS);
+
 SECTIONS
 {
-    PROVIDE (___KERNEL_START__ = .);
     . = 0x100000;     /* system's start address */
 
+	.boot :
+	{
+		header_start = .; LONG(MB_MAGIC)
+		LONG(MB_FLAGS)
+		LONG(MB_CHKSUM)
+		LONG(0)
+		LONG(0)
+		LONG(0)
+		LONG(0)
+		LONG(0)
+		LONG(0)
+		LONG(0)
+		LONG(0)
+		LONG(0)
+		header_end = .;
+  	}
+
+    PROVIDE (___KERNEL_START__ = .);
     .text :
     {
         *(".text")

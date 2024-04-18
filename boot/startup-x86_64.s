@@ -7,18 +7,6 @@ STACKSIZE: equ 65536
 ; DON'T MODIFY THIS UNLESS YOU UPDATE THE setup_paging accordingly
 MAX_MEM: equ 512
 
-; Multiboot constants
-MULTIBOOT_PAGE_ALIGN	 equ   1<<0
-MULTIBOOT_MEMORY_INFO	 equ   1<<1
-
-; magic number for Multiboot
-MULTIBOOT_HEADER_MAGIC	 equ   0x1badb002
-
-; Multiboot flags (ELF specific!)
-MULTIBOOT_HEADER_FLAGS	 equ   MULTIBOOT_PAGE_ALIGN | MULTIBOOT_MEMORY_INFO
-MULTIBOOT_HEADER_CHKSUM  equ   -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
-MULTIBOOT_EAX_MAGIC		 equ   0x2badb002
-
 ; exported symbols
 [GLOBAL startup]
 [GLOBAL pml4]
@@ -37,33 +25,6 @@ MULTIBOOT_EAX_MAGIC		 equ   0x2badb002
 [SECTION .text]
 
 [BITS 32]
-
-	jmp    startup	; jump over Multiboot header
-	align  4		; 32-bit alignment for GRUB
-
-;
-;	Multiboot header for starting with GRUB or QEMU (w/o BIOS)
-;
-
-	dd MULTIBOOT_HEADER_MAGIC
-	dd MULTIBOOT_HEADER_FLAGS
-	dd MULTIBOOT_HEADER_CHKSUM
-	dd 0 ; header_addr (gets ignored)
-	dd 0 ; load_addr (gets ignored)
-	dd 0 ; load_end_addr (gets ignored)
-	dd 0 ; bss_end_addr (gets ignored)
-	dd 0 ; entry_addr (gets ignored)
-	dd 0 ; mode_type (gets ignored)
-	dd 0 ; width (gets ignored)
-	dd 0 ; height (gets ignored)
-	dd 0 ; depth (gets ignored)
-
-;
-;	system start, part 1 (in 32-bit Protected Mode)
-;	set up GDT, segmentation (dummy for long-mode, but requried).
-;	and pagetable. Prepare the system for long-mode
-;
-
 startup:
 	cld				 ; GCC-compiled code expects the direction flag to be 0
 	cli				 ; disable interrupts
