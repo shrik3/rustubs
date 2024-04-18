@@ -1,26 +1,37 @@
------------------------------------------------------------
-    Attributions for derived works
------------------------------------------------------------
-files:
++---------------------------------------------------------+
+|   This Project (RuStuBS)                                |
++---------------------------------------------------------+
+Author(s)
+    Tianhao Wang <shrik3@mailbox.org>
+
+Copyright
+    2023-2024: RuStuBS author(s)
+
+Source:
+    https://sr.ht/~shrik3/rustubs/
+
++---------------------------------------------------------+
+|   Derived Works                                         |
++---------------------------------------------------------+
+files
     ./boot/{multiboot.s, startup-x86_64.s}
     ./defs/x86_64-linker.ld
 
-Attribution:
+Attribution
     intermezzOS/kernel: Apache2/MIT
     Copyright (c) 2016 intermezzOS Developers
 
-source:
+source
     https://github.com/intermezzOS/kernel
 
 -----------------------------------------------------------
 
 
------------------------------------------------------------
-    Attributions for Inspirations
-+----------------------------------------------------------
++---------------------------------------------------------+
+|   Attributions for Inspirations                         |
++---------------------------------------------------------+
 OOStuBS
 Institut für Verteilte Systeme (IVS),
     Otto-von-Guericke-Universität Magdeburg
 Lehrstuhl für Informatik 4,
     Friedrich-Alexander-Universität Erlangen-Nürnberg
-+----------------------------------------------------------
