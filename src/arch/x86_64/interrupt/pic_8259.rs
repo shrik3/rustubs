@@ -15,7 +15,7 @@ impl PicDeviceInt {
 
 // init must be called before interrupt is enabled.
 // TODO: turn pic into a singleton struct
-pub fn init() {
+pub fn _init() {
 	outb(0x20, 0x11);
 	outb(0xa0, 0x11);
 	outb(0x21, 0x20);

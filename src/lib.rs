@@ -8,11 +8,11 @@ mod ds;
 mod io;
 mod machine;
 mod mm;
+use arch::x86_64::interrupt;
 use arch::x86_64::interrupt::pic_8259;
 use arch::x86_64::interrupt::pic_8259::PicDeviceInt;
 use core::panic::PanicInfo;
 use machine::cgascr::CGAScreen;
-use machine::interrupt;
 
 use crate::machine::key::Modifiers;
 
@@ -26,11 +26,11 @@ fn panic(info: &PanicInfo) -> ! {
 #[no_mangle]
 pub extern "C" fn _entry() -> ! {
 	// init code
-	pic_8259::init();
-	pic_8259::allow(PicDeviceInt::KEYBOARD);
-	interrupt::interrupt_enable();
 	io::set_attr(0x1f);
 	io::clear();
+	interrupt::init();
+	pic_8259::allow(PicDeviceInt::KEYBOARD);
+	interrupt::interrupt_enable();
 	println!("--RuStuBs--");
 	println!("    _._     _,-'\"\"`-._     ~Meow");
 	println!("   (,-.`._,'(       |\\`-/|");

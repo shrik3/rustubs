@@ -161,10 +161,6 @@ clear_bss:
 	inc    rdi
 	cmp    rdi, ___BSS_END__
 	jne    clear_bss
-
-	; initialize IDT and PICs
-	call   setup_idt
-
 	fninit		   ; activate FPU
 
 init_sse:
@@ -181,38 +177,6 @@ init_sse:
 	call   _entry  ; call the OS kernel's rust part.
 	cli			   ; Usually we should not get here.
 	hlt
-
-;
-;	Interrupt handling
-;
-
-
-;
-; Relocating of IDT entries and setting IDTR
-;
-
-setup_idt:
-	mov    rax, vectors_start
-
-	; bits 0..15 -> ax, 16..31 -> bx, 32..64 -> edx
-	mov    rbx, rax
-	mov    rdx, rax
-	shr    rdx, 32
-	shr    rbx, 16
-
-	mov    r10, idt   ; pointer to the actual interrupt gate
-	mov    rcx, 255   ; counter
-.loop:
-	add    [r10+0], ax
-	adc    [r10+6], bx
-	adc    [r10+8], edx
-	add    r10, 16
-	dec    rcx
-	jge    .loop
-
-	lidt   [idt_descr]
-	ret
-
 
 [SECTION .data]
 

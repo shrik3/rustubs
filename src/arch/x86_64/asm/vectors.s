@@ -9,29 +9,21 @@
 ;
 ; Interrupt descriptor table with 256 entries
 ; TODO: use a interrupt stack instead of the current stack.
-;
-idt:
-%macro idt_entry 1
-	dw	(wrapper_%1 - wrapper_0) & 0xffff ; offset 0 .. 15
-	dw	0x0000 | 0x8 * 2 ; selector points to 64-bit code segment selector (GDT)
-	dw	0x8e00 ; 8 -> interrupt is present, e -> 80386 32-bit interrupt gate
-	dw	((wrapper_%1 - wrapper_0) & 0xffff0000) >> 16 ; offset 16 .. 31
-	dd	((wrapper_%1 - wrapper_0) & 0xffffffff00000000) >> 32 ; offset 32..63
-	dd	0x00000000 ; reserved
-%endmacro
 
-%assign i 0
-%rep 256
-idt_entry i
-%assign i i+1
-%endrep
+idt:
+; reserve space for 256x idt entries (16 bytes each)
+resb 16 * 256
 
 idt_descr:
 	dw	256*8 - 1	 ; 256 entries
 	dq idt
 
-; template for header for each interrupt-handling routine
+; NOTE: vectors MUST have fixed instruction length currently aligned to 16
+; bytes. DO NOT modify the wrapper, instead change the wrapper_body if needed.
+; if the vector has to be modified into more than 16 bytes,
+; arch::x86_64:: interrupt::_idt_init() must be modified accordingly
 %macro wrapper 1
+align 16
 wrapper_%1:
 	push   rbp
 	mov    rbp, rsp
@@ -46,8 +38,8 @@ wrapper_%1:
 vectors_start:
 %assign i 0
 %rep 256
-wrapper i
-%assign i i+1
+	wrapper i
+	%assign i i+1
 %endrep
 
 ; common handler body
