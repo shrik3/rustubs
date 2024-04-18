@@ -24,6 +24,7 @@ CARGO_XBUILD_TARGET = ./defs/$(ARCH)-rustubs.json
 CARGO_XBUILD_FLAGS = --release
 # ---------- No need to edit below this line --------------
 # ---------- If you have to, something is wrong -----------
+LDFLAGS = -no-warn-rwx-segment -static -e startup
 ASM_SOURCES = $(shell find ./src -name "*.s")
 ASM_OBJECTS = $(patsubst %.s,_%.o, $(notdir $(ASM_SOURCES)))
 # I don't like this style... but what can I do?
@@ -32,7 +33,7 @@ ASMOBJ_PREFIXED = $(addprefix $(BUILD)/,$(ASM_OBJECTS))
 VPATH = $(sort $(dir $(ASM_SOURCES)))
 
 
-ifneq ($(filter --release,$(CARGO_XBUILD_FLAGS)),)  
+ifneq ($(filter --release,$(CARGO_XBUILD_FLAGS)),)
     RUST_BUILD = release
 else
 	RUST_BUILD = debug
@@ -50,7 +51,7 @@ bootdisk.iso : $(BUILD)/kernel
 # Note: explicitly tell the linker to use startup: as the entry point (we have no main here)
 $(BUILD)/kernel : rust_kernel startup.o $(ASMOBJ_PREFIXED)
 	@echo "---LINKING ... ---"
-	$(VERBOSE) ld -static -e startup -T $(LINKER_SCRIPT) -o $@ $(BUILD)/startup.o $(ASMOBJ_PREFIXED) $(RUST_OBJECT)
+	$(VERBOSE) ld $(LDFLAGS) -T $(LINKER_SCRIPT) -o $@ $(BUILD)/startup.o $(ASMOBJ_PREFIXED) $(RUST_OBJECT)
 
 # Note: this target works when the VPATH is set correctly
 $(BUILD)/_%.o : %.s | $(BUILD)
