@@ -1,26 +1,6 @@
 [![builds.sr.ht status](https://builds.sr.ht/~shrik3/rustubs/commits/master/x86_64.yml.svg)](https://builds.sr.ht/~shrik3/rustubs/commits/master/x86_64.yml?)
 
-# License & Copyright:
 
-The following list of files contain code copied or derived from the OOStuBS
-project, an minimal operating system used in several German universities for
-tutorial purposes. These code are available in public, but the Copyright status
-is not clear.
-
-This project **will adapt a copy-left license** (presumably EUPL-1.2). As soon
-as I do a total clean-room rewrite of the borrowed code. **As for now, all
-rights are reserverd**. I'm sorry for this, but I need to stay on the safe side
-before everything is sorted out.
-
-To be specific: 
-```
-./boot/startup-x86_64.s
-    Copyright 1998-2002  Institut für Verteilte Systeme (IVS), Otto-von-Guericke-Universität Magdeburg
-    Copyright 2002-2019  Lehrstuhl für Informatik 4, Friedrich-Alexander-Universität Erlangen-Nürnberg
-
-rest of the code:
-    Copyright 2023-2024 Tianhao Wang <shrik3@mailbox.org>
-```
 
 # RuStuBS: a rust tutorial operating system inspired by OOStuBS.
 
@@ -100,12 +80,19 @@ Please take a look at the CI manifest:
 ├── src             # main source code
 ```
 
+# License & Copyright:
+
+This project is licensed under **EUPL 1.2.**. See `LICENSE` and `ATTRIBUTIONS`.
+
+**Notes on OOStuBS**  
+The OOStuBS, which this project takes inspirations from, doesn't allow
+re-distribution without written consent from its copyright holders. This project
+contains some small pieces of boilerplate code and comments from OOStuBS (such
+as initializing the GDT). These are generic enough that the OOStuBS copyright
+shouldn't apply (also see below for details). Also I'll gradually get rid of
+such snippets.
+
 # Remarks
-**Why not projects like [blog_os](https://os.phil-opp.com/)?**  
-firstly, because it's my own practice. "What I can't create, I don't understand".
-Secondly, the newest revision of *blog_os* can only be booted with BIOS, not
-UEFI. And the complexity (e.g. the sartup.s) is hidden behind the `bootimage`,
-I feel necessary to go through the painful part.
 
 **Relationship w. OOStuBS**  
 This project is inspired by OOStuBS. It started as a mere copy, but the path
@@ -130,6 +117,18 @@ quickly diverged.
 - The "startup" code is borrowed from the OOStuBS labs @ TU Dresden. This is
   why you are still seeing "all rights reserved" instead of a copy-left license.
   I'll do the clean-room rewrite as soon as possible.
+
+**Relationship w. [rstubs](https://www.sra.uni-hannover.de/Lehre/WS23/L_BST/rdoc/rstubs/)**  
+NONE. This project has nothing to do the Uni Hannover rstubs project, a OOStuBS
+spin-off written in rust. As a matter of fact, I didn't know its existence until
+I accidentally came across it recently. People come up with similar ideas, it
+happens.
+
+**Why not projects like [blog_os](https://os.phil-opp.com/)?**  
+firstly, because it's my own practice. "What I can't create, I don't understand".
+Secondly, the newest revision of *blog_os* can only be booted with BIOS, not
+UEFI. And the complexity (e.g. the sartup.s) is hidden behind the `bootimage`,
+I feel necessary to go through the painful part.
 
 **Your code sucks**  
 yes.
