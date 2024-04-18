@@ -84,9 +84,7 @@ pub fn interrupt_disable() {
 
 #[inline(always)]
 fn _idt_init() {
-	unsafe {
-		println!("[init] idt: vectors_start: 0x{:x}", vectors_start as usize);
-	}
+	println!("[init] idt: vectors_start: 0x{:x}", vectors_start as usize);
 
 	let gate_descriptors: &mut [GateDescriptor64] =
 		unsafe { slice::from_raw_parts_mut(idt as *mut GateDescriptor64, 256) };

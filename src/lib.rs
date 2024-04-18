@@ -27,27 +27,21 @@ fn panic(info: &PanicInfo) -> ! {
 pub extern "C" fn _entry() -> ! {
 	// init code
 	io::set_attr(0x1f);
-	io::clear();
+	io::clear_screen();
 	interrupt::init();
 	pic_8259::allow(PicDeviceInt::KEYBOARD);
 	interrupt::interrupt_enable();
-	println!("--RuStuBs--");
-	println!("    _._     _,-'\"\"`-._     ~Meow");
-	println!("   (,-.`._,'(       |\\`-/|");
-	println!("       `-.-' \\ )-`( , o o)");
-	println!("             `-    \\`_`\"'-");
-	//
-	// busy loop query keyboard
+	io::print_welcome();
 	let mut framemap = mm::pma::FMap::new();
 	framemap.init();
 	println!("Bitmap starting from : {:p}", framemap.bm.as_ptr());
 	println!("Skip first {} bytes", framemap.skip_byte);
 
-	use crate::machine::device_io::IOPort;
+	// busy loop query keyboard
 	loop {
 		io::KBCTL_GLOBAL.lock().fetch_key();
 		if let Some(k) = io::KBCTL_GLOBAL.lock().consume_key() {
-			println! {"caught key: {:?}", k}
+			println! {"key: {:?}", k}
 		}
 	}
 }

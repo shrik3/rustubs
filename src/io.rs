@@ -27,10 +27,18 @@ pub fn _print(args: fmt::Arguments) {
 	CGASCREEN_GLOBAL.lock().write_fmt(args).unwrap();
 }
 
-pub fn clear() {
+pub fn clear_screen() {
 	CGASCREEN_GLOBAL.lock().clear();
 }
 
 pub fn set_attr(attr: u8) {
 	CGASCREEN_GLOBAL.lock().setattr(attr);
+}
+
+pub fn print_welcome() {
+	println!("--RuStuBs--");
+	println!("    _._     _,-'\"\"`-._     ~Meow");
+	println!("   (,-.`._,'(       |\\`-/|");
+	println!("       `-.-' \\ )-`( , o o)");
+	println!("             `-    \\`_`\"'-");
 }
