@@ -49,9 +49,23 @@ Beyond the original StuBS
 Please take a look at the CI manifest:
 `.builds/x86_64.yml`
 
+**build dependencies**
+- rust toolchain: `nightly-x86_64-unknown-linux-gnu`
+- `cargo xbuild`, install with:
+    ```
+    $ cargo install xbuild
+    ```
+- `rustfmt`, this should be shipped with your rust/cargo installation. If not,
+  install with
+    ```
+    $ cargo install rustfmt
+    ```
+- `GNU ld (GNU Binutils)`
+- `nasm`
+- `xorriso` and `grub` to create bootdisk image. 
+
+
 **general dependencies:**
-- cargo / rustc (nightly)
-- xbuild for crossbuild
 - basics: nasm, make, glibc, ld etc.
 - xorriso and grub (to create bootable image)
 - qemu-system-x86_64 (optional for simulation)
@@ -64,6 +78,15 @@ Please take a look at the CI manifest:
 - simply run `make`, you will get `bootdisk.iso`, which you can use to boot a
   bare metal
 - use `make qemu` to load and test the iso image with qemu
+
+**troubleshooting**
+- cargo xbuild hangs: try updating the default toolchain and rebuilding xbuild.
+- `ld (Gnu Binutils) <=2.39` do not support `--no-warn-rwx-segments` flag. If
+  that's your case, remove it from the `LDFLAGS` in `Makefile`
+- `grub-mkrescue` fails if you don't have the `piglatin` locale available.
+  Either pick one locale you have, or remove the `--locale` option for
+  `grub-mkrescue` in `Makefile`. (If you don't specify one locale, all will be
+  installed, resulting in a unnecessarily huge image).
 
 ## Structure
 ```
