@@ -24,14 +24,14 @@ idt_descr:
 ; if the vector has to be modified into more than 16 bytes,
 ; arch::x86_64:: interrupt::_idt_init() must be modified accordingly
 [SECTION .reserved.vectors]
-%macro wrapper 1
+%macro vector 1
 align 16
-wrapper_%1:
+vector_%1:
 	push   rbp
 	mov    rbp, rsp
 	push   rax
 	mov    al, %1
-	jmp    wrapper_body
+	jmp    vector_body
 %endmacro
 
 ; automatic generation of 256 interrupt-handling routines, based on above macro
@@ -39,12 +39,12 @@ wrapper_%1:
 vectors_start:
 %assign i 0
 %rep 256
-	wrapper i
+	vector i
 	%assign i i+1
 %endrep
 
 ; common handler body
-wrapper_body:
+vector_body:
 	; GCC expects the direction flag to be 0
 	cld
 	; save volatile registers
@@ -73,7 +73,7 @@ wrapper_body:
 	pop    rdx
 	pop    rcx
 
-	; ... also those from the wrapper
+	; ... also those from the vector wrapper
 	pop    rax
 	pop    rbp
 
