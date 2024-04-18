@@ -18,9 +18,10 @@ BUILD = build
 ARCH = x86_64
 ASM = nasm
 ASMOBJFORMAT = elf64
+ASMFLAGS = -w-zeroing
 LINKER_SCRIPT = ./defs/$(ARCH)-linker.ld
 CARGO_XBUILD_TARGET = ./defs/$(ARCH)-rustubs.json
-CARGO_XBUILD_FLAGS =
+CARGO_XBUILD_FLAGS = --release
 # ---------- No need to edit below this line --------------
 # ---------- If you have to, something is wrong -----------
 ASM_SOURCES = $(shell find ./src -name "*.s")
@@ -53,7 +54,7 @@ $(BUILD)/kernel : rust_kernel startup.o $(ASMOBJ_PREFIXED)
 $(BUILD)/_%.o : %.s | $(BUILD)
 	@echo "ASM		$@"
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
-	$(VERBOSE) $(ASM) -f $(ASMOBJFORMAT) -o $@ $<
+	$(VERBOSE) $(ASM) -f $(ASMOBJFORMAT) $(ASMFLAGS) -o $@ $<
 
 
 # install xbuild first. (cargo install xbuild)
@@ -66,7 +67,7 @@ rust_kernel: check
 # TODO make this arch dependent
 startup.o: boot/startup-$(ARCH).s | $(BUILD)
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
-	nasm -f elf64 -o $(BUILD)/startup.o boot/startup-$(ARCH).s
+	$(VERBOSE) $(ASM) -f $(ASMOBJFORMAT) $(ASMFLAGS) -o $(BUILD)/startup.o boot/startup-$(ARCH).s
 
 .PHONY: $(BUILD)
 $(BUILD):
