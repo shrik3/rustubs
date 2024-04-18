@@ -22,8 +22,8 @@ default-features = false
 version = "1.4"
 features = ["spin_no_std"]
 
-[build]
-target = "x86_64-rustubs"
+# [build]
+# target = "x86_64-rustubs"
 
 [lib]
 crate-type = ["staticlib"]

@@ -57,7 +57,7 @@ impl GateDescriptor64 {
 
 #[no_mangle]
 #[cfg(target_arch = "x86_64")]
-extern "C" fn interrupt_gate(slot: u16) {
+extern "C" fn interrupt_gate(_slot: u16) {
 	interrupt_disable();
 	// NOTE: the interrupt handler should NEVER block on a lock; in this case
 	// the CGA screen is protected by a spinlock. The lock holder will never be

@@ -26,17 +26,16 @@ MAX_MEM: equ 512
 
 [BITS 32]
 startup:
-	cld				 ; GCC-compiled code expects the direction flag to be 0
-	cli				 ; disable interrupts
+	cld
+	cli
 	lgdt   [gdt_80]  ; set new segment descriptors
 
 	; global data segment
 	mov    eax, 3 * 0x8
-	; 0x8 is the length of each entry
-	; these registers point to 4th entry the GDT (see also the code there)
-	; in x86 long mode these are dummy pointers
-	; which are not actually used in addressing. (don't use segmentation at all)
-	; all the addresses are physical addresses from 0.
+	; 0x8 is the length of each entry these registers point to 4th entry the GDT
+	; (see also the code there) in x86 long mode these are dummy pointers which
+	; are not actually used in addressing. (don't use segmentation at all) all
+	; the addresses are physical addresses from 0.
 	mov    ds, ax
 	mov    es, ax
 	mov    fs, ax
@@ -46,19 +45,16 @@ startup:
 	mov    ss, ax
 	mov    esp, init_stack+STACKSIZE
 
-;
-;  Switch to 64-bit Long Mode
-;
-
 init_longmode:
 	; activate address extension (PAE)
 	mov    eax, cr4
 	or	   eax, 1 << 5
 	mov    cr4, eax
 
+setup_paging:
 	; Provisional identical page mapping, using 1G huge page (therefore only 2 table
 	; levels needed)
-setup_paging:
+	;
 	; PML4 (Page Map Level 4 / 1st level)
 	mov    eax, pdp
 	or	   eax, 0xf
@@ -96,7 +92,6 @@ activate_long_mode:
 	; jump to 64-bit code segment -> full activation of Long Mode
 	jmp    2 * 0x8 : longmode_start
 
-
 ;
 ;	system start, part 2 (in 64-bit Long Mode)
 ;	1. clear BSS
@@ -105,7 +100,6 @@ activate_long_mode:
 ;	4. (optional) enable SSE
 ;	5. jump to rust main code
 ;
-
 longmode_start:
 [BITS 64]
 	; clear BSS

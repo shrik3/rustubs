@@ -43,16 +43,18 @@ RUST_OBJECT = target/$(ARCH)-rustubs/$(RUST_BUILD)/librustubs.a
 all: bootdisk.iso
 
 bootdisk.iso : $(BUILD)/kernel
+	@echo "---BUILDING BOOTDISK IMAGE---"
 	$(VERBOSE) cp $< isofiles/boot/
-	$(VERBOSE) grub-mkrescue -d /usr/lib/grub/i386-pc --locales=en@piglatin --themes=none -o bootdisk.iso isofiles
+	$(VERBOSE) grub-mkrescue -d /usr/lib/grub/i386-pc --locales=en@piglatin --themes=none -o bootdisk.iso isofiles > /dev/null 2>&1
 
 # Note: explicitly tell the linker to use startup: as the entry point (we have no main here)
 $(BUILD)/kernel : rust_kernel startup.o $(ASMOBJ_PREFIXED)
+	@echo "---LINKING ... ---"
 	$(VERBOSE) ld -static -e startup -T $(LINKER_SCRIPT) -o $@ $(BUILD)/startup.o $(ASMOBJ_PREFIXED) $(RUST_OBJECT)
 
 # Note: this target works when the VPATH is set correctly
 $(BUILD)/_%.o : %.s | $(BUILD)
-	@echo "ASM		$@"
+	@echo "---ASM		$@"
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
 	$(VERBOSE) $(ASM) -f $(ASMOBJFORMAT) $(ASMFLAGS) -o $@ $<
 
@@ -61,11 +63,13 @@ $(BUILD)/_%.o : %.s | $(BUILD)
 # Compile the rust part: note that the the cargo crate is of type [staticlib], if you don't
 # define this, the linker will have troubles, especially when we use a "no_std" build
 rust_kernel: check
-	 cargo xbuild --target $(CARGO_XBUILD_TARGET) $(CARGO_XBUILD_FLAGS)
+	@echo "---BUILDING RUST KERNEL---"
+	@cargo xbuild --target $(CARGO_XBUILD_TARGET) $(CARGO_XBUILD_FLAGS)
 
 # need nasm
 # TODO make this arch dependent
 startup.o: boot/startup-$(ARCH).s | $(BUILD)
+	@echo "---ASM		$@"
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
 	$(VERBOSE) $(ASM) -f $(ASMOBJFORMAT) $(ASMFLAGS) -o $(BUILD)/startup.o boot/startup-$(ARCH).s
 

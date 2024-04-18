@@ -23,6 +23,6 @@ pub unsafe fn settle() {
 	// regs->rsp = sp;
 }
 
-pub unsafe fn switch(ctx_curr: usize, ctx_next: usize) {
+pub unsafe fn switch(_ctx_curr: usize, _ctx_next: usize) {
 	todo!()
 }

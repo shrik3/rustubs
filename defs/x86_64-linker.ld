@@ -5,7 +5,7 @@ MB_CHKSUM = 0x100000000 - (MB_MAGIC + MB_FLAGS);
 
 SECTIONS
 {
-    . = 0x100000;     /* system's start address */
+	. = 0x100000;	  /* system's start address */
 
 	.boot :
 	{
@@ -22,24 +22,25 @@ SECTIONS
 		LONG(0)
 		LONG(0)
 		header_end = .;
-  	}
+	}
 
-    PROVIDE (___KERNEL_START__ = .);
-    .text :
-    {
-        *(".text")
-        *(".text.*")
-        *(".text$")
-    }
+	PROVIDE (___KERNEL_START__ = .);
+	.text :
+	{
+		*(".text")
+		*(".text.*")
+		*(".text$")
+	}
 
-    .data :
-    {
-        *(".data")
-        *(".data.*")
-        *(".data$")
-    }
+	.data :
+	{
+		*(".data")
+		*(".data.*")
+		*(".data$")
+	}
 
-	.reserved : {
+	.reserved :
+	{
 		*(".reserved")
 		*(".reserved.*")
 	}
@@ -49,32 +50,33 @@ SECTIONS
 	 * for zeroing because it's explicitly overwritten anyways. I KNOW WHAT I'M
 	 * DOING! An example is the idt.
 	 */
-	.reserved_0 (NOLOAD) : {
+	.reserved_0 (NOLOAD) :
+	{
 		*(".reserved_0")
 		*(".reserved_0.*")
 	}
 
-    .rodata :
-    {
-        *(".rodata")
-        *(".rodata$")
-        *(".rodata.*")
-    }
+	.rodata :
+	{
+		*(".rodata")
+		*(".rodata$")
+		*(".rodata.*")
+	}
 
-    .bss :
-    {
-        PROVIDE (___BSS_START__ = .);
-        *(".bss")
-        *(".bss.*")
-        PROVIDE (___BSS_END__ = .);
-    }
+	.bss :
+	{
+		PROVIDE (___BSS_START__ = .);
+		*(".bss")
+		*(".bss.*")
+		PROVIDE (___BSS_END__ = .);
+	}
 
-    /* global page table for 64-bit long mode */
-    .global_pagetable ALIGN(4096) (NOLOAD) :
-    {
-        *(".global_pagetable")
-    }
+	/* global page table for 64-bit long mode */
+	.global_pagetable ALIGN(4096) (NOLOAD) :
+	{
+		*(".global_pagetable")
+	}
 
-    . = ALIGN(4096);
-    PROVIDE (___KERNEL_END__ = .);
+	. = ALIGN(4096);
+	PROVIDE (___KERNEL_END__ = .);
 }
