@@ -63,12 +63,11 @@ Please take a look at the CI manifest:
 - `GNU ld (GNU Binutils)`
 - `nasm`
 - `xorriso` and `grub` to create bootdisk image. 
+- `Gnu Make`
 
 
 **general dependencies:**
-- basics: nasm, make, glibc, ld etc.
-- xorriso and grub (to create bootable image)
-- qemu-system-x86_64 (optional for simulation)
+- `qemu-system-x86_64` (optional for simulation)
 
 **Add rust sources**
 - We use `no_std` in the rust build. To use the `core` components, you need to
