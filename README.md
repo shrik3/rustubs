@@ -1,15 +1,10 @@
 [![builds.sr.ht status](https://builds.sr.ht/~shrik3/rustubs/commits/master/x86_64.yml.svg)](https://builds.sr.ht/~shrik3/rustubs/commits/master/x86_64.yml?)
 
 
-
 # RuStuBS: a rust tutorial operating system inspired by OOStuBS.
 
 This is a toy bare metal operation system implemented in Rust. Apologies for my
 shitty code, I'm a rust beginner.
-
-The project is based on the OOStuBS, an OS exercise project used in some German
-Universities. This one in perticular, is based on the TU Dresden version
-(Operating System Construction), led by my Professor Dr. Horst Schirmeier.
 
 **Status / Roadmap**
 - [ ] GDB support (qemu stub)
