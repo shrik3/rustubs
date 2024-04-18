@@ -95,28 +95,8 @@ init_longmode:
 	or	   eax, 1 << 5
 	mov    cr4, eax
 
-	; create page table (mandatory)
-	call   setup_paging
-
-	; activate Long Mode (for now in compatibility mode)
-	mov    ecx, 0x0C0000080 ; select EFER (Extended Feature Enable Register)
-	rdmsr
-	or	   eax, 1 << 8 ; LME (Long Mode Enable)
-	wrmsr
-
-	; activate paging
-	mov    eax, cr0
-	or	   eax, 1 << 31
-	mov    cr0, eax
-
-	; jump to 64-bit code segment -> full activation of Long Mode
-	jmp    2 * 0x8 : longmode_start
-
-;
-; Provisional identical page mapping, using 1G huge page (therefore only 2 table
-; levels needed)
-;
-
+	; Provisional identical page mapping, using 1G huge page (therefore only 2 table
+	; levels needed)
 setup_paging:
 	; PML4 (Page Map Level 4 / 1st level)
 	mov    eax, pdp
@@ -141,7 +121,20 @@ fill_tables2_done:
 	; set base pointer to PML4
 	mov    eax, pml4
 	mov    cr3, eax
-	ret
+activate_long_mode:
+	; activate Long Mode (for now in compatibility mode)
+	mov    ecx, 0x0C0000080 ; select EFER (Extended Feature Enable Register)
+	rdmsr
+	or	   eax, 1 << 8 ; LME (Long Mode Enable)
+	wrmsr
+	; activate paging
+	mov    eax, cr0
+	or	   eax, 1 << 31
+	mov    cr0, eax
+
+	; jump to 64-bit code segment -> full activation of Long Mode
+	jmp    2 * 0x8 : longmode_start
+
 
 ;
 ;	system start, part 2 (in 64-bit Long Mode)
