@@ -12,11 +12,25 @@ SECTIONS
 
     .data :
     {
-		*(".data.idt")
-		*(".data.vectors")
         *(".data")
+        *(".data.*")
         *(".data$")
     }
+
+	.reserved : {
+		*(".reserved")
+		*(".reserved.*")
+	}
+
+	/*
+	 * basically the same as BSS, but I want some flexibility and I don't care
+	 * for zeroing because it's explicitly overwritten anyways. I KNOW WHAT I'M
+	 * DOING! An example is the idt.
+	 */
+	.reserved_0 (NOLOAD) : {
+		*(".reserved_0")
+		*(".reserved_0.*")
+	}
 
     .rodata :
     {

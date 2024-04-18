@@ -5,7 +5,7 @@
 [GLOBAL vectors_start]
 [EXTERN interrupt_gate]
 
-[SECTION .data.idt]
+[SECTION .reserved_0.idt]
 ;
 ; Interrupt descriptor table with 256 entries
 ; TODO: use a interrupt stack instead of the current stack.
@@ -14,6 +14,7 @@ idt:
 ; reserve space for 256x idt entries (16 bytes each)
 resb 16 * 256
 
+[SECTION .reserved]
 idt_descr:
 	dw	256*8 - 1	 ; 256 entries
 	dq idt
@@ -22,6 +23,7 @@ idt_descr:
 ; bytes. DO NOT modify the wrapper, instead change the wrapper_body if needed.
 ; if the vector has to be modified into more than 16 bytes,
 ; arch::x86_64:: interrupt::_idt_init() must be modified accordingly
+[SECTION .reserved.vectors]
 %macro wrapper 1
 align 16
 wrapper_%1:
@@ -34,7 +36,6 @@ wrapper_%1:
 
 ; automatic generation of 256 interrupt-handling routines, based on above macro
 
-[SECTION .data.vectors]
 vectors_start:
 %assign i 0
 %rep 256
