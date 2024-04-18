@@ -131,9 +131,6 @@ quickly diverged.
 - The "OO" (objekt orientiert) aspect is torn. The OOP concept creates an illusion
   that "data" and "code" magically belong to "object", which is never the case.
   I personally prefer NOT to use too much OOP in system programming.
-- The "startup" code is borrowed from the OOStuBS labs @ TU Dresden. This is
-  why you are still seeing "all rights reserved" instead of a copy-left license.
-  I'll do the clean-room rewrite as soon as possible.
 
 **Relationship w. [rstubs](https://www.sra.uni-hannover.de/Lehre/WS23/L_BST/rdoc/rstubs/)**  
 NONE. This project has nothing to do the Uni Hannover rstubs project, a OOStuBS
