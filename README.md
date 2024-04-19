@@ -1,5 +1,11 @@
 [![builds.sr.ht status](https://builds.sr.ht/~shrik3/rustubs/commits/master/x86_64.yml.svg)](https://builds.sr.ht/~shrik3/rustubs/commits/master/x86_64.yml?)
 
+* [Build](#build)
+* [Structure](#structure)
+* [Contributing](#contributing)
+* [License & Copyright](#license-amp-copyright)
+* [Remarks](#remarks)
+* [Documentation Sources](#documentation-sources)
 
 # RuStuBS: a rust tutorial operating system inspired by OOStuBS.
 
@@ -15,24 +21,14 @@ shitty code, I'm a rust beginner.
 - [X] Intigrate print into rust println! etc.
 - [X] Keyboard controller and input handler
 - [?] Interrupt handler (WIP)
-    - linked list for plugbox
-    - implement plugbox
-    - interrupt handler code for kbd
-    - input buffer
 - [ ] intrrupt sync
-    - split upper/lower half of handlers
 - [ ] Threading
-    - stack allocator (could be trivial)
-    - define context
-    - implement switch/toc code
 - [ ] Scheduler (single CPU)
-    - DS
 - [ ] Timer Interrupt
 - [ ] Synchronization Primitives
-    - implement waiting/wakeup
 - [ ] asm! Wrappers for basic instructions
 
-Beyond the original StuBS
+Beyond StuBS
 - [ ] Task Descriptor structures
 - [ ] Paging: PMA and paging structures
 - [ ] Paging: pagefault handler
@@ -97,7 +93,12 @@ Please take a look at the CI manifest:
 ├── src             # main source code
 ```
 
-# License & Copyright:
+## Contributing
+
+Anyone can contribute to rustubs. Please refer to
+[the contribution guidelines](https://git.sr.ht/~shrik3/rustubs/tree/master/item/CONTRIBUTING.md)
+
+## License & Copyright
 
 This project is licensed under **EUPL 1.2.**. See `LICENSE` and `ATTRIBUTIONS`.
 
@@ -109,7 +110,7 @@ as initializing the GDT). These are generic enough that the OOStuBS copyright
 shouldn't apply (also see below for details). Also I'll gradually get rid of
 such snippets.
 
-# Remarks
+## Remarks
 
 **Relationship w. OOStuBS**  
 This project is inspired by OOStuBS. It started as a mere copy, but the path
@@ -147,7 +148,7 @@ I feel necessary to go through the painful part.
 **Your code sucks**  
 yes.
 
-**Helper docs**
+## Documentation Sources
 
 x86_64 calling conventions  
 https://aaronbloomfield.github.io/pdr/book/x86-64bit-ccc-chapter.pdf
