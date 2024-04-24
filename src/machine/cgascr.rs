@@ -11,7 +11,7 @@ use core::{fmt, ptr, slice, str};
 // For each character, it takes 2 byte in the buffer
 // (one for char and one for attribute)
 // Therefore the MAX_COLS should be a multiple of 4
-
+// broken..
 const MAX_COLS: usize = 80;
 const MAX_ROWS: usize = 25;
 const CGA_BUFFER_START: *mut u8 = 0xb8000 as *mut u8;
@@ -37,6 +37,11 @@ pub struct CGAScreen {
 	dport: IOPort,
 }
 
+#[inline(always)]
+pub fn cal_offset(row: usize, col: usize) -> usize {
+	col + row * MAX_COLS
+}
+
 #[allow(dead_code)]
 impl CGAScreen {
 	pub fn new() -> Self {
@@ -55,18 +60,10 @@ impl CGAScreen {
 	}
 
 	#[inline(always)]
-	fn cal_offset(&self, row: usize, col: usize) -> usize {
-		col + row * MAX_COLS
-	}
-
-	#[inline(always)]
-	pub fn show(&self, row: usize, col: usize, c: char, attr: u8) {
-		let index = self.cal_offset(row, col);
-
-		unsafe {
-			*CGA_BUFFER_START.offset(index as isize * 2) = c as u8;
-			*CGA_BUFFER_START.offset(index as isize * 2 + 1) = attr;
-		}
+	pub fn show(&mut self, row: usize, col: usize, c: char, attr: u8) {
+		let index = cal_offset(row, col);
+		self.cga_mem[index * 2] = c as u8;
+		self.cga_mem[index * 2 + 1] = attr;
 	}
 
 	pub fn putchar(&mut self, ch: char) {
@@ -163,7 +160,7 @@ impl CGAScreen {
 
 	pub fn setpos(&mut self, row: usize, col: usize) {
 		// io ports for instruction register and data register
-		let offset = self.cal_offset(row, col);
+		let offset = cal_offset(row, col);
 		// set lower byte
 		self.iport.outb(15 as u8);
 		delay();
@@ -211,7 +208,7 @@ impl CGAScreen {
 		offset as u32
 	}
 
-	pub fn show_coners(&self) {
+	pub fn show_corners(&mut self) {
 		// TODO replace hardcoded
 		self.show(0, 0, 0xda as char, self.attr);
 		self.show(0, 79, 0xbf as char, self.attr);
