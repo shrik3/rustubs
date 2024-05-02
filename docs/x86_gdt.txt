@@ -1,0 +1,54 @@
+
+GDT, segmentation and long mode:
+
+in real mode (16 bit), the address is generated with SegBaseReg:Offset
+PhyAddr = (SegBaseReg << 4) + Offset SegBase:Offset could be CS:IP for
+instructions or DS for data etc. DS:SI for data.
+
+in protected/long mode, the segment base registers are not directly used
+to generate address. Instead they index into GDT. The pointed GDT entry
+describes the logical "Segment", including the "base" and "limit". PhyAddr
+= GDT[SegBaseReg].base + Offset
+
+Segmentation is obsolete and we will assume a "flat memory model", as most
+compilers do. That is, all the segments cover the full address space. The
+"Base" part of the segmentation is ignored and offset represents the full
+logical address. Nevertheless we can't really disable segmentation, so
+some we still have to manually set up some segmentations in the GDT.
+
+
+
+GDT Entry (Segment Descriptor) Format
+-------------------------------------
+word 0  limit [0:15]
+word 1  base  [0:15]
+word 2  base  [16:23]
+        AccessByte [0:7]
+word 3  limit [16:19]
+        flags [0:3]
+        base  [24:31]
+-------------------------------------
+
+limit: 20-bit value. unit either 1 byte or 4K page
+base : 32-bit value.
+
+to use a flat memory model (as we do here), set limit to 0xFFFF, base to
+0, and use 4k granularity in the access byte.
+
+AccessByte:
+0 - A   Accessed bit
+1 - RW  Readable bit for code seg, or Writable for data seg.
+        Write access is never allowed for code. Read access is always
+        allowed for data
+2 - DC  For data, Direction bit, 1 for grow down
+        For code, Conforming bit
+3 - E   Executable
+4 - S   Descriptor type. 0 for system segment and 1 for code/data segment
+[6:5]   DPL Descriptor Privilege Level. ring 0~3
+7 - P   Present Bit. Must be 1 for valie entries
+
+flags:
+0       Res 0
+1 - L   Long-mode code, 1 for 64-bit code. When L set, DB MBZ
+2 - DB  Size Flag for protected mode seg. 0 for 16 bit and 1 for 32 bit
+3 - G   Granularity of Limit. 0 for 1 byte and 1 for 4KiB

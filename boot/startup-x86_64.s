@@ -28,14 +28,11 @@ MAX_MEM: equ 512
 startup:
 	cld
 	cli
-	lgdt   [gdt_80]  ; set new segment descriptors
-
-	; global data segment
+	; setup GDT by loading GDT descriptor
+	; see docs/x86_gdt.txt
+	lgdt   [gdt_80]
+	; use the 3rd gdt entry for protected mode segmentations
 	mov    eax, 3 * 0x8
-	; 0x8 is the length of each entry these registers point to 4th entry the GDT
-	; (see also the code there) in x86 long mode these are dummy pointers which
-	; are not actually used in addressing. (don't use segmentation at all) all
-	; the addresses are physical addresses from 0.
 	mov    ds, ax
 	mov    es, ax
 	mov    fs, ax
@@ -89,20 +86,13 @@ activate_long_mode:
 	or	   eax, 1 << 31
 	mov    cr0, eax
 
+	; use the 2nd gdt entry (see definition below)
 	; jump to 64-bit code segment -> full activation of Long Mode
 	jmp    2 * 0x8 : longmode_start
 
-;
-;	system start, part 2 (in 64-bit Long Mode)
-;	1. clear BSS
-;	2. enable floating poitn unit
-;	3. set up idt
-;	4. (optional) enable SSE
-;	5. jump to rust main code
-;
-longmode_start:
 [BITS 64]
-	; clear BSS
+	;	system start, part 2 (in 64-bit Long Mode)
+longmode_start:
 	mov    rdi, ___BSS_START__
 clear_bss:
 	mov    byte [rdi], 0
@@ -128,30 +118,38 @@ init_sse:
 
 [SECTION .data]
 
-;
-; Segment descriptors
-;
-
 gdt:
-	dw	0,0,0,0   ; NULL descriptor
+	; see docs/x86_gdt.txt
+
+	; GDT[0] should always be NULL descriptor
+	dw	0,0,0,0
 
 	; 32-bit code segment descriptor
-	dw	0xFFFF	  ; 4Gb - (0x100000*0x1000 = 4Gb)
-	dw	0x0000	  ; base address=0
-	dw	0x9A00	  ; code read/exec
-	dw	0x00CF	  ; granularity=4096, 386 (+5th nibble of limit)
+	; limit=0xFFFF, base=0
+	; Types: P|Ring0|Code/Data|Exec|NonConforming|Readable|NotAccessed
+	; Flags: 4K|32-bit|Not Long Mode
+	dw	0xFFFF
+	dw	0x0000
+	dw	0x9A00
+	dw	0x00CF
 
 	; 64-bit code segment descriptor
-	dw	0xFFFF	  ; 4Gb - (0x100000*0x1000 = 4Gb)
-	dw	0x0000	  ; base address=0
-	dw	0x9A00	  ; code read/exec
-	dw	0x00AF	  ; granularity=4096, 386 (+5th nibble of limit), Long-Mode
+	; limit=0xFFFF, base=0
+	; Types: P|Ring0|Code/Data|Exec|NonConforming|Readable|NotAccessed
+	; Flags: 4K|-|LongMode|-
+	dw	0xFFFF
+	dw	0x0000
+	dw	0x9A00
+	dw	0x00AF
 
 	; data segment descriptor
-	dw	0xFFFF	  ; 4Gb - (0x100000*0x1000 = 4Gb)
-	dw	0x0000	  ; base address=0
-	dw	0x9200	  ; data read/write
-	dw	0x00CF	  ; granularity=4096, 386 (+5th nibble of limit)
+	; limit=0xFFFF, base=0
+	; Types:  Present|Ring0|Code/Data|NoExec|GrowUp|Writable|NotAccessed
+	; Flags:  4K|32-bit|Not Long Mode
+	dw	0xFFFF
+	dw	0x0000
+	dw	0x9200
+	dw	0x00CF
 
 gdt_80:
 	dw	4*8 - 1   ; GDT limit=24, 4 GDT entries - 1
@@ -160,7 +158,7 @@ gdt_80:
 
 [SECTION .bss]
 
-global init_stack:data (init_stack.end - init_stack)
+	global init_stack:data (init_stack.end - init_stack)
 init_stack:
 	resb STACKSIZE
 .end:
