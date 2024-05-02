@@ -12,7 +12,7 @@ MAX_MEM: equ 512
 [GLOBAL pml4]
 [GLOBAL pdp]
 
-; functions from the other parts
+; functions from other parts of rustubs
 [EXTERN vectors_start]
 [EXTERN idt]
 [EXTERN idt_descr]
@@ -49,9 +49,9 @@ init_longmode:
 	mov    cr4, eax
 
 setup_paging:
-	; Provisional identical page mapping, using 1G huge page (therefore only 2 table
-	; levels needed)
-	;
+	; Provisional identical page mapping, using 1G huge page, therefore only 2
+	; table levels needed. see docs/x86_paging.txt
+
 	; PML4 (Page Map Level 4 / 1st level)
 	mov    eax, pdp
 	or	   eax, 0xf
@@ -77,7 +77,8 @@ fill_tables2_done:
 	mov    cr3, eax
 activate_long_mode:
 	; activate Long Mode (for now in compatibility mode)
-	mov    ecx, 0x0C0000080 ; select EFER (Extended Feature Enable Register)
+	; select EFER (Extended Feature Enable Register)
+	mov    ecx, 0x0C0000080
 	rdmsr
 	or	   eax, 1 << 8 ; LME (Long Mode Enable)
 	wrmsr
@@ -158,7 +159,7 @@ gdt_80:
 
 [SECTION .bss]
 
-	global init_stack:data (init_stack.end - init_stack)
+global init_stack:data (init_stack.end - init_stack)
 init_stack:
 	resb STACKSIZE
 .end:
