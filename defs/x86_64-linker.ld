@@ -1,5 +1,10 @@
 /* defs for Multiboot headers */
+/* https://www.gnu.org/software/grub/manual/multiboot/multiboot.txt */
 MB_MAGIC = 0x1badb002;
+/* bit 0
+ * all boot modules loaded along with the operating system must be
+ * aligned on page (4KB) bit 1 must include mem_* structures
+ */
 MB_FLAGS = 0x3;
 MB_CHKSUM = 0x100000000 - (MB_MAGIC + MB_FLAGS);
 
@@ -9,7 +14,8 @@ SECTIONS
 
 	.boot :
 	{
-		header_start = .; LONG(MB_MAGIC)
+		header_start = .;
+		LONG(MB_MAGIC)
 		LONG(MB_FLAGS)
 		LONG(MB_CHKSUM)
 		LONG(0)

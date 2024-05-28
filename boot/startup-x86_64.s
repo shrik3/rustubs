@@ -11,7 +11,8 @@ MAX_MEM: equ 512
 [GLOBAL startup]
 [GLOBAL pml4]
 [GLOBAL pdp]
-
+[GLOBAL mb_magic]
+[GLOBAL mb_info_addr]
 ; functions from other parts of rustubs
 [EXTERN vectors_start]
 [EXTERN idt]
@@ -28,6 +29,12 @@ MAX_MEM: equ 512
 startup:
 	cld
 	cli
+	; with multiboot specs, grub initialzes the registers:
+	; EAX: magic value 0x2BADB002
+	; EBX: 32-bit physical address of the multiboot information struct
+	; we store them in global variables for future uses in rust code.
+	mov	   dword [mb_magic], eax
+	mov	   dword [mb_info_addr], ebx
 	; setup GDT by loading GDT descriptor
 	; see docs/x86_gdt.txt
 	lgdt   [gdt_80]
@@ -156,6 +163,11 @@ gdt_80:
 	dw	4*8 - 1   ; GDT limit=24, 4 GDT entries - 1
 	dq	gdt		  ; GDT address
 
+; multiboot info
+mb_magic:
+	dd 	0x00000000
+mb_info_addr:
+	dd 	0x00000000
 
 [SECTION .bss]
 

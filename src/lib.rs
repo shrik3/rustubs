@@ -8,13 +8,13 @@ mod ds;
 mod io;
 mod machine;
 mod mm;
+use crate::machine::key::Modifiers;
 use arch::x86_64::interrupt;
 use arch::x86_64::interrupt::pic_8259;
 use arch::x86_64::interrupt::pic_8259::PicDeviceInt;
 use core::panic::PanicInfo;
 use machine::cgascr::CGAScreen;
-
-use crate::machine::key::Modifiers;
+use machine::multiboot;
 
 #[cfg(not(test))]
 #[panic_handler]
@@ -28,14 +28,18 @@ pub extern "C" fn _entry() -> ! {
 	// init code
 	io::set_attr(0x1f);
 	io::clear_screen();
+	assert!(multiboot::check_magic(), "bad multiboot magic!");
+	let mbi = multiboot::get_mb_info().expect("bad multiboot info flags");
+	println!("MB INFO: {:#X?}", mbi);
 	interrupt::init();
 	pic_8259::allow(PicDeviceInt::KEYBOARD);
 	interrupt::interrupt_enable();
-	io::print_welcome();
 	let mut framemap = mm::pma::FMap::new();
 	framemap.init();
 	println!("Bitmap starting from : {:p}", framemap.bm.as_ptr());
 	println!("Skip first {} bytes", framemap.skip_byte);
+	println!("system init .. done!");
+	// io::print_welcome();
 
 	// busy loop query keyboard
 	loop {
