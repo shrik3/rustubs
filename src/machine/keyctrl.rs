@@ -92,19 +92,19 @@ impl KeyboardController {
 		// TODO perhaps disable interrupts here
 		// TODO set a timeout. The ACK reply may never come
 		// 1. write command
-		unsafe {
-			self.__block_until_cmd_buffer_empty();
-		}
 		self.dport.outb(Cmd::SetLed as u8);
+		unsafe { self.__block_until_data_available() }
 		// 2. wait for ack
-		let ack = unsafe { self.__block_for_ack() };
-		if !ack {
-			return;
-		}
+		let reply = self.dport.inb();
 		// 3. write leds
-		self.dport.outb(leds);
-		// 4. wait for ack: we will ignore this ack because there is nothing we
-		//    can do if the ack doesn't arive
+		if reply == Msg::ACK as u8 {
+			self.dport.outb(leds);
+		}
+		// we should wait for another ACK but we don't really care.
+		// just make sure we wait...
+		unsafe {
+			self.__block_until_data_available();
+		}
 	}
 
 	pub fn update_state(&mut self, code: u8) {
@@ -264,6 +264,7 @@ impl KeyboardController {
 	/// unsafe: this function could block forever as it doesn't emply
 	/// timeout.
 	/// wait until the next OUTB; return true if get an ACK message
+	#[inline(always)]
 	unsafe fn __block_for_ack(&self) -> bool {
 		loop {
 			// if let Some(f)
@@ -276,12 +277,24 @@ impl KeyboardController {
 		return msg == Msg::ACK as u8;
 	}
 
+	#[inline(always)]
 	unsafe fn __block_until_cmd_buffer_empty(&self) {
 		loop {
 			let s = self.read_status().unwrap();
 			if !s.contains(StatusReg::INB) {
 				break;
 			};
+		}
+	}
+
+	/// block until there is something in the data register to read
+	#[inline(always)]
+	unsafe fn __block_until_data_available(&self) {
+		loop {
+			let status = self.read_status().unwrap();
+			if status.contains(StatusReg::OUTB) {
+				break;
+			}
 		}
 	}
 }
