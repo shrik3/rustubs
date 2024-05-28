@@ -1,34 +1,55 @@
 +---------------------------------------------------------+
-|   This Project (RuStuBS)                                |
+|   this project (RuStuBS)                                |
 +---------------------------------------------------------+
-Copyright
+Copyright:
     2023-2024: Tianhao Wang <shrik3@mailbox.org>
+
+License: EUPL-1.2
 
 Source:
     https://sr.ht/~shrik3/rustubs/
 
-Contributor(s):
+Author(s):
     Tianhao Wang <shrik3@mailbox.org>
 
 +---------------------------------------------------------+
-|   Derived Works                                         |
+|   derived works from rust-osdev/bootloader              |
 +---------------------------------------------------------+
-files
-    ./boot/{multiboot.s, startup-x86_64.s}
-    ./defs/x86_64-linker.ld
+copyright:
+    2018 Philipp Oppermann
 
-Attribution
-    intermezzOS/kernel: Apache2/MIT
+license:
+    MIT License
+    https://github.com/rust-osdev/bootloader/blob/main/LICENSE-MIT
+
+files:
+    boot/mod.rs
+
+source:
+    https://github.com/rust-osdev/bootloader/tree/main
+
++---------------------------------------------------------+
+|   derived works from intermezzOS                        |
++---------------------------------------------------------+
+copyright:
     Copyright (c) 2016 intermezzOS Developers
 
-source
+license:
+    MIT license
+    https://github.com/intermezzOS/kernel/blob/master/LICENSE-MIT
+
+files:
+    boot/startup-x86_64.s
+    defs/x86_64-linker.ld
+
+source:
     https://github.com/intermezzOS/kernel
 
 -----------------------------------------------------------
 
 
 +---------------------------------------------------------+
-|   Attributions for Inspirations                         |
+|   attributions for inspirations                         |
 +---------------------------------------------------------+
 OOStuBS
 Institut für Verteilte Systeme (IVS),
