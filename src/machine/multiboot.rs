@@ -1,9 +1,25 @@
 use crate::io::*;
+use lazy_static::lazy_static;
 // provide functions to parse information provided by grub multiboot
 // see docs/multiboot.txt
 extern "C" {
 	static mb_magic: u32;
 	static mb_info_addr: u32;
+}
+
+lazy_static! {
+	pub static ref MBOOTINFO: &'static MultibootInfo =
+		unsafe { &*(mb_info_addr as *const MultibootInfo) };
+}
+
+/// this must be checked before any MB info fields are used.
+pub fn check() -> bool {
+	if unsafe { mb_magic != 0x2BADB002 } {
+		return false;
+	};
+	// must check magic before checking flags
+	let f = MBOOTINFO.get_flags();
+	return f.check_valid();
 }
 
 #[repr(C)]
@@ -19,10 +35,55 @@ pub struct MultibootMmap {
 #[repr(C)]
 #[repr(packed)]
 #[derive(Debug, Clone, Copy)]
+pub struct MultibootInfoMmap {
+	pub mmap_length: u32,
+	pub mmap_addr: u32,
+}
+
+#[repr(C)]
+#[repr(packed)]
+#[derive(Debug, Clone, Copy)]
+pub struct MultibootInfoMem {
+	mem_lower: u32,
+	mem_upper: u32,
+}
+
+#[repr(C)]
+#[repr(packed)]
+#[derive(Debug)]
+/// all fields MUST be acquired via unsafe getters, because the MB magic and reserved bits in flags
+/// must be checked for validity before using. It does not suffice to check the corresponding
+/// present bits in the getters.
+/// Some fields are marked as padding because we don't need them (for now)
 pub struct MultibootInfo {
-	pub flags: MultibootInfoFlags,
-	pub mem_lower: u32,
-	pub mem_upper: u32,
+	flags: MultibootInfoFlags,
+	mem: MultibootInfoMem,
+	_pad1: [u8; 32],
+	mmap: MultibootInfoMmap,
+	_pad2: [u8; 68],
+}
+
+impl MultibootInfo {
+	// private function. Don't use it outside the module.
+	fn get_flags(&self) -> MultibootInfoFlags {
+		return self.flags;
+	}
+
+	pub unsafe fn get_mem(&self) -> Option<MultibootInfoMem> {
+		if self.get_flags().contains(MultibootInfoFlags::MEM) {
+			return Some(self.mem);
+		} else {
+			return None;
+		}
+	}
+
+	pub unsafe fn get_mmap(&self) -> Option<MultibootInfoMmap> {
+		if self.get_flags().contains(MultibootInfoFlags::MMAP) {
+			return Some(self.mmap);
+		} else {
+			return None;
+		}
+	}
 }
 
 use bitflags::bitflags;
@@ -57,21 +118,11 @@ impl MultibootInfoFlags {
 	}
 }
 
-pub fn check_magic() -> bool {
-	return unsafe { mb_magic == 0x2BADB002 };
-}
-
-pub fn get_mb_info() -> Option<MultibootInfo> {
-	if !check_magic() {
+pub fn get_mb_info() -> Option<&'static MultibootInfo> {
+	if !check() {
 		return None;
 	}
-	let mbi = unsafe { *(mb_info_addr as *mut MultibootInfo) };
-	let flags = mbi.flags;
-	if !flags.check_valid() {
-		return None;
-	}
-	return Some(mbi);
+	return Some(&MBOOTINFO);
 }
 
 // TODO: expand MultibootInfo struct defs if needed.
-

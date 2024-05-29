@@ -28,9 +28,12 @@ pub extern "C" fn _entry() -> ! {
 	// init code
 	io::set_attr(0x1f);
 	io::clear_screen();
-	assert!(multiboot::check_magic(), "bad multiboot magic!");
+	assert!(multiboot::check(), "bad multiboot info from grub!");
 	let mbi = multiboot::get_mb_info().expect("bad multiboot info flags");
-	println!("MB INFO: {:#X?}", mbi);
+	let mem = unsafe { mbi.get_mem() }.unwrap();
+	let mmap = unsafe { mbi.get_mmap() }.unwrap();
+	println!("memory: {:#X?}", mem);
+	println!("mmap (start): {:#X?}", mmap);
 	interrupt::init();
 	pic_8259::allow(PicDeviceInt::KEYBOARD);
 	interrupt::interrupt_enable();
