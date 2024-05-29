@@ -84,5 +84,16 @@ SECTIONS
 	}
 
 	. = ALIGN(4096);
+	/* reserve space for a premitive stack based physical frame allocator */
+	/* each frame is 4KiB in size and has a 64bit (physical) address. e.g. */
+	/* for every 1 GiB physical memory we need 2 MiB space reserved for the */
+	/* free stack. For a easier bootstraping we are using a fix-sized stack */
+	/* array. Currently using 4GiB, therefore reserve 8MiB. */
+	PROVIDE (___FREE_PAGE_STACK__ = .);
+	.global_free_page_stack ALIGN(4096) (NOLOAD) :
+	{
+		*("..global_free_page_stack")
+	}
+	. = ALIGN(4096);
 	PROVIDE (___KERNEL_END__ = .);
 }

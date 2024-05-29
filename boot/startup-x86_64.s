@@ -186,3 +186,10 @@ pml4:
 pdp:
 	resb   4096
 	alignb 4096
+
+; reserve 8MiB for frame alloc.
+; (see linker file)
+[SECTION .global_free_page_stack]
+free_page_stack:
+	resb   8388608
+	alignb 4096

@@ -31,19 +31,27 @@ pub extern "C" fn _entry() -> ! {
 	assert!(multiboot::check(), "bad multiboot info from grub!");
 	let mbi = multiboot::get_mb_info().expect("bad multiboot info flags");
 	let mem = unsafe { mbi.get_mem() }.unwrap();
-	let mmap = unsafe { mbi.get_mmap() }.unwrap();
-	println!("memory: {:#X?}", mem);
-	println!("mmap (start): {:#X?}", mmap);
-
-	multiboot::_test_mmap();
+	println!(
+		"available memory: lower {:#X} KiB, upper:{:#X} KiB",
+		mem.lower(),
+		mem.upper()
+	);
+	mm::init();
 	interrupt::init();
 	pic_8259::allow(PicDeviceInt::KEYBOARD);
 	interrupt::interrupt_enable();
-	let mut framemap = mm::pma::FMap::new();
-	framemap.init();
-	println!("Bitmap starting from : {:p}", framemap.bm.as_ptr());
-	println!("Skip first {} bytes", framemap.skip_byte);
-	println!("system init .. done!");
+
+	println!(
+		"kernel: {:#X} - {:#X}",
+		defs::pmap_kernel_start(),
+		defs::pmap_kernel_end()
+	);
+	println!(
+		"   BSS: {:#X} - {:#X}",
+		defs::pmap_bss_start(),
+		defs::pmap_bss_end()
+	);
+
 	// io::print_welcome();
 
 	// busy loop query keyboard

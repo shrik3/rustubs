@@ -1,67 +1,72 @@
-use crate::defs::{self, Mem};
-use core::ffi::c_void;
-use core::{ptr, slice};
-// this is POC code, it will be ugly
+use crate::defs::*;
+use crate::io::*;
+use crate::machine::multiboot::MultibootMmap;
+use core::slice;
 
 extern "C" {
-	pub fn ___KERNEL_END__();
+	fn ___FREE_PAGE_STACK__();
 }
 
-type BitU8 = u8;
-/// Bitmap for physical frames
-pub struct FMap {
-	pub bm: &'static mut [BitU8],
-	// skip over the kernel image and the bitmap itself.
-	pub skip_byte: usize,
+/// There should only be one global instance of this.
+pub struct PageStackAllocator {
+	page_stack: &'static mut [u64],
+	size: usize,
+	head: usize,
 }
 
-pub enum PMAError {
-	DoubleFree,
-}
+impl PageStackAllocator {
+	// covering 4GiB physical memory of 4K frames
+	const STACK_SIZE: usize = 0x100000;
 
-impl FMap {
 	pub fn new() -> Self {
-		let map_start = ___KERNEL_END__ as usize;
-		let fmap = Self {
-			bm: unsafe { slice::from_raw_parts_mut(map_start as *mut u8, Mem::PHY_BM_SIZE) },
-			// looks ugly, perhaps FIXME
-			// We'll waste several frames for the sake of easy alignment
-			skip_byte: 1 + ((map_start >> Mem::PAGE_SHIFT) / 8),
+		let ps = Self {
+			page_stack: unsafe {
+				slice::from_raw_parts_mut(
+					___FREE_PAGE_STACK__ as usize as *mut u64,
+					Self::STACK_SIZE,
+				)
+			},
+			size: Self::STACK_SIZE,
+			head: 0,
 		};
-		fmap
+		return ps;
 	}
 
-	/// return : index to the bitmap u8 , bit mask to retrive the bit.
-	fn locate_bit(addr: usize) -> Option<(usize, u8)> {
-		if addr >= Mem::PHY_TOP {
+	/// push an addr into the free page stack
+	/// MUST be atomic or bad things happen...
+	pub fn free_page(&mut self, addr: u64) -> bool {
+		if self.head >= self.size {
+			return false;
+		}
+		self.page_stack[self.head] = addr;
+		self.head += 1;
+		return true;
+	}
+
+	pub fn alloc_page(&mut self) -> Option<u64> {
+		if self.head == 0 {
 			return None;
 		}
-		let pn = addr >> Mem::PAGE_SHIFT;
-		let idx = pn / 8;
-		let mask: u8 = 1 << (pn % 8);
-		Some((idx, mask))
+		self.head -= 1;
+		Some(self.page_stack[self.head])
 	}
 
-	pub fn alloc_frame(&mut self) -> usize {
-		for i in self.skip_byte..self.bm.len() {
-			if self.bm[i] == 0xff {
-				continue;
+	/// 4k page only
+	pub fn insert_range(&mut self, r: Range) -> u64 {
+		let mut inserted = 0;
+		let mut page = roundup_4k(r.addr);
+		loop {
+			if !r.contains(page) {
+				break;
 			}
-			todo!()
+			if !self.free_page(page) {
+				break;
+			} else {
+				println!("inserted: {:#X}", page);
+				inserted += 1;
+			}
+			page += 0x1000;
 		}
-		0
-	}
-
-	pub fn dealloc_frame(&mut self) -> Result<(), PMAError> {
-		Ok(())
-	}
-
-	pub fn init(&mut self) {
-		for i in 0..self.skip_byte {
-			self.bm[i] = 0xff;
-		}
-		for i in self.skip_byte..self.bm.len() {
-			self.bm[i] = 0;
-		}
+		return inserted;
 	}
 }
