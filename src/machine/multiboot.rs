@@ -10,11 +10,22 @@ extern "C" {
 }
 
 lazy_static! {
+	/// reference to the multiboot info blob provided by the bootloader. This
+	/// reference should be acquired via the get_mb_info() function, otherwise
+	/// MUST manually call the check() function before using.
 	pub static ref MBOOTINFO: &'static MultibootInfo =
 		unsafe { &*(mb_info_addr as *const MultibootInfo) };
 }
 
-/// this must be checked before any MB info fields are used.
+pub fn get_mb_info() -> Option<&'static MultibootInfo> {
+	if !check() {
+		return None;
+	}
+	return Some(&MBOOTINFO);
+}
+
+/// this must be called before any MB info fields are used: the mb_magic should
+/// be correctly set and all reserved bits in mbinfo flags should be 0.
 pub fn check() -> bool {
 	if unsafe { mb_magic != 0x2BADB002 } {
 		return false;
@@ -26,6 +37,7 @@ pub fn check() -> bool {
 
 #[repr(C)]
 #[repr(packed)]
+/// describes a a physical memory block.
 pub struct MultibootMmap {
 	pub size: u32,
 	pub addr: u64,
@@ -33,28 +45,7 @@ pub struct MultibootMmap {
 	pub mtype: u32,
 }
 
-impl fmt::Debug for MultibootMmap {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		let addr = self.addr;
-		let len = self.len;
-		let mtype = self.mtype;
-		write!(
-			f,
-			"[{}] @ {:#X} + {:#X}",
-			match mtype {
-				MultibootMmap::MTYPE_RAM => "GOOD",
-				MultibootMmap::MTYPE_RAM_RES => "RESV",
-				MultibootMmap::MTYPE_ACPI => "ACPI",
-				MultibootMmap::MTYPE_RAM_NVS => "NVS ",
-				MultibootMmap::MTYPE_RAM_DEFECT => "BAD ",
-				_ => "UNKN",
-			},
-			addr,
-			len,
-		)
-	}
-}
-
+/// defs of memory types in the multiboot's struct
 impl MultibootMmap {
 	/// avaialble ram
 	pub const MTYPE_RAM: u32 = 1;
@@ -71,11 +62,15 @@ impl MultibootMmap {
 #[repr(C)]
 #[repr(packed)]
 #[derive(Debug, Clone, Copy)]
+/// present in MultibootInfo struct, if the corresponding flag is set. This describes the mmap
+/// buffer (do not confuse with the mmap struct itself)
 pub struct MultibootInfoMmap {
 	pub mmap_length: u32,
 	pub mmap_addr: u32,
 }
 
+/// example code to query physical memory maps: traverse the mmap structs
+/// provided by bootloader.
 pub fn _test_mmap() {
 	let mmapinfo = unsafe { MBOOTINFO.get_mmap() }.unwrap();
 	let buf_start = mmapinfo.mmap_addr;
@@ -96,9 +91,25 @@ pub fn _test_mmap() {
 #[repr(C)]
 #[repr(packed)]
 #[derive(Debug, Clone, Copy)]
+/// describes amount of lower and upper memory. Lower memory starts from 0,
+/// maximum 640 Kib. Upper memory starts from 1MiB, size maximum is addr of the
+/// _first_ upper memory hole minus 1MiB (not guaranteed)
+/// Both sizes have 1KiB unit.
 pub struct MultibootInfoMem {
-	mem_lower: u32,
-	mem_upper: u32,
+	pub mem_lower: u32,
+	pub mem_upper: u32,
+}
+
+/// the packed members needs getter, because direct access with reference may be unaligned.
+/// In this case the MultibootInfoMem members are aligned to 4 bytes (u32) which should be fine,
+/// but the compiler doesn't agree ... pffff it needs to be smarter
+impl MultibootInfoMem {
+	pub fn lower(&self) -> u32 {
+		self.mem_lower
+	}
+	pub fn upper(&self) -> u32 {
+		self.mem_upper
+	}
 }
 
 #[repr(C)]
@@ -116,6 +127,7 @@ pub struct MultibootInfo {
 	_pad2: [u8; 68],
 }
 
+// TODO: expand MultibootInfo struct defs if needed.
 impl MultibootInfo {
 	// private function. Don't use it outside the module.
 	fn get_flags(&self) -> MultibootInfoFlags {
@@ -163,7 +175,7 @@ bitflags! {
 
 impl MultibootInfoFlags {
 	/// only 13 bits of the MB info flags are defined. The other flag bits must
-	/// be zero for the info block to be valie.
+	/// be zero for the info block to be valid.
 	const VALID_MASK: u32 = 0x1FFF;
 
 	pub fn check_valid(&self) -> bool {
@@ -171,11 +183,24 @@ impl MultibootInfoFlags {
 	}
 }
 
-pub fn get_mb_info() -> Option<&'static MultibootInfo> {
-	if !check() {
-		return None;
+impl fmt::Debug for MultibootMmap {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		let addr = self.addr;
+		let len = self.len;
+		let mtype = self.mtype;
+		write!(
+			f,
+			"[{}] @ {:#X} + {:#X}",
+			match mtype {
+				MultibootMmap::MTYPE_RAM => "GOOD",
+				MultibootMmap::MTYPE_RAM_RES => "RESV",
+				MultibootMmap::MTYPE_ACPI => "ACPI",
+				MultibootMmap::MTYPE_RAM_NVS => "NVS ",
+				MultibootMmap::MTYPE_RAM_DEFECT => "BAD ",
+				_ => "UNKN",
+			},
+			addr,
+			len,
+		)
 	}
-	return Some(&MBOOTINFO);
 }
-
-// TODO: expand MultibootInfo struct defs if needed.
