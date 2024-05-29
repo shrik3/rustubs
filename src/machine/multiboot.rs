@@ -1,4 +1,6 @@
 use crate::io::*;
+use core::fmt;
+use core::mem::size_of;
 use lazy_static::lazy_static;
 // provide functions to parse information provided by grub multiboot
 // see docs/multiboot.txt
@@ -24,12 +26,46 @@ pub fn check() -> bool {
 
 #[repr(C)]
 #[repr(packed)]
-#[derive(Debug)]
 pub struct MultibootMmap {
 	pub size: u32,
 	pub addr: u64,
 	pub len: u64,
 	pub mtype: u32,
+}
+
+impl fmt::Debug for MultibootMmap {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		let addr = self.addr;
+		let len = self.len;
+		let mtype = self.mtype;
+		write!(
+			f,
+			"[{}] @ {:#X} + {:#X}",
+			match mtype {
+				MultibootMmap::MTYPE_RAM => "GOOD",
+				MultibootMmap::MTYPE_RAM_RES => "RESV",
+				MultibootMmap::MTYPE_ACPI => "ACPI",
+				MultibootMmap::MTYPE_RAM_NVS => "NVS ",
+				MultibootMmap::MTYPE_RAM_DEFECT => "BAD ",
+				_ => "UNKN",
+			},
+			addr,
+			len,
+		)
+	}
+}
+
+impl MultibootMmap {
+	/// avaialble ram
+	pub const MTYPE_RAM: u32 = 1;
+	/// reserved ram
+	pub const MTYPE_RAM_RES: u32 = 2;
+	/// usable memory holding ACPI info
+	pub const MTYPE_ACPI: u32 = 3;
+	/// WHAT IS THIS 4???
+	pub const MTYPE_RAM_NVS: u32 = 4;
+	/// defective RAM
+	pub const MTYPE_RAM_DEFECT: u32 = 5;
 }
 
 #[repr(C)]
@@ -38,6 +74,23 @@ pub struct MultibootMmap {
 pub struct MultibootInfoMmap {
 	pub mmap_length: u32,
 	pub mmap_addr: u32,
+}
+
+pub fn _test_mmap() {
+	let mmapinfo = unsafe { MBOOTINFO.get_mmap() }.unwrap();
+	let buf_start = mmapinfo.mmap_addr;
+	let buf_len = mmapinfo.mmap_length;
+	let buf_end = buf_start + buf_len;
+	let mut curr = buf_start as u64;
+	loop {
+		if curr >= buf_end as u64 {
+			break;
+		}
+		let mblock = unsafe { &*(curr as *const MultibootMmap) };
+		curr += mblock.size as u64;
+		curr += 4; // mmap.size does not include the the size itself
+		println!("mem block {:#X?}", mblock);
+	}
 }
 
 #[repr(C)]

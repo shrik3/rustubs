@@ -34,6 +34,8 @@ pub extern "C" fn _entry() -> ! {
 	let mmap = unsafe { mbi.get_mmap() }.unwrap();
 	println!("memory: {:#X?}", mem);
 	println!("mmap (start): {:#X?}", mmap);
+
+	multiboot::_test_mmap();
 	interrupt::init();
 	pic_8259::allow(PicDeviceInt::KEYBOARD);
 	interrupt::interrupt_enable();
