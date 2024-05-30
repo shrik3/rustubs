@@ -22,28 +22,15 @@ pub fn pmap_bss_end() -> u64 {
 	return ___BSS_END__ as u64;
 }
 
-pub struct Mem;
-pub struct VAddr(u64);
-#[derive(Debug)]
-pub struct Range {
-	pub addr: u64,
-	pub len: u64,
-}
-
 pub fn roundup_4k(addr: u64) -> u64 {
-	return (addr + 0x1000) & 0xffff_ffff_ffff_0000;
+	return (addr + 0xfff) & !0xfff;
 }
 
 pub fn rounddown_4k(addr: u64) -> u64 {
-	return addr & 0xffff_ffff_ffff_0000;
+	return addr & !0xfff;
 }
 
-impl Range {
-	pub fn contains(&self, addr: u64) -> bool {
-		return self.addr <= addr && addr < self.addr + self.len;
-	}
-}
-
+pub struct Mem;
 impl Mem {
 	// units
 	pub const K: u64 = 1024;
@@ -68,18 +55,6 @@ impl Mem {
 	// memory (37268) 4k pages, 37268 bits are needed, hence
 	// 4096 bytes, exactly one page!
 	pub const PHY_BM_SIZE: u64 = Mem::PHY_PAGES >> 3;
-}
-
-impl VAddr {
-	pub fn roundup_4k(&self) {
-		todo!()
-	}
-	pub fn rounddown_4k(&self) {
-		todo!()
-	}
-	pub fn page_number(&self) -> u64 {
-		self.0 >> Mem::PAGE_SHIFT
-	}
 }
 
 // PHY_TOP			128M

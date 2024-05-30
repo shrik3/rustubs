@@ -1,6 +1,7 @@
 use crate::defs::*;
 use crate::io::*;
 use crate::machine::multiboot::MultibootMmap;
+use core::ops::Range;
 use core::slice;
 
 extern "C" {
@@ -51,18 +52,18 @@ impl PageStackAllocator {
 		Some(self.page_stack[self.head])
 	}
 
-	/// 4k page only
-	pub fn insert_range(&mut self, r: Range) -> u64 {
+	/// 4k page only?
+	pub fn insert_range(&mut self, r: &Range<u64>) -> u64 {
+		// r.contains(&1);
 		let mut inserted = 0;
-		let mut page = roundup_4k(r.addr);
+		let mut page = roundup_4k(r.start);
 		loop {
-			if !r.contains(page) {
+			if !r.contains(&page) {
 				break;
 			}
 			if !self.free_page(page) {
 				break;
 			} else {
-				println!("inserted: {:#X}", page);
 				inserted += 1;
 			}
 			page += 0x1000;

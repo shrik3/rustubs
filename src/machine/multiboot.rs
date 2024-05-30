@@ -1,7 +1,8 @@
-use crate::defs::Range;
+// use crate::defs::Range;
 use crate::io::*;
 use core::fmt;
 use core::mem::size_of;
+use core::ops::Range;
 use lazy_static::lazy_static;
 // provide functions to parse information provided by grub multiboot
 // see docs/multiboot.txt
@@ -58,11 +59,11 @@ impl MultibootMmap {
 	pub const MTYPE_RAM_NVS: u32 = 4;
 	/// defective RAM
 	pub const MTYPE_RAM_DEFECT: u32 = 5;
-	pub fn get_range(&self) -> Range {
-		return Range {
-			addr: self.addr,
-			len: self.len,
-		};
+	pub fn get_range(&self) -> Range<u64> {
+		Range {
+			start: self.addr,
+			end: self.addr + self.len,
+		}
 	}
 	pub fn get_end(&self) -> u64 {
 		return self.addr + self.len;

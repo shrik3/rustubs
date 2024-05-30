@@ -1,6 +1,7 @@
 use crate::defs::*;
 use crate::io::*;
 use crate::machine::multiboot;
+use core::ops::Range;
 pub mod pma;
 
 use lazy_static::lazy_static;
@@ -32,20 +33,21 @@ pub fn init() {
 			continue;
 		}
 		// TODO early break if the array is already full
-		if mblock.get_range().contains(pmap_kernel_end()) {
-			let r = Range {
-				addr: pmap_kernel_end(),
-				len: mblock.get_end() - pmap_kernel_end(),
-			};
-			inserted += GLOBAL_PMA.lock().insert_range(r);
-		} else {
-			inserted += GLOBAL_PMA.lock().insert_range(mblock.get_range());
+		let mut r = mblock.get_range();
+		if mblock.get_range().contains(&pmap_kernel_end()) {
+			r.start = pmap_kernel_end();
 		}
-		println!(
-			"pma init: {:#X}KiB free memory, {:#X} pages inserted from block {:#X?}",
-			inserted * 0x4,
-			inserted,
-			mblock,
-		);
+		inserted += GLOBAL_PMA.lock().insert_range(&r);
 	}
+
+	println!(
+		"pma init: kernel mapped at {:#X} - {:#X}",
+		pmap_kernel_start(),
+		pmap_kernel_end()
+	);
+	println!(
+		"pma init: {:#X}KiB free memory, {:#X} pages",
+		inserted * 0x4,
+		inserted,
+	);
 }
