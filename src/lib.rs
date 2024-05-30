@@ -2,6 +2,7 @@
 #![allow(unused_imports)]
 #![no_std]
 #![no_main]
+#![feature(const_option)]
 mod arch;
 mod defs;
 mod ds;

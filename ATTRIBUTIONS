@@ -13,22 +13,6 @@ Author(s):
     Tianhao Wang <shrik3@mailbox.org>
 
 +---------------------------------------------------------+
-|   derived works from rust-osdev/bootloader              |
-+---------------------------------------------------------+
-copyright:
-    2018 Philipp Oppermann
-
-license:
-    MIT License
-    https://github.com/rust-osdev/bootloader/blob/main/LICENSE-MIT
-
-files:
-    boot/mod.rs
-
-source:
-    https://github.com/rust-osdev/bootloader/tree/main
-
-+---------------------------------------------------------+
 |   derived works from intermezzOS                        |
 +---------------------------------------------------------+
 copyright:
@@ -45,11 +29,43 @@ files:
 source:
     https://github.com/intermezzOS/kernel
 
+
++---------------------------------------------------------+
+|   derived works from x86_64 (rust crate)                |
++---------------------------------------------------------+
+copyright:
+	Copyright (c) 2018 Philipp Oppermann
+	Copyright (c) 2015 Gerd Zellweger
+	Copyright (c) 2015 The libcpu Developers
+
+license:
+	MIT license
+	https://docs.rs/crate/x86_64/latest/source/LICENSE-MIT
+
+files:
+	src/arch/x86_64/paging
+
+source:
+	https://docs.rs/x86_64/latest/src/x86_64/structures/paging/page_table.rs
+
 -----------------------------------------------------------
 
 
 +---------------------------------------------------------+
-|   attributions for inspirations                         |
+|   rust-osdev/bootloader (inspiration)                   |
++---------------------------------------------------------+
+copyright:
+    2018 Philipp Oppermann
+
+license:
+    MIT License
+    https://github.com/rust-osdev/bootloader/blob/main/LICENSE-MIT
+
+source:
+    https://github.com/rust-osdev/bootloader/tree/main
+
++---------------------------------------------------------+
+|   the original OOStuBS (inspiration)                    |
 +---------------------------------------------------------+
 OOStuBS
 Institut für Verteilte Systeme (IVS),
