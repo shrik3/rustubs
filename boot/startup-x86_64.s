@@ -56,6 +56,15 @@ init_longmode:
 	mov    cr4, eax
 
 setup_paging:
+
+	; zero out the initial page tables (2 pages in total)
+	mov    edi, pml4
+clear_pt:
+	mov    byte [edi], 0
+	inc    edi
+	cmp    edi, pt_end
+	jne    clear_pt
+
 	; Provisional identical page mapping, using 1G huge page, therefore only 2
 	; table levels needed. see docs/x86_paging.txt
 
@@ -186,7 +195,7 @@ pml4:
 pdp:
 	resb   4096
 	alignb 4096
-
+pt_end:
 ; reserve 8MiB for frame alloc.
 ; (see linker file)
 [SECTION .global_free_page_stack]
