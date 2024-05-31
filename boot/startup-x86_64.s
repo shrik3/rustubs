@@ -1,3 +1,4 @@
+; vi: ft=nasm
 ; Contains code from from the OSC lab project OOStuBS @ TU Dresden
 
 ; stack for the main function (renamed to _entry())
@@ -7,24 +8,31 @@ STACKSIZE: equ 65536
 ; DON'T MODIFY THIS UNLESS YOU UPDATE THE setup_paging accordingly
 MAX_MEM: equ 512
 
+; be careful with the extern and exported symbols when mapping a higher-half
+; kernel: regardless where they are physically loaded
+; 1) extern symbols may have 64 bit virtual addresses or values. Do not use them
+; 	 in the 32bit part of the startup code.
+; 2) if the exported (global) symbols are mapped to low (virtual) addresses,
+; 	 they would be no longer accessable after the kernel switch to a higher half
+; 	 mapping. This is especially true for the multiboot info data.
+
+
 ; exported symbols
 [GLOBAL startup]
-[GLOBAL pml4]
-[GLOBAL pdp]
 [GLOBAL mb_magic]
 [GLOBAL mb_info_addr]
 ; functions from other parts of rustubs
-[EXTERN vectors_start]
-[EXTERN idt]
-[EXTERN idt_descr]
 [EXTERN _entry]
-
-; addresses provided by the linker
 [EXTERN ___BSS_START__]
 [EXTERN ___BSS_END__]
 
 [SECTION .text]
 
+; symbols used in 32bit mode:
+; mb_magic
+; mab_info_addr
+; gdt_80
+; init_stack
 [BITS 32]
 startup:
 	cld
