@@ -1,25 +1,25 @@
 // exported symbols from asm/linker.
 // They are always unsafe.
 extern "C" {
-	fn ___KERNEL_START__();
-	fn ___KERNEL_END__();
-	fn ___BSS_START__();
-	fn ___BSS_END__();
+	fn ___KERNEL_PM_START__();
+	fn ___KERNEL_PM_END__();
+	fn ___BSS_PM_START__();
+	fn ___BSS_PM_END__();
 }
 
 pub fn pmap_kernel_start() -> u64 {
-	return ___KERNEL_START__ as u64;
+	return ___KERNEL_PM_START__ as u64;
 }
 
 pub fn pmap_kernel_end() -> u64 {
-	return ___KERNEL_END__ as u64;
+	return ___KERNEL_PM_END__ as u64;
 }
 pub fn pmap_bss_start() -> u64 {
-	return ___BSS_START__ as u64;
+	return ___BSS_PM_START__ as u64;
 }
 
 pub fn pmap_bss_end() -> u64 {
-	return ___BSS_END__ as u64;
+	return ___BSS_PM_END__ as u64;
 }
 
 pub fn roundup_4k(addr: u64) -> u64 {

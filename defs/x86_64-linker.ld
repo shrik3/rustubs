@@ -30,7 +30,7 @@ SECTIONS
 		header_end = .;
 	}
 
-	PROVIDE (___KERNEL_START__ = .);
+	PROVIDE (___KERNEL_PM_START__ = .);
 	.text :
 	{
 		*(".text")
@@ -71,10 +71,10 @@ SECTIONS
 
 	.bss :
 	{
-		PROVIDE (___BSS_START__ = .);
+		PROVIDE (___BSS_PM_START__ = .);
 		*(".bss")
 		*(".bss.*")
-		PROVIDE (___BSS_END__ = .);
+		PROVIDE (___BSS_PM_END__ = .);
 	}
 
 	/* global page table for 64-bit long mode */
@@ -95,5 +95,5 @@ SECTIONS
 		*("..global_free_page_stack")
 	}
 	. = ALIGN(4096);
-	PROVIDE (___KERNEL_END__ = .);
+	PROVIDE (___KERNEL_PM_END__ = .);
 }
