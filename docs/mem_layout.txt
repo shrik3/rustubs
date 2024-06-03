@@ -1,0 +1,23 @@
+Start                   Sz      P4Idx    Desc
+/end                            P3Idx
+---                     ---     ---      ---
+0x0000_0000_0000_0000   128T    0~255    userspace memory
+0x0000_7fff_ffff_ffff           0        (4k pages)
+
+0x0000_8000_0000_0000   ~2^64   -        unused hole due to sign extension
+0xffff_7fff_0000_0000           -        (not mapped)
+
+0xffff_8000_0000_0000   64G    256       Identical mapping of the whole physical
+0xffff_800f_ffff_ffff          0~63      memory (1G pages)
+
+0xffff_8010_0000_0000   64G    256       Hole
+0xffff_801f_ffff_ffff          64~127    (not mapped)
+
+0xffff_8020_0000_0000   64G    256       Kernel image (text and data) (linker)
+0xffff_802f_ffff_ffff          128~191   (1G pages)
+
+0xffff_8030_0000_0000   64G    256       Kernel Heap
+0xffff_803f_ffff_ffff          192~255   (4K pages)
+
+NOTE: "offset" doesn't count the sign extension, i.e. ignoring the 16 MSBs of
+ones.
