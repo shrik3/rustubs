@@ -6,14 +6,14 @@
 [GLOBAL vectors_start]
 [EXTERN interrupt_gate]
 
-[SECTION .reserved_0.idt]
+[SECTION .data.idt]
 ; Interrupt descriptor table with 256 entries
 ; TODO: use a interrupt stack instead of the current stack.
 idt:
 ; reserve space for 256x idt entries (16 bytes each)
 resb 16 * 256
 
-[SECTION .data32]
+[SECTION .data.idt_descr]
 idt_descr:
 	dw  256*8 - 1    ; 256 entries
 	dq idt
@@ -22,13 +22,14 @@ idt_descr:
 ; bytes. DO NOT modify the wrapper, instead change the wrapper_body if needed.
 ; if the vector has to be modified into more than 16 bytes,
 ; arch::x86_64:: interrupt::_idt_init() must be modified accordingly
-[SECTION .data32.vectors]
+[SECTION .text.vectors]
 %macro vector 1
 align 16
 vector_%1:
 	push   rbp
 	mov    rbp, rsp
 	push   rax
+	push   rbx
 	mov    al, %1
 	jmp    vector_body
 %endmacro
@@ -60,7 +61,9 @@ vector_body:
 	and    rax, 0xff
 	; call the interrupt handling code with interrupt number as parameter
 	mov    rdi, rax
-	call   interrupt_gate
+	mov    rbx, interrupt_gate
+	; TODO fix the long jump. I don't want to waste another register
+	call   rbx
 
 	; restore volatile registers
 	pop    r11
@@ -73,6 +76,7 @@ vector_body:
 	pop    rcx
 
 	; ... also those from the vector wrapper
+	pop    rbx
 	pop    rax
 	pop    rbp
 
