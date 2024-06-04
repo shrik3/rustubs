@@ -3,7 +3,7 @@ pub mod pit;
 use crate::io::*;
 use core::arch::asm;
 use core::slice;
-
+// TODO use P2V for extern symbol addresses
 // number of entries in IDT
 pub const IDT_CAPACITY: usize = 256;
 // size of interrupt handler wrapper routine (vector)

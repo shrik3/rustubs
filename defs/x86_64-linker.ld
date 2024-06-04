@@ -71,10 +71,10 @@ SECTIONS
 
 	.bss :
 	{
-		PROVIDE (___BSS_PM_START__ = .);
+		PROVIDE (___BSS_START__ = .);
 		*(".bss")
 		*(".bss.*")
-		PROVIDE (___BSS_PM_END__ = .);
+		PROVIDE (___BSS_END__ = .);
 	}
 
 	/* global page table for 64-bit long mode */

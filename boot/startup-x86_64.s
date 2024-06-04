@@ -31,8 +31,8 @@ MAX_MEM: equ 512
 [GLOBAL mb_info_addr]
 ; functions from other parts of rustubs
 ; NOTE: this are all from 64bit code, so do not use them in 32bit assembly
-[EXTERN ___BSS_PM_START__]
-[EXTERN ___BSS_PM_END__]
+[EXTERN ___BSS_START__]
+[EXTERN ___BSS_END__]
 [EXTERN KERNEL_OFFSET]
 [EXTERN _entry]
 ; =============================================================================
@@ -170,8 +170,8 @@ fill_kvma2:
 	jne    fill_kvma2
 	; done :-)
 	; clear BSS section for the rust code.
-	mov    rdi, ___BSS_PM_START__
-	mov    rax, ___BSS_PM_END__
+	mov    rdi, ___BSS_START__
+	mov    rax, ___BSS_END__
 clear_bss:
 	; clear the BSS section before going to rust code
 	; TODO speed this up by clearing 8 bytes at once. Alignment should be taken

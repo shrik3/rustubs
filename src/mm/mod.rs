@@ -41,12 +41,12 @@ pub fn init() {
 	}
 
 	println!(
-		"pma init: kernel mapped at {:#X} - {:#X}",
+		"[init] pma: kernel loaded at phy: {:#X} - {:#X}",
 		pmap_kernel_start(),
 		pmap_kernel_end()
 	);
 	println!(
-		"pma init: {:#X}KiB free memory, {:#X} pages",
+		"[init] pma: {:#X} KiB free memory, {:#X} frames inserted",
 		inserted * 0x4,
 		inserted,
 	);

@@ -3,29 +3,46 @@
 extern "C" {
 	fn ___KERNEL_PM_START__();
 	fn ___KERNEL_PM_END__();
-	fn ___BSS_PM_START__();
-	fn ___BSS_PM_END__();
+	fn ___BSS_START__();
+	fn ___BSS_END__();
 }
 
+#[inline]
 pub fn pmap_kernel_start() -> u64 {
-	return ___KERNEL_PM_START__ as u64;
+	___KERNEL_PM_START__ as u64
 }
 
+#[inline]
 pub fn pmap_kernel_end() -> u64 {
-	return ___KERNEL_PM_END__ as u64;
-}
-pub fn pmap_bss_start() -> u64 {
-	return ___BSS_PM_START__ as u64;
+	___KERNEL_PM_END__ as u64
 }
 
-pub fn pmap_bss_end() -> u64 {
-	return ___BSS_PM_END__ as u64;
+#[inline]
+pub fn vmap_kernel_start() -> u64 {
+	pmap_kernel_start() + Mem::KERNEL_OFFSET
 }
 
+#[inline]
+pub fn vmap_kernel_end() -> u64 {
+	pmap_kernel_end() + Mem::KERNEL_OFFSET
+}
+
+#[inline]
+pub fn bss_start() -> u64 {
+	return ___BSS_START__ as u64;
+}
+
+#[inline]
+pub fn bss_end() -> u64 {
+	return ___BSS_END__ as u64;
+}
+
+#[inline]
 pub fn roundup_4k(addr: u64) -> u64 {
 	return (addr + 0xfff) & !0xfff;
 }
 
+#[inline]
 pub fn rounddown_4k(addr: u64) -> u64 {
 	return addr & !0xfff;
 }
@@ -55,11 +72,30 @@ impl Mem {
 	// memory (37268) 4k pages, 37268 bits are needed, hence
 	// 4096 bytes, exactly one page!
 	pub const PHY_BM_SIZE: u64 = Mem::PHY_PAGES >> 3;
+	pub const ID_MAP_START: u64 = 0xffff_8000_0000_0000;
+	pub const ID_MAP_END: u64 = 0xffff_8010_0000_0000;
+	pub const KERNEL_OFFSET: u64 = 0xffff_8020_0000_0000;
+	// 64 GiB available memory
+	pub const MAX_PHY_MEM: u64 = 0x1000000000;
 }
 
-// PHY_TOP			128M
-// ~				free frames
-// PMA::bitmap		+ PHY_BM_SIZE
-// ~				___KERNEL_END__
-// KERNEL IMAGE
-// KERNEL START		1 M
+// convert VA <-> PA wrt. the kernel id mapping
+// from 0xffff_8000_0000_0000 ~ 0xffff_800f_ffff_ffff virtual
+// to 0x0 ~ 0xf_ffff_ffff physical (64G)
+#[allow(non_snake_case)]
+#[inline]
+pub fn V2P(va: u64) -> Option<u64> {
+	if va >= Mem::ID_MAP_END || va < Mem::ID_MAP_START {
+		return None;
+	}
+	return Some(va - Mem::ID_MAP_START);
+}
+
+#[allow(non_snake_case)]
+#[inline]
+pub fn P2V(pa: u64) -> Option<u64> {
+	if pa >= Mem::MAX_PHY_MEM {
+		return None;
+	}
+	return Some(pa + Mem::ID_MAP_START);
+}

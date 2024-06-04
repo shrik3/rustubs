@@ -14,6 +14,7 @@ use arch::x86_64::interrupt;
 use arch::x86_64::interrupt::pic_8259;
 use arch::x86_64::interrupt::pic_8259::PicDeviceInt;
 use core::panic::PanicInfo;
+use defs::*;
 use machine::cgascr::CGAScreen;
 use machine::multiboot;
 
@@ -33,7 +34,7 @@ pub extern "C" fn _entry() -> ! {
 	let mbi = multiboot::get_mb_info().expect("bad multiboot info flags");
 	let mem = unsafe { mbi.get_mem() }.unwrap();
 	println!(
-		"available memory: lower {:#X} KiB, upper:{:#X} KiB",
+		"[init] available memory: lower {:#X} KiB, upper:{:#X} KiB",
 		mem.lower(),
 		mem.upper()
 	);
@@ -43,14 +44,14 @@ pub extern "C" fn _entry() -> ! {
 	interrupt::interrupt_enable();
 
 	println!(
-		"kernel: {:#X} - {:#X}",
-		defs::pmap_kernel_start(),
-		defs::pmap_kernel_end()
+		"[init] kernel mapped @ {:#X} - {:#X}",
+		vmap_kernel_start(),
+		vmap_kernel_end(),
 	);
 	println!(
-		"   BSS: {:#X} - {:#X}",
-		defs::pmap_bss_start(),
-		defs::pmap_bss_end()
+		"[init] BSS mapped    @ {:#X} - {:#X}",
+		bss_start(),
+		bss_end()
 	);
 
 	// io::print_welcome();
