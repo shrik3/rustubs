@@ -19,9 +19,10 @@ ARCH = x86_64
 ASM = nasm
 ASMOBJFORMAT = elf64
 ASMFLAGS = -w-zeroing
-LINKER_SCRIPT = ./defs/$(ARCH)-linker.ld
+LINKER_SCRIPT = ./defs/$(ARCH)-hm-linker.ld
 CARGO_XBUILD_TARGET = ./defs/$(ARCH)-rustubs.json
 CARGO_XBUILD_FLAGS =
+RUSTC_FLAGS := -C code-model=large
 # ---------- No need to edit below this line --------------
 # ---------- If you have to, something is wrong -----------
 LDFLAGS = -no-warn-rwx-segment -static -e startup
@@ -65,7 +66,7 @@ $(BUILD)/_%.o : %.s | $(BUILD)
 # define this, the linker will have troubles, especially when we use a "no_std" build
 rust_kernel: check
 	@echo "---BUILDING RUST KERNEL---"
-	@cargo xbuild --target $(CARGO_XBUILD_TARGET) $(CARGO_XBUILD_FLAGS)
+	@RUSTFLAGS="$(RUSTC_FLAGS)" cargo xbuild --target $(CARGO_XBUILD_TARGET) $(CARGO_XBUILD_FLAGS)
 
 # need nasm
 # TODO make this arch dependent

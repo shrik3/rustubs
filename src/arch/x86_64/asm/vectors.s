@@ -1,5 +1,6 @@
+; vi: ft=nasm
 ; vectors.s - idt for x86_64
-
+[BITS 64]
 [GLOBAL idt]
 [GLOBAL idt_descr]
 [GLOBAL vectors_start]
