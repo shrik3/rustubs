@@ -23,7 +23,7 @@ impl PageStackAllocator {
 		let ps = Self {
 			page_stack: unsafe {
 				slice::from_raw_parts_mut(
-					___FREE_PAGE_STACK__ as usize as *mut u64,
+					P2V(___FREE_PAGE_STACK__ as u64).unwrap() as *mut u64,
 					Self::STACK_SIZE,
 				)
 			},
