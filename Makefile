@@ -95,6 +95,12 @@ clean:
 qemu: bootdisk.iso
 	qemu-system-x86_64 -drive file=./bootdisk.iso,format=raw -k en-us
 
+gdb:
+	gdb -x /tmp/gdbcommands.$(shell id -u) build/kernel
+
+qemu-gdb: bootdisk.iso
+	@echo "target remote localhost:$(shell echo $$(( $$(id -u) % (65536 - 1024) + 1024 )))" > /tmp/gdbcommands.$(shell id -u)
+	@qemu-system-x86_64 -drive file=bootdisk.iso,format=raw -k en-us -S -gdb tcp::$(shell echo $$(( $$(id -u) % (65536 - 1024) + 1024 )))
 
 test:
 	@echo "---BUILD DIR---"
