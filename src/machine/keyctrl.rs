@@ -5,7 +5,6 @@ use bitflags::bitflags;
 use core::cmp;
 use core::cmp::{Eq, PartialEq};
 use core::ffi::c_uchar;
-use num_enum::{IntoPrimitive, TryFromPrimitive};
 
 // Driver for the PS/2 keybard/mouse controller
 // beyound OOStuBS:
