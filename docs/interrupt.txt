@@ -1,0 +1,60 @@
+https://wiki.osdev.org/Exceptions
+https://wiki.osdev.org/Interrupts#General_IBM-PC_Compatible_Interrupt_Information
+
+------------------------------------------------------
+VectorNr.   Name                Type        ErrorCode
+------------------------------------------------------
+0x0     Division Error          Fault       -
+0x1     Debug                   Fault/Trap  -
+0x2     NMI                     Interrupt   -
+0x3     Breakpoint              Trap        -
+0x4     Overflow                Trap        -
+0x5     Bound Range Exceeded    Fault       -
+0x6     Invalid Opcode          Fault       -
+0x7     Device Not Available    Fault       -
+0x8     Double Fault            Abort       Yes (zero)
+0x9     Legacy (CSO)            Fault       -
+0xA     Invalid TSS             Fault       Yes
+0xB     Segment Not Present     Fault       Yes
+0xC     Stack Segment Fault     Fault       Yes
+0xD     GPF                     Fault       Yes
+0xE     Page Fault              Fault       Yes
+0xF     RESERVED                -           -
+0x10    x87 FP Exception        Fault       -
+0x11    Alignment Check         Fault       Yes
+0x12    Machine Check           Abort       -
+0x13    SIMD FP Exception       Fault       -
+0x14    Virt. Exception         Fault       -
+0x15    Control Protection      Fault       Yes
+0x16    RESERVED                -           -
+0x17    RESERVED                -           -
+0x18    RESERVED                -           -
+0x19    RESERVED                -           -
+0x1A    RESERVED                -           -
+0x1B    RESERVED                -           -
+0x1C    Hpervisor Injection     Fault       -
+0x1D    VMM Communication       Fault       Yes
+0x1E    Security Exception      Fault       Yes
+0x1F    RESERVED
+------------------------------------------------------
+PIC1 (master) remapped from vector offset 0x20
+------------------------------------------------------
+0x20	PIT (Timer)
+0x21    Keyboard
+0x22    PIC internal (never raised)
+0x23    COMM2 (if enabled)
+0x24    COMM1 (if enabled)
+0x25    LPT2 (if enabled)
+0x26    Floppy Disk
+0x27    LPT1 / Unreliable "spurious" interrupt (usually)
+------------------------------------------------------
+PIC2 (slave) remapped from vector offset 0x28
+------------------------------------------------------
+0x28    CMOS realtime-clock (if enabled)
+0x29    Free for peripherals / SCSI / NIC
+0x2A    Free for peripherals / SCSI / NIC
+0x2B    Free for peripherals / SCSI / NIC
+0x2C    PS2 Mouse
+0x2D    FPU / Coprocessor / Inter-processor
+0x2E    Primary ATA Hard Disk
+0x2F    Secondary ATA Hard Disk
