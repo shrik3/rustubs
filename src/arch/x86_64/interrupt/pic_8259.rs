@@ -6,6 +6,7 @@ const IMR1: u16 = 0x21;
 const IMR2: u16 = 0xa1;
 const CTRL1: u16 = 0x20;
 const CTRL2: u16 = 0xa0;
+const PIC_VECTOR_OFFSET: u8 = 0x20;
 
 pub struct PicDeviceInt;
 impl PicDeviceInt {
@@ -13,19 +14,33 @@ impl PicDeviceInt {
 	pub const KEYBOARD: u8 = 1;
 }
 
-// init must be called before interrupt is enabled.
+// code and text from: https://wiki.osdev.org/8259_PIC#Code_Examples
+// reprogram the PIC; _init must be called before interrupt is enabled.
 // TODO: turn pic into a singleton struct
+// TODO: replace these hardcoded ....
+// 0x20: PIC1 COMMAND (MASTER)
+// 0x21: PIC1 DATA
+// 0xA0: PIC2 COMMAND (SLAVE)
+// 0xA1: PIC2 DATA
 pub fn _init() {
-	outb(0x20, 0x11);
-	outb(0xa0, 0x11);
-	outb(0x21, 0x20);
-	outb(0xa1, 0x28);
-	outb(0x21, 0x04);
-	outb(0xa1, 0x02);
-	outb(0x21, 0x03);
-	outb(0xa1, 0x03);
-	outb(0xa1, 0xff);
-	outb(0x21, 0xfb);
+	// ICW1_ICW4 | ICW1_INIT
+	// start init sequence in cascade mode
+	outb(CTRL1, 0x11);
+	outb(CTRL2, 0x11);
+	// ICW2: MASTER PIC vector offset = 0x20
+	outb(IMR1, PIC_VECTOR_OFFSET);
+	// ICW2: SLAVE PIC vector offset = 0x28
+	outb(IMR2, PIC_VECTOR_OFFSET + 8);
+	// ICW3: tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
+	outb(IMR1, 0x04);
+	// ICW3: tell Slave PIC its cascade identity (0000 0010)
+	outb(IMR2, 0x02);
+	// ICW4: 8086 mode | auto (normal) EOI
+	outb(IMR1, 0x03);
+	outb(IMR2, 0x03);
+	// set masks
+	outb(IMR1, 0xfb);
+	outb(IMR2, 0xff);
 }
 
 // 8-bit registers IMR1 and IMR2 registers hold interrupt masking bit 0~7 and
