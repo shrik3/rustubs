@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
+#![allow(unexpected_cfgs)]
 #![no_std]
 #![no_main]
 #![feature(const_option)]

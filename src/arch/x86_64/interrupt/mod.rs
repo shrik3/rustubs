@@ -27,6 +27,7 @@ extern "C" {
 // [48:63] - addr[16:31]
 // [64:95] - addr[32:63]
 #[repr(C)]
+#[repr(packed)]
 pub struct GateDescriptor64 {
 	pub offset_1: u16,
 	pub selector: u16,

@@ -82,6 +82,9 @@ SECTIONS
 		*(".text")
 		*(".text.*")
 		*(".text$")
+		*(".ltext")
+		*(".ltext.*")
+		*(".ltext$")
 	}
 
 	.data : AT(ADDR(.data) - KERNEL_OFFSET)
@@ -89,13 +92,19 @@ SECTIONS
 		*(".data")
 		*(".data.*")
 		*(".data$")
+		*(".ldata")
+		*(".ldata.*")
+		*(".ldata$")
 	}
 
 	.bss : AT(ADDR(.bss) - KERNEL_OFFSET)
 	{
 		PROVIDE (___BSS_START__ = .);
 		*(".bss")
+		*(".lbss")
 		*(".bss.*")
+		*(".lbss.*")
+		*(".lbss$")
 		PROVIDE (___BSS_END__ = .);
 	}
 
@@ -104,6 +113,9 @@ SECTIONS
 		*(".rodata")
 		*(".rodata$")
 		*(".rodata.*")
+		*(".lrodata")
+		*(".lrodata$")
+		*(".lrodata.*")
 	}
 
 	PROVIDE (___KERNEL_PM_END__ = . - KERNEL_OFFSET);
