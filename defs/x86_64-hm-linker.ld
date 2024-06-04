@@ -33,17 +33,10 @@ SECTIONS
 		header_end = .;
 	}
 
-
 	.d32 :
 	{
 		*(".data32")
-	}
-
-	.reserved :
-	{
-		*(".reserved")
-		*(".reserved.*")
-		*(".gdt")
+		*(".data32.*")
 	}
 
 	/*
@@ -53,10 +46,8 @@ SECTIONS
 	 */
 	.reserved_0 (NOLOAD) :
 	{
-		*(".init_k_stack")
 		*(".reserved_0")
 		*(".reserved_0.*")
-		*(".reserved_0.init_stack")
 	}
 
 

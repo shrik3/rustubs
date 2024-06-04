@@ -64,7 +64,7 @@ extern "C" fn interrupt_gate(_slot: u16) {
 	// able to release the lock if the interrupt handler blocks on it. Try
 	// spamming the keyboard with the following line of code uncommented: it
 	// will deadlock!
-	// println!("interrupt received 0x{:x}", slot);
+	// println!("interrupt received 0x{:x}", _slot);
 	interrupt_enable();
 }
 
