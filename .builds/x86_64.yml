@@ -13,7 +13,6 @@ tasks:
       cd rustubs
       rustup default nightly
       rustup component add rust-src
-      cargo install cargo-xbuild
   - build: |
       cd rustubs
       mkdir build

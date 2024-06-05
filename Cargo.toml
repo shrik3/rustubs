@@ -9,17 +9,9 @@ license = "eupl-1.2"
 spin = "0.9.8"
 bitflags = "2.4.2"
 
-# rebuild components, instead of using the prebuilt ones.
-# see https://os.phil-opp.com/heap-allocation/#the-allocator-interface
-# [unstable]
-# build-std = ["core", "compiler_builtins", "alloc"]
-
 [dependencies.lazy_static]
 version = "1.4"
 features = ["spin_no_std"]
-
-# [build]
-# target = "x86_64-rustubs"
 
 [lib]
 crate-type = ["staticlib"]

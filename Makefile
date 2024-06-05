@@ -66,7 +66,7 @@ $(BUILD)/_%.o : %.s | $(BUILD)
 # define this, the linker will have troubles, especially when we use a "no_std" build
 rust_kernel: check
 	@echo "---BUILDING RUST KERNEL---"
-	@RUSTFLAGS="$(RUSTC_FLAGS)" cargo xbuild --target $(CARGO_XBUILD_TARGET) $(CARGO_XBUILD_FLAGS)
+	RUSTFLAGS="$(RUSTC_FLAGS)" cargo build --target $(CARGO_XBUILD_TARGET) $(CARGO_XBUILD_FLAGS)
 
 # need nasm
 # TODO make this arch dependent
