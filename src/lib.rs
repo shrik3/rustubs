@@ -11,6 +11,7 @@ mod io;
 mod machine;
 mod mm;
 use crate::machine::key::Modifiers;
+mod proc;
 use arch::x86_64::interrupt;
 use arch::x86_64::interrupt::pic_8259;
 use arch::x86_64::interrupt::pic_8259::PicDeviceInt;
