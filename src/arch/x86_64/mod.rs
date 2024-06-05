@@ -1,4 +1,4 @@
-pub mod context;
+pub mod arch_regs;
 pub mod interrupt;
 pub mod io_port;
 pub mod mem;
