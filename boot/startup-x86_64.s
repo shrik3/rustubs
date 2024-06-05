@@ -174,6 +174,7 @@ fill_kvma2:
 	mov    rax, ___BSS_END__
 clear_bss:
 	; clear the BSS section before going to rust code
+	; TODO: sanity check start < end, otherwise could be endless loop
 	; TODO speed this up by clearing 8 bytes at once. Alignment should be taken
 	; care of..
 	mov    byte [rdi], 0
