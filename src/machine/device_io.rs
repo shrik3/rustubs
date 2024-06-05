@@ -4,7 +4,7 @@ pub use crate::arch::x86_64::io_port::*;
 // either use the io functions directly, or via a IOPort instance.
 pub struct IOPort(u16);
 impl IOPort {
-	pub fn new(port: u16) -> Self {
+	pub const fn new(port: u16) -> Self {
 		Self(port)
 	}
 	pub fn inw(&self) -> u16 {

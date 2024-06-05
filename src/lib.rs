@@ -9,7 +9,6 @@ mod ds;
 mod io;
 mod machine;
 mod mm;
-use crate::machine::key::Modifiers;
 mod proc;
 extern crate alloc;
 use alloc::vec::Vec;
@@ -19,7 +18,9 @@ use arch::x86_64::interrupt::pic_8259::PicDeviceInt;
 use core::panic::PanicInfo;
 use defs::*;
 use machine::cgascr::CGAScreen;
+use machine::key::Modifiers;
 use machine::multiboot;
+use machine::serial::Serial;
 
 #[cfg(not(test))]
 #[panic_handler]
@@ -61,6 +62,7 @@ pub extern "C" fn _entry() -> ! {
 	for s in test_vec.iter() {
 		println!("{s}");
 	}
+	Serial::print("hello from serial");
 	loop {
 		io::KBCTL_GLOBAL.lock().fetch_key();
 		if let Some(k) = io::KBCTL_GLOBAL.lock().consume_key() {
