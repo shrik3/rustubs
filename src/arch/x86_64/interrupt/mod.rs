@@ -1,11 +1,14 @@
 pub mod pic_8259;
 pub mod pit;
+use crate::arch::x86_64::arch_regs::TrapFrame;
 use crate::io::*;
 use core::arch::asm;
 use core::slice;
 // TODO use P2V for extern symbol addresses
 // number of entries in IDT
 pub const IDT_CAPACITY: usize = 256;
+// 32 exceptions + 16 irqs from PIC = 48 valid interrupts
+pub const IDT_VALID: usize = 48;
 // size of interrupt handler wrapper routine (vector)
 pub const VECTOR_SIZE: u64 = 16;
 extern "C" {
@@ -58,14 +61,24 @@ impl GateDescriptor64 {
 
 #[no_mangle]
 #[cfg(target_arch = "x86_64")]
-extern "C" fn interrupt_gate(_slot: u16) {
+extern "C" fn trap_gate(_nr: u16, fp: u64) {
 	interrupt_disable();
+	// let ctx_p = ptregs_addr as *mut PtRegs;
+	// let ctx_p = ctx_p.cast::<PtRegs>();
+	// let ctx = unsafe { &mut *ctx_p };
 	// NOTE: the interrupt handler should NEVER block on a lock; in this case
 	// the CGA screen is protected by a spinlock. The lock holder will never be
 	// able to release the lock if the interrupt handler blocks on it. Try
 	// spamming the keyboard with the following line of code uncommented: it
 	// will deadlock!
-	// println!("interrupt received 0x{:x}", _slot);
+	println!("interrupt received 0x{:x}", _nr);
+	if _nr < 0x20 {
+		let _frame = unsafe { &mut *(fp as *mut TrapFrame) };
+		println!("trap: @{:#X} {:#X?}", fp, _frame);
+		unsafe {
+			asm!("hlt");
+		}
+	}
 	interrupt_enable();
 }
 
@@ -91,9 +104,13 @@ fn _idt_init() {
 		unsafe { slice::from_raw_parts_mut(idt as *mut GateDescriptor64, 256) };
 
 	// write to idt
-	for i in 0..IDT_CAPACITY {
+	for i in 0..IDT_VALID {
 		let offset: u64 = vectors_start as u64 + (i as u64 * VECTOR_SIZE);
 		gate_descriptors[i].set_default_interrupt(offset);
+	}
+	let offset_inv: u64 = vectors_start as u64 + (IDT_VALID as u64 * VECTOR_SIZE);
+	for i in IDT_VALID..IDT_CAPACITY {
+		gate_descriptors[i].set_default_interrupt(offset_inv);
 	}
 	// set idtr
 	unsafe { asm! ("lidt [{}]", in(reg) idt_descr) }

@@ -4,7 +4,7 @@
 [GLOBAL idt]
 [GLOBAL idt_descr]
 [GLOBAL vectors_start]
-[EXTERN interrupt_gate]
+[EXTERN trap_gate]
 
 [SECTION .data.idt]
 ; Interrupt descriptor table with 256 entries
@@ -18,30 +18,66 @@ idt_descr:
 	dw  256*8 - 1    ; 256 entries
 	dq idt
 
-; NOTE: vectors MUST have fixed instruction length currently aligned to 16
-; bytes. DO NOT modify the wrapper, instead change the wrapper_body if needed.
-; if the vector has to be modified into more than 16 bytes,
-; arch::x86_64:: interrupt::_idt_init() must be modified accordingly
 [SECTION .text.vectors]
-%macro vector 1
+%macro trap_without_err 1
 align 16
 vector_%1:
-	push   rbp
-	mov    rbp, rsp
+	push   0
 	push   rax
-	push   rbx
 	mov    al, %1
 	jmp    vector_body
 %endmacro
 
-; automatic generation of 256 interrupt-handling routines, based on above macro
+%macro trap_with_err 1
+align 16
+vector_e_%1:
+	push   rax
+	mov    al, %1
+	jmp    vector_body
+%endmacro
 
 vectors_start:
-%assign i 0
-%rep 256
-	vector i
+; the first 32 are x86 exceptions / traps
+trap_without_err        0       ; Div By Zero
+trap_without_err        1       ; Debug
+trap_without_err        2       ; NMI
+trap_without_err        3       ; BP
+trap_without_err        4       ; OF
+trap_without_err        5       ; Bound Range
+trap_without_err        6       ; Invalid Opcode
+trap_without_err        7       ; Device N/A
+trap_with_err           8       ; Double Fault
+trap_without_err        9       ; Legacy (not used)
+trap_with_err           10      ; Invalid TSS
+trap_with_err           11      ; Segment Not Present
+trap_with_err           12      ; Stack Segment Fault
+trap_with_err           13      ; GPF
+trap_with_err           14      ; Page Fault
+trap_without_err        15      ; RESERVED
+trap_without_err        16      ; x87 FP exception
+trap_with_err           17      ; Alighment check
+trap_without_err        18      ; Machine Check
+trap_without_err        19      ; SIMD FP Exception
+trap_without_err        20      ; Virtualization Exception
+trap_with_err           21      ; Control Protection
+trap_without_err        22      ; RESERVED
+trap_without_err        23      ; RESERVED
+trap_without_err        24      ; RESERVED
+trap_without_err        25      ; RESERVED
+trap_without_err        26      ; RESERVED
+trap_without_err        27      ; RESERVED
+trap_without_err        28      ; Hypervisor Injection
+trap_with_err           29      ; VMM Communication
+trap_with_err           30      ; Security Exception
+trap_without_err        31      ; RESERVED
+; 16 PIC IRQs are remapped from 32 to 47
+%assign i 32
+%rep 16
+	trap_without_err i
 	%assign i i+1
 %endrep
+; irqs from 48 are not valid, we define one extra vector for all of them
+trap_without_err        48      ; INVALID
 
 ; common handler body
 vector_body:
@@ -59,11 +95,14 @@ vector_body:
 
 	; the generated wrapper only gives us 8 bits, mask the rest
 	and    rax, 0xff
-	; call the interrupt handling code with interrupt number as parameter
+	; the first parameter is the interrupt (exception) number
 	mov    rdi, rax
-	mov    rbx, interrupt_gate
-	; TODO fix the long jump. I don't want to waste another register
-	call   rbx
+        ; the second parameter is a pointer to the trap frame
+        mov    rsi, rsp
+	; For a long jump, we need to put the (large) address in an register
+	; here reusing one of the caller clobbered regs (pushed above)
+	mov    r11, trap_gate
+	call   r11
 
 	; restore volatile registers
 	pop    r11
@@ -75,10 +114,8 @@ vector_body:
 	pop    rdx
 	pop    rcx
 
-	; ... also those from the vector wrapper
-	pop    rbx
 	pop    rax
-	pop    rbp
-
+	; "pop" the error code
+	add    rsp, 8
 	; done
 	iretq
