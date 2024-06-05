@@ -1,6 +1,7 @@
 // code derived from the x86_64 crate
 // https://docs.rs/x86_64/latest/src/x86_64/addr.rs.html
 // see ATTRIBUTIONS
+pub mod fault;
 use crate::defs::*;
 use bitflags::bitflags;
 #[repr(align(4096))]
@@ -97,6 +98,11 @@ impl Pagetable {
 	#[inline]
 	pub fn is_empty(&self) -> bool {
 		self.iter().all(|entry| entry.is_unused())
+	}
+
+	/// walk the page table, create missing tables, return mapped physical frame
+	pub fn map_page(&self, _va: VAddr) {
+		todo!()
 	}
 }
 

@@ -1,6 +1,7 @@
 pub mod pic_8259;
 pub mod pit;
 use crate::arch::x86_64::arch_regs::TrapFrame;
+use crate::arch::x86_64::paging::fault;
 use crate::io::*;
 use core::arch::asm;
 use core::slice;
@@ -71,13 +72,19 @@ extern "C" fn trap_gate(_nr: u16, fp: u64) {
 	// able to release the lock if the interrupt handler blocks on it. Try
 	// spamming the keyboard with the following line of code uncommented: it
 	// will deadlock!
-	println!("interrupt received 0x{:x}", _nr);
-	if _nr < 0x20 {
-		let _frame = unsafe { &mut *(fp as *mut TrapFrame) };
-		println!("trap: @{:#X} {:#X?}", fp, _frame);
+	// TODO this is only a POC, use proper defines and match later
+	let _frame = unsafe { &mut *(fp as *mut TrapFrame) };
+	if _nr == 0xe {
+		// Pagefault
+		let fault_address = fault::get_fault_addr();
+		fault::page_fault_handler(_frame, fault_address)
+	} else if _nr < 0x20 {
+		println!("[trap[ {:#X?}", _frame);
 		unsafe {
 			asm!("hlt");
 		}
+	} else {
+		// deal with irq
 	}
 	interrupt_enable();
 }
