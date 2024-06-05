@@ -13,7 +13,7 @@ This is a toy bare metal operation system implemented in Rust. Apologies for my
 shitty code, I'm a rust beginner.
 
 **Status / Roadmap**
-- [ ] GDB support (qemu stub)
+- [X] GDB support (qemu stub)
 - [X] Basic code structure
 - [X] Build minimal iso image
 - [X] bootable using grub
@@ -21,8 +21,8 @@ shitty code, I'm a rust beginner.
 - [X] Intigrate print into rust println! etc.
 - [X] Keyboard controller and input handler
 - [?] Interrupt handler (WIP)
-- [ ] intrrupt sync
-- [ ] Threading
+- [ ] intrrupt sync (pro-/epilogue model)
+- [?] Threading (WIP)
 - [ ] Scheduler (single CPU)
 - [ ] Timer Interrupt
 - [ ] Synchronization Primitives
@@ -30,10 +30,10 @@ shitty code, I'm a rust beginner.
 
 Beyond StuBS
 - [ ] Task Descriptor structures
-- [ ] Paging: PMA and paging structures
-- [ ] Paging: pagefault handler
+- [X] Paging: PMA and paging structures
+- [?] Paging: pagefault handler (WIP)
 - [ ] user heap and mmap
-- [ ] Upperhalf Kernel
+- [X] Upperhalf Kernel
 - [ ] Address Space for each Process
 - [ ] in memory FS
 - [ ] user library
@@ -46,36 +46,37 @@ Please take a look at the CI manifest:
 `.builds/x86_64.yml`
 
 **build dependencies**
-- rust toolchain: `nightly-x86_64-unknown-linux-gnu`
-- `cargo xbuild`, install with:
-    ```
-    $ cargo install xbuild
-    ```
+- newest rust nightly toolchain: `nightly-x86_64-unknown-linux-gnu`. `1.80
+  nightly (2024-06-04) ` is tested.
 - `rustfmt`, this should be shipped with your rust/cargo installation. If not,
   install with
     ```
     $ cargo install rustfmt
     ```
 - `GNU ld (GNU Binutils)`
-- `nasm`
+- `nasm` for the assembly sources
 - `xorriso` and `grub` to create bootdisk image. 
 - `Gnu Make`
 
 
-**general dependencies:**
-- `qemu-system-x86_64` (optional for simulation)
-
 **Add rust sources**
 - We use `no_std` in the rust build. To use the `core` components, you need to
   add the rust sources by running e.g. `rustup component add  rust-src`
+  , optionally specify the toolchain here, if the aforementioned nightly is not
+  made default
 
 **build and run**
 - simply run `make`, you will get `bootdisk.iso`, which you can use to boot a
   bare metal
-- use `make qemu` to load and test the iso image with qemu
+- use `make qemu` to load and test the iso image with qemu (need
+  `qemu-system-x86_64`)
+
+**debug with gdb**
+- require `gdb` (or `rust-gdb`)
+- make sure you have the debug build (default)
+- run `make qemu-gdb` in one terminal and `make gdb` in another.
 
 **troubleshooting**
-- cargo xbuild hangs: try updating the default toolchain and rebuilding xbuild.
 - `ld (Gnu Binutils) <=2.39` do not support `--no-warn-rwx-segments` flag. If
   that's your case, remove it from the `LDFLAGS` in `Makefile`
 - `grub-mkrescue` fails if you don't have the `piglatin` locale available.
@@ -84,6 +85,7 @@ Please take a look at the CI manifest:
   installed, resulting in a unnecessarily huge image).
 
 ## Structure
+
 ```
 .
 ├── boot            # early boot/startup code
@@ -91,6 +93,9 @@ Please take a look at the CI manifest:
 ├── docs            # namely
 ├── isofiles        # assets for the grub generated iso
 ├── src             # main source code
+├── .build          # CI manifests (for builds.sr.ht)
+├── .cargo          # config for cargo build (build-std)
+
 ```
 
 ## Contributing
