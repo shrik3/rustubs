@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
-#![allow(unexpected_cfgs)]
 #![no_std]
 #![no_main]
 #![feature(const_option)]
@@ -65,4 +64,12 @@ pub extern "C" fn _entry() -> ! {
 			println! {"key: {:?}", k}
 		}
 	}
+}
+
+pub unsafe fn _test_pf() {
+	// try a page fault
+	use core::arch::asm;
+	use core::slice;
+	let name_buf = slice::from_raw_parts_mut(0xffffffffffff0000 as *mut u64, 10);
+	asm!("mov [rdi], rax", in("rdi") name_buf.as_mut_ptr());
 }
