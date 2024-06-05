@@ -73,7 +73,6 @@ SECTIONS
 	.t32 :
 	{
 		*(".text32")
-		*(".text.interrupt_gate")
 	}
 
 	. = . + KERNEL_OFFSET;

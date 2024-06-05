@@ -11,6 +11,8 @@ mod machine;
 mod mm;
 use crate::machine::key::Modifiers;
 mod proc;
+extern crate alloc;
+use alloc::vec::Vec;
 use arch::x86_64::interrupt;
 use arch::x86_64::interrupt::pic_8259;
 use arch::x86_64::interrupt::pic_8259::PicDeviceInt;
@@ -32,38 +34,40 @@ pub extern "C" fn _entry() -> ! {
 	io::set_attr(0x1f);
 	io::clear_screen();
 	assert!(multiboot::check(), "bad multiboot info from grub!");
-	let mbi = multiboot::get_mb_info().expect("bad multiboot info flags");
-	let mem = unsafe { mbi.get_mem() }.unwrap();
-	println!(
-		"[init] available memory: lower {:#X} KiB, upper:{:#X} KiB",
-		mem.lower(),
-		mem.upper()
-	);
-	mm::init();
+	// check mbi now. This will be later used to initilize the allocator
+	let _mbi = multiboot::get_mb_info().expect("bad multiboot info flags");
+	// initialize the idt and re-program the pic. Must do this before enabling irq
+	// also must initialize the idt before mm, because the later may trigger page faults, which is
+	// fatal and we want to catch them during system initilization.
 	interrupt::init();
-	pic_8259::allow(PicDeviceInt::KEYBOARD);
-	interrupt::interrupt_enable();
+	mm::init();
 
 	println!(
 		"[init] kernel mapped @ {:#X} - {:#X}",
-		vmap_kernel_start(),
-		vmap_kernel_end(),
+		unsafe { vmap_kernel_start() },
+		unsafe { vmap_kernel_end() },
 	);
 	println!(
 		"[init] BSS mapped    @ {:#X} - {:#X}",
 		bss_start(),
 		bss_end()
 	);
-
-	// io::print_welcome();
-
 	// busy loop query keyboard
+	interrupt::interrupt_enable();
+	pic_8259::allow(PicDeviceInt::KEYBOARD);
+	let mut test_vec = Vec::<&str>::new();
+	test_vec.push("hello ");
+	test_vec.push("world");
+	for s in test_vec.iter() {
+		println!("{s}");
+	}
 	loop {
 		io::KBCTL_GLOBAL.lock().fetch_key();
 		if let Some(k) = io::KBCTL_GLOBAL.lock().consume_key() {
 			println! {"key: {:?}", k}
 		}
 	}
+	// test heap
 }
 
 pub unsafe fn _test_pf() {

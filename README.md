@@ -20,8 +20,10 @@ shitty code, I'm a rust beginner.
 - [X] Setting up CGA display, print something (hello world)
 - [X] Intigrate print into rust println! etc.
 - [X] Keyboard controller and input handler
-- [?] Interrupt handler (WIP)
-- [ ] intrrupt sync (pro-/epilogue model)
+- [X] Interrupt handler
+- [X] kmalloc (using the [linked-list-allocator ](https://github.com/rust-osdev/linked-list-allocator))
+    TODO: implement my own
+- [?] intrrupt sync (pro-/epilogue model)
 - [?] Threading (WIP)
 - [ ] Scheduler (single CPU)
 - [ ] Timer Interrupt

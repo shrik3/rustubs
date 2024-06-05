@@ -274,7 +274,7 @@ pdp1:
 pt_end:
 ; reserve 8MiB for frame alloc.
 ; (see linker file)
-[SECTION .global_free_page_stack]
-free_page_stack:
-	resb   8388608
-	alignb 4096
+;[SECTION .global_free_page_stack]
+;free_page_stack:
+;	resb   8388608
+;	alignb 4096

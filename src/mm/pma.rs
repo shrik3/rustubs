@@ -8,6 +8,12 @@ extern "C" {
 	fn ___FREE_PAGE_STACK__();
 }
 
+// disabled for now
+// lazy_static! {
+// 	pub static ref GLOBAL_PMA: Mutex<pma::PageStackAllocator> =
+// 		Mutex::new(pma::PageStackAllocator::new());
+// }
+
 /// There should only be one global instance of this.
 pub struct PageStackAllocator {
 	page_stack: &'static mut [u64],

@@ -1,5 +1,3 @@
-// exported symbols from asm/linker.
-// They are always unsafe.
 extern "C" {
 	fn ___KERNEL_PM_START__();
 	fn ___KERNEL_PM_END__();
@@ -7,25 +5,29 @@ extern "C" {
 	fn ___BSS_END__();
 }
 
+// ANY ADDRESS FROM PHYSICAL MAPPING IS UNSAFE BECAUSE THE LOW MEMORY MAPPING
+// WILL BE DROPPED FOR USERSPACE
+// TODO: create VMAs in the MM struct
 #[inline]
-pub fn pmap_kernel_start() -> u64 {
+pub unsafe fn pmap_kernel_start() -> u64 {
 	___KERNEL_PM_START__ as u64
 }
 
 #[inline]
-pub fn pmap_kernel_end() -> u64 {
+pub unsafe fn pmap_kernel_end() -> u64 {
 	___KERNEL_PM_END__ as u64
 }
 
 #[inline]
-pub fn vmap_kernel_start() -> u64 {
+pub unsafe fn vmap_kernel_start() -> u64 {
 	pmap_kernel_start() + Mem::KERNEL_OFFSET
 }
 
 #[inline]
-pub fn vmap_kernel_end() -> u64 {
+pub unsafe fn vmap_kernel_end() -> u64 {
 	pmap_kernel_end() + Mem::KERNEL_OFFSET
 }
+// ABOVE ONLY VALID BEFORE DROPPING LOWER MEMORY MAPPING -----//
 
 #[inline]
 pub fn bss_start() -> u64 {
@@ -53,8 +55,6 @@ impl Mem {
 	pub const K: u64 = 1024;
 	pub const M: u64 = 1024 * Mem::K;
 	pub const G: u64 = 1024 * Mem::M;
-	// physical memory layout: qemu defaults to 128 MiB phy Memory
-	pub const PHY_TOP: u64 = 128 * Mem::M;
 	// 4 lv 4K paging
 	pub const PAGE_SIZE: u64 = 0x1000;
 	pub const PAGE_SHIFT: u64 = 12;
@@ -67,16 +67,21 @@ impl Mem {
 	pub const L2_MASK: u64 = 0x1ff << Mem::L2_SHIFT;
 	pub const L3_SHIFT: u8 = 12;
 	pub const L3_MASK: u64 = 0x1ff << Mem::L3_SHIFT;
-	pub const PHY_PAGES: u64 = Mem::PHY_TOP >> Mem::PAGE_SHIFT;
+	// 64 GiB available memory
+	pub const MAX_PHY_MEM: u64 = 0x1000000000;
+	// we should have at least 64 MiB free physical memory (excluding the kernel it self)
+	pub const MIN_PHY_MEM: u64 = 64 * Self::M;
 	// size of frame allocator bitmap: number of physical frames / 8 for 128M
 	// memory (37268) 4k pages, 37268 bits are needed, hence
 	// 4096 bytes, exactly one page!
-	pub const PHY_BM_SIZE: u64 = Mem::PHY_PAGES >> 3;
 	pub const ID_MAP_START: u64 = 0xffff_8000_0000_0000;
 	pub const ID_MAP_END: u64 = 0xffff_8010_0000_0000;
+	// kernel image:0xffff_8020_0000_0000 ~ 0xffff_802f_0000_0000;
 	pub const KERNEL_OFFSET: u64 = 0xffff_8020_0000_0000;
-	// 64 GiB available memory
-	pub const MAX_PHY_MEM: u64 = 0x1000000000;
+	// kernel heap: 0xffff_8030_0000_0000 ~ 0xffff_803f_0000_0000;
+	// (64 GiB)
+	pub const KERNEL_HEAP_START: u64 = 0xffff_8030_0000_0000;
+	pub const KERNEL_HEAP_END: u64 = 0xffff_8040_0000_0000;
 }
 
 // convert VA <-> PA wrt. the kernel id mapping
