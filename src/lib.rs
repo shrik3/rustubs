@@ -22,7 +22,6 @@ use machine::key::Modifiers;
 use machine::multiboot;
 use machine::serial::Serial;
 
-#[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
 	println!("{}", info);

@@ -3,22 +3,12 @@
 # for those (me included) who are not sure about
 # the building process.
 # TODO reorganize...
-# TODO add dependencies (.d) if necessary but I don't think so...
-#	 the librustubs is cargo self-contained), others are asm code,
-#	 for which dep files are not needed
-#	 And .. I don't think I'll add c/c++ files to this project..
 # TODO replace hardcoded values with variables
-# TODO there can be more options of grub-mkrescue
-# TODO put the startup.s elsewhere (I don't like it in the root dir)
-# TODO maybe put the bootdisk.iso in the build dir too ..
-
 # verbose for testing; VERBOSE=@ to turn off..
 VERBOSE=@
 BUILD = build
 ARCH = x86_64
-ASM = nasm
-ASMOBJFORMAT = elf64
-ASMFLAGS = -w-zeroing
+NASMFLAGS = -w-zeroing -f elf64
 LINKER_SCRIPT = ./defs/$(ARCH)-hm-linker.ld
 CARGO_XBUILD_TARGET = ./defs/$(ARCH)-rustubs.json
 CARGO_XBUILD_FLAGS =
@@ -30,26 +20,26 @@ ASM_SOURCES = $(shell find ./src -name "*.s")
 ASM_OBJECTS = $(patsubst %.s,_%.o, $(notdir $(ASM_SOURCES)))
 # I don't like this style... but what can I do?
 ASMOBJ_PREFIXED = $(addprefix $(BUILD)/,$(ASM_OBJECTS))
+RUST_OBJECT = target/$(ARCH)-rustubs/$(RUST_BUILD)/librustubs.a
 # Setting directories to look for missing source files
 VPATH = $(sort $(dir $(ASM_SOURCES)))
-
-
 ifneq ($(filter --release,$(CARGO_XBUILD_FLAGS)),)
     RUST_BUILD = release
 else
 	RUST_BUILD = debug
 endif
 
-RUST_OBJECT = target/$(ARCH)-rustubs/$(RUST_BUILD)/librustubs.a
-
 all: bootdisk.iso
 
 bootdisk.iso : $(BUILD)/kernel
 	@echo "---BUILDING BOOTDISK IMAGE---"
 	$(VERBOSE) cp $< isofiles/boot/
-	$(VERBOSE) grub-mkrescue -d /usr/lib/grub/i386-pc --locales=en@piglatin --themes=none -o bootdisk.iso isofiles > /dev/null 2>&1
+	$(VERBOSE) grub-mkrescue -d /usr/lib/grub/i386-pc \
+		--locales=en@piglatin --themes=none \
+		-o bootdisk.iso isofiles > /dev/null 2>&1
 
-# Note: explicitly tell the linker to use startup: as the entry point (we have no main here)
+# Note: explicitly tell the linker to use startup: as the entry point (we have
+# no main here)
 $(BUILD)/kernel : rust_kernel startup.o $(ASMOBJ_PREFIXED)
 	@echo "---LINKING ... ---"
 	$(VERBOSE) ld $(LDFLAGS) -T $(LINKER_SCRIPT) -o $@ $(BUILD)/startup.o $(ASMOBJ_PREFIXED) $(RUST_OBJECT)
@@ -58,22 +48,21 @@ $(BUILD)/kernel : rust_kernel startup.o $(ASMOBJ_PREFIXED)
 $(BUILD)/_%.o : %.s | $(BUILD)
 	@echo "---ASM		$@"
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
-	$(VERBOSE) $(ASM) -f $(ASMOBJFORMAT) $(ASMFLAGS) -o $@ $<
+	$(VERBOSE) $(ASM) $(ASMFLAGS) -o $@ $<
 
-
-# install xbuild first. (cargo install xbuild)
-# Compile the rust part: note that the the cargo crate is of type [staticlib], if you don't
-# define this, the linker will have troubles, especially when we use a "no_std" build
+# Compile the rust part: note that the the cargo crate is of type [staticlib],
+# if you don't define this, the linker will have troubles, especially when we
+# use a "no_std" build
 rust_kernel: check
 	@echo "---BUILDING RUST KERNEL---"
 	RUSTFLAGS="$(RUSTC_FLAGS)" cargo build --target $(CARGO_XBUILD_TARGET) $(CARGO_XBUILD_FLAGS)
 
-# need nasm
+# compile the assembly source
 # TODO make this arch dependent
 startup.o: boot/startup-$(ARCH).s | $(BUILD)
 	@echo "---ASM		$@"
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
-	$(VERBOSE) $(ASM) -f $(ASMOBJFORMAT) $(ASMFLAGS) -o $(BUILD)/startup.o boot/startup-$(ARCH).s
+	$(VERBOSE) nasm $(NASMFLAGS) -o $(BUILD)/startup.o boot/startup-$(ARCH).s
 
 .PHONY: $(BUILD)
 $(BUILD):
@@ -99,8 +88,8 @@ gdb:
 	gdb -x /tmp/gdbcommands.$(shell id -u) build/kernel
 
 qemu-gdb: bootdisk.iso
-	@echo "target remote localhost:$(shell echo $$(( $$(id -u) % (65536 - 1024) + 1024 )))" > /tmp/gdbcommands.$(shell id -u)
-	@qemu-system-x86_64 -drive file=bootdisk.iso,format=raw -k en-us -S -gdb tcp::$(shell echo $$(( $$(id -u) % (65536 - 1024) + 1024 ))) -serial mon:stdio
+	@echo "target remote localhost:9876" > /tmp/gdbcommands.$(shell id -u)
+	@qemu-system-x86_64 -drive file=bootdisk.iso,format=raw -k en-us -S -gdb tcp::9876 -serial mon:stdio
 
 test:
 	@echo "---BUILD DIR---"
@@ -111,6 +100,5 @@ test:
 	@echo $(ASM_OBJECTS)
 	@echo "---ASM OBJ PREFIXED"
 	@echo $(ASMOBJ_PREFIXED)
-
 
 .PHONY: clean qemu test
