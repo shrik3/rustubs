@@ -82,6 +82,11 @@ impl Mem {
 	// (64 GiB)
 	pub const KERNEL_HEAP_START: u64 = 0xffff_8030_0000_0000;
 	pub const KERNEL_HEAP_END: u64 = 0xffff_8040_0000_0000;
+	// unlike the initial "thread" that has 64K stack, new tasks have 4 pages of
+	// kernel stack.
+	pub const KERNEL_STACK_SIZE: u64 = 0x4000;
+	pub const KERNEL_STACK_MASK: u64 = Self::KERNEL_STACK_SIZE - 1;
+	pub const KERNEL_STACK_TASK_MAGIC: u64 = 0x1A2B3C4D5E6F6969;
 }
 
 // convert VA <-> PA wrt. the kernel id mapping
