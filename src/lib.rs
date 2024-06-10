@@ -21,6 +21,7 @@ use machine::cgascr::CGAScreen;
 use machine::key::Modifiers;
 use machine::multiboot;
 use machine::serial::Serial;
+use proc::task::Task;
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
@@ -58,6 +59,7 @@ pub extern "C" fn _entry() -> ! {
 	let mut test_vec = Vec::<&str>::new();
 	test_vec.push("hello ");
 	test_vec.push("world");
+	_test_proc_switch_to();
 	for s in test_vec.iter() {
 		println!("{s}");
 	}
@@ -77,4 +79,26 @@ pub unsafe fn _test_pf() {
 	use core::slice;
 	let name_buf = slice::from_raw_parts_mut(0xffffffffffff0000 as *mut u64, 10);
 	asm!("mov [rdi], rax", in("rdi") name_buf.as_mut_ptr());
+}
+
+pub fn _test_proc_switch_to() {
+	use crate::arch::x86_64::arch_regs::Context64;
+	use crate::mm::KSTACK_ALLOCATOR;
+	use crate::proc::task::*;
+	let sp = unsafe { KSTACK_ALLOCATOR.lock().allocate() };
+	println!("new task on {:#X}", sp);
+	let new_task = unsafe {
+		Task::settle_on_stack(
+			sp,
+			Task {
+				magic: Mem::KERNEL_STACK_TASK_MAGIC,
+				task_id: 42,
+				kernel_stack: sp,
+				state: TaskState::Meow,
+				context: Context64::default(),
+			},
+		)
+	};
+	new_task.prepare_context(_task_entry as u64);
+	unsafe { context_swap_to(&(new_task.context) as *const _ as u64) }
 }

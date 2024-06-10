@@ -1,6 +1,8 @@
 use crate::defs::*;
 use crate::io::*;
 use crate::machine::multiboot;
+use alloc::alloc::{alloc, dealloc, Layout};
+use alloc::vec::Vec;
 use core::ops::Range;
 use linked_list_allocator::LockedHeap;
 
@@ -11,6 +13,10 @@ use spin::Mutex;
 
 #[global_allocator]
 static ALLOCATOR: LockedHeap = LockedHeap::empty();
+
+lazy_static! {
+	pub static ref KSTACK_ALLOCATOR: Mutex<KStackAllocator> = Mutex::new(KStackAllocator::new());
+}
 
 /// half measure: simply initialize the linkedlist allocator
 pub fn init() {
@@ -44,6 +50,8 @@ pub fn init() {
 			);
 			r.start = unsafe { pmap_kernel_end() };
 		}
+		// TODO this is pretty ugly, consider 1. impl length() for Range and 2.
+		// take reference instead of copy.
 		match largest_phy_range {
 			None => largest_phy_range = Some(r),
 			Some(ref lr) => {
@@ -74,4 +82,54 @@ pub fn init() {
 /// which operates on the id map regions.
 pub fn _init_pma() {
 	todo!()
+}
+
+/// wrapper around the global allocator with caching
+pub struct KStackAllocator {
+	pool: Vec<u64>,
+}
+
+/// TODO: the heap allocator is primitive atm and it may fail to allocate new
+/// kernel stack (64K here) due to fragmentation. It may be a good idea to
+/// reserve some memory during system init to guarantee that we can at least
+impl KStackAllocator {
+	const KSTACK_ALLOC_POOL_CAP: usize = 16;
+	const KSTACK_LAYOUT: Layout = unsafe {
+		Layout::from_size_align_unchecked(
+			Mem::KERNEL_STACK_SIZE as usize,
+			Mem::KERNEL_STACK_SIZE as usize,
+		)
+	};
+
+	pub fn new() -> Self {
+		let p = Vec::with_capacity(Self::KSTACK_ALLOC_POOL_CAP);
+		Self { pool: p }
+	}
+
+	/// unsafe because this may fail (same as populate)
+	pub unsafe fn allocate(&mut self) -> u64 {
+		if let Some(addr) = self.pool.pop() {
+			return addr;
+		} else {
+			return alloc(Self::KSTACK_LAYOUT) as u64;
+		}
+	}
+
+	/// unsafe because you must make sure you give back something the allocator gave
+	/// you. Otherwise you break the kernel heap allocator.
+	pub unsafe fn free(&mut self, addr: u64) {
+		if self.pool.len() < Self::KSTACK_ALLOC_POOL_CAP {
+			self.pool.push(addr);
+		} else {
+			dealloc(addr as *mut u8, Self::KSTACK_LAYOUT);
+		}
+	}
+
+	/// unsafe because this could OOM if you stress the allocator too much
+	/// (although unlikely)
+	pub unsafe fn populate(&mut self) {
+		for _ in 0..Self::KSTACK_ALLOC_POOL_CAP {
+			self.pool.push(alloc(Self::KSTACK_LAYOUT) as u64);
+		}
+	}
 }

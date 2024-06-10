@@ -15,6 +15,21 @@ pub struct Context64 {
 	pub fpu: [u8; 108],
 }
 
+impl Default for Context64 {
+	fn default() -> Context64 {
+		Context64 {
+			rbx: 0,
+			r12: 0,
+			r13: 0,
+			r14: 0,
+			r15: 0,
+			rbp: 0,
+			rsp: 0,
+			fpu: [0; 108],
+		}
+	}
+}
+
 /// arch specific registers
 #[repr(C)]
 #[repr(packed)]
