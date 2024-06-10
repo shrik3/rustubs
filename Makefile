@@ -48,7 +48,7 @@ $(BUILD)/kernel : rust_kernel startup.o $(ASMOBJ_PREFIXED)
 $(BUILD)/_%.o : %.s | $(BUILD)
 	@echo "---ASM		$@"
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
-	$(VERBOSE) $(ASM) $(ASMFLAGS) -o $@ $<
+	$(VERBOSE) nasm $(NASMFLAGS) -o $@ $<
 
 # Compile the rust part: note that the the cargo crate is of type [staticlib],
 # if you don't define this, the linker will have troubles, especially when we
