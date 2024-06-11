@@ -1,6 +1,7 @@
 pub mod pic_8259;
 pub mod pit;
 use crate::arch::x86_64::arch_regs::TrapFrame;
+use crate::arch::x86_64::is_int_enabled;
 use crate::arch::x86_64::paging::fault;
 use crate::io::*;
 use core::arch::asm;
@@ -100,6 +101,27 @@ pub fn interrupt_enable() {
 pub fn interrupt_disable() {
 	unsafe {
 		asm!("cli");
+	}
+}
+
+#[inline]
+/// irq_save() disables all interrupts and returns the previous state
+pub fn irq_save() -> bool {
+	if is_int_enabled() {
+		interrupt_disable();
+		return true;
+	} else {
+		return false;
+	}
+}
+
+#[inline]
+/// irq_restore only re-enable irq if was_enabled==true.
+/// it will not disable irq regardless the was_enabled value. This function
+/// should only be called to restore irq based on previous irq_save();
+pub fn irq_restore(was_enabled: bool) {
+	if was_enabled {
+		interrupt_enable();
 	}
 }
 

@@ -39,6 +39,8 @@ impl Scheduler {
 
 	// pop front, push back
 	pub fn do_schedule() {
+		// TODO: remove this spinlock, because we should protect the scheduler
+		// with irq_save/restore
 		if SCHEDULER.is_locked() {
 			panic!("scheduler lock has been taken, something wrong");
 		}
