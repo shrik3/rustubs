@@ -43,28 +43,24 @@ impl Scheduler {
 			panic!("scheduler lock has been taken, something wrong");
 		}
 		let mut lock_guard = SCHEDULER.lock();
-		let t = lock_guard.run_queue.pop_front();
-		match t {
-			None => {
-				panic!("run queue empty, how? what do I do??")
-			}
-			Some(next_tid) => {
-				let next_task = next_tid.get_task_ref_mut();
-				let me = Task::current().unwrap();
-				lock_guard.run_queue.push_back(next_tid);
-				if me.pid == next_task.pid {
-					return;
-				}
-				// make sure we release the scheduler lock before doing context
-				// swap
-				drop(lock_guard);
-				unsafe {
-					context_swap(
-						&(me.context) as *const _ as u64,
-						&(next_task.context) as *const _ as u64,
-					);
-				}
-			}
+		let next_tid = lock_guard
+			.run_queue
+			.pop_front()
+			.expect("empty run queue, how?");
+		let next_task = next_tid.get_task_ref_mut();
+		let me = Task::current().unwrap();
+		lock_guard.run_queue.push_back(next_tid);
+		if me.pid == next_task.pid {
+			return;
+		}
+		// make sure we release the scheduler lock before doing context
+		// swap
+		drop(lock_guard);
+		unsafe {
+			context_swap(
+				&(me.context) as *const _ as u64,
+				&(next_task.context) as *const _ as u64,
+			);
 		}
 	}
 
