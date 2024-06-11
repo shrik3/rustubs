@@ -59,10 +59,13 @@ pub enum TaskState {
 pub extern "C" fn _task_entry() -> ! {
 	let t = Task::current().unwrap();
 	println!("I'm Mr.Meeseeks {}, look at me~", t.pid);
-	Scheduler::do_schedule();
-	println!("I'm Mr.Meeseeks {}, look at me~", t.pid);
-	Scheduler::do_schedule();
-	unsafe { asm!("cli; hlt") };
+	loop {
+		KBCTL_GLOBAL.lock().fetch_key();
+		if let Some(k) = KBCTL_GLOBAL.lock().consume_key() {
+			println! {"thread {} got key: {}",t.pid ,k.asc}
+		}
+		Scheduler::do_schedule();
+	}
 	panic!("should not reach");
 }
 
