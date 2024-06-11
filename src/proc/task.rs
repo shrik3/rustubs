@@ -1,6 +1,9 @@
 use crate::arch::x86_64::arch_regs;
+use crate::arch::x86_64::arch_regs::Context64;
 use crate::defs::*;
 use crate::io::*;
+use crate::mm::KSTACK_ALLOCATOR;
+use crate::proc::sched::*;
 use core::arch::asm;
 use core::ptr;
 
@@ -10,7 +13,7 @@ use core::ptr;
 /// NOTE: we don't use repr(C) or repr(packed) here
 pub struct Task {
 	pub magic: u64,
-	pub task_id: u32,
+	pub pid: u32,
 	/// note that this points to the stack bottom (low addr)
 	pub kernel_stack: u64,
 	// pub user_stack: u64,
@@ -24,6 +27,7 @@ pub struct Task {
 /// the smart pointer types automatically drops the owned values when their
 /// lifetime end. For now want to have manual control of when, where and how I
 /// drop the Task because there could be more plans than just freeing the memory
+#[derive(Copy, Clone, Debug)]
 pub struct TaskId(u64);
 
 impl TaskId {
@@ -31,12 +35,12 @@ impl TaskId {
 		Self { 0: addr }
 	}
 
-	pub unsafe fn get_task_ref(&self) -> &Task {
-		&*(self.0 as *mut Task)
+	pub fn get_task_ref(&self) -> &Task {
+		return unsafe { &*(self.0 as *mut Task) };
 	}
 
-	pub unsafe fn get_task_ref_mut(&self) -> &mut Task {
-		&mut *(self.0 as *mut Task)
+	pub fn get_task_ref_mut(&self) -> &mut Task {
+		return unsafe { &mut *(self.0 as *mut Task) };
 	}
 }
 
@@ -53,12 +57,11 @@ pub enum TaskState {
 
 #[no_mangle]
 pub extern "C" fn _task_entry() -> ! {
-	println!("I'm Mr.Meeseeks, look at me~");
 	let t = Task::current().unwrap();
-	println!(
-		"I am PID {}, kernel stack {:#X}, task state {:#X?}",
-		t.task_id, t.kernel_stack, t.state
-	);
+	println!("I'm Mr.Meeseeks {}, look at me~", t.pid);
+	Scheduler::do_schedule();
+	println!("I'm Mr.Meeseeks {}, look at me~", t.pid);
+	Scheduler::do_schedule();
 	unsafe { asm!("cli; hlt") };
 	panic!("should not reach");
 }
@@ -116,5 +119,26 @@ impl Task {
 			return None;
 		}
 		return Some(t);
+	}
+
+	/// used for trivial tests
+	pub fn create_dummy(pid: u32) -> TaskId {
+		let sp = unsafe { KSTACK_ALLOCATOR.lock().allocate() };
+		let tid = TaskId::new(sp);
+		println!("new task on {:#X}", sp);
+		let nt = unsafe {
+			Task::settle_on_stack(
+				sp,
+				Task {
+					magic: Mem::KERNEL_STACK_TASK_MAGIC,
+					pid,
+					kernel_stack: sp,
+					state: TaskState::Meow,
+					context: Context64::default(),
+				},
+			)
+		};
+		nt.prepare_context(_task_entry as u64);
+		tid
 	}
 }

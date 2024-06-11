@@ -24,19 +24,22 @@ shitty code, I'm a rust beginner.
 - [X] kmalloc (using the [linked-list-allocator ](https://github.com/rust-osdev/linked-list-allocator))
     TODO: implement my own
 - [?] intrrupt sync (pro-/epilogue model)
-- [?] Threading (WIP)
-- [ ] Scheduler (single CPU)
+- [x] Threading
+- [x] Scheduler (single CPU)
 - [ ] Timer Interrupt
 - [ ] Synchronization Primitives
 - [ ] asm! Wrappers for basic instructions
 
+MISC
+- [ ] FP and SSE state
+
 Beyond StuBS
-- [ ] Task Descriptor structures
+- [X] Upperhalf Kernel
+- [X] Task Descriptor structures
 - [X] Paging: PMA and paging structures
 - [?] Paging: pagefault handler (WIP)
+- [?] Address Space for each Process
 - [ ] user heap and mmap
-- [X] Upperhalf Kernel
-- [ ] Address Space for each Process
 - [ ] in memory FS
 - [ ] user library
 - [ ] syscall

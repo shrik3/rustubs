@@ -3,6 +3,7 @@
 #![no_std]
 #![no_main]
 #![feature(const_option)]
+#![feature(try_with_capacity)]
 mod arch;
 mod defs;
 mod ds;
@@ -11,6 +12,7 @@ mod machine;
 mod mm;
 mod proc;
 extern crate alloc;
+use crate::proc::sched::*;
 use alloc::vec::Vec;
 use arch::x86_64::interrupt;
 use arch::x86_64::interrupt::pic_8259;
@@ -82,23 +84,10 @@ pub unsafe fn _test_pf() {
 }
 
 pub fn _test_proc_switch_to() {
-	use crate::arch::x86_64::arch_regs::Context64;
-	use crate::mm::KSTACK_ALLOCATOR;
-	use crate::proc::task::*;
-	let sp = unsafe { KSTACK_ALLOCATOR.lock().allocate() };
-	println!("new task on {:#X}", sp);
-	let new_task = unsafe {
-		Task::settle_on_stack(
-			sp,
-			Task {
-				magic: Mem::KERNEL_STACK_TASK_MAGIC,
-				task_id: 42,
-				kernel_stack: sp,
-				state: TaskState::Meow,
-				context: Context64::default(),
-			},
-		)
-	};
-	new_task.prepare_context(_task_entry as u64);
-	unsafe { context_swap_to(&(new_task.context) as *const _ as u64) }
+	SCHEDULER.lock().insert_task(Task::create_dummy(1));
+	SCHEDULER.lock().insert_task(Task::create_dummy(2));
+	SCHEDULER.lock().insert_task(Task::create_dummy(3));
+	SCHEDULER.lock().insert_task(Task::create_dummy(4));
+	SCHEDULER.lock().insert_task(Task::create_dummy(5));
+	Scheduler::kickoff();
 }
