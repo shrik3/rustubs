@@ -4,13 +4,13 @@
 #![no_main]
 #![feature(const_option)]
 #![feature(try_with_capacity)]
-mod arch;
-mod defs;
-mod ds;
-mod io;
-mod machine;
-mod mm;
-mod proc;
+pub mod arch;
+pub mod defs;
+pub mod ds;
+pub mod io;
+pub mod machine;
+pub mod mm;
+pub mod proc;
 extern crate alloc;
 use crate::proc::sched::*;
 use alloc::vec::Vec;
