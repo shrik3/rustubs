@@ -55,13 +55,16 @@ pub extern "C" fn _entry() -> ! {
 		bss_start(),
 		bss_end()
 	);
+	let interval = interrupt::pit::PIT::set_interval(500000);
+	println!("[init] timer interrupt set to {} ns", interval);
 	// busy loop query keyboard
 	interrupt::interrupt_enable();
 	pic_8259::allow(PicDeviceInt::KEYBOARD);
 	let mut test_vec = Vec::<&str>::new();
+	_test_proc_switch_to();
+	// default test, should not reach
 	test_vec.push("hello ");
 	test_vec.push("world");
-	_test_proc_switch_to();
 	for s in test_vec.iter() {
 		println!("{s}");
 	}
@@ -89,5 +92,6 @@ pub fn _test_proc_switch_to() {
 	SCHEDULER.lock().insert_task(Task::create_dummy(3));
 	SCHEDULER.lock().insert_task(Task::create_dummy(4));
 	SCHEDULER.lock().insert_task(Task::create_dummy(5));
+	pic_8259::allow(PicDeviceInt::TIMER);
 	Scheduler::kickoff();
 }
