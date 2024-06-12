@@ -149,7 +149,7 @@ here is how the interrupt handler work:
  |               v                                           |
  |   [EXEC. HANDLER.PROLOGUE]                                |
  |               |                                           |
- |               |                                           |
+ |               |            (optionally clear the queue)   |
  |        _______V______     N          _______________________
  |       <needs epilogue?>------->     [RESTORE CTX AND .. IRET]------> LEVEL 1
  |        ```````````````               ``^````````````^```````

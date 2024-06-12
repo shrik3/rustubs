@@ -7,6 +7,7 @@ use crate::arch::x86_64::paging::fault;
 use crate::defs::IntNumber as INT;
 use crate::io::*;
 use crate::machine::interrupt::plugbox::IRQ_GATE_MAP;
+use crate::proc::sync::*;
 use core::arch::asm;
 use core::slice;
 // TODO use P2V for extern symbol addresses
@@ -82,7 +83,26 @@ extern "C" fn trap_gate(nr: u16, fp: u64) {
 }
 
 #[inline]
-/// handle_irq assumes the interrupt is disabled when called
+/// handle_irq assumes the interrupt is **enabled** when called
+unsafe fn clear_epilogue_queue() {
+	let mut epi: Option<EpilogueEntrant>;
+	loop {
+		interrupt_disable();
+		epi = EPILOGUE_QUEUE.l3_get_ref_mut().queue.pop_front();
+		if epi.is_none() {
+			break;
+		}
+		interrupt_enable();
+		epi.unwrap().call();
+	}
+	// you need to make sure the interrupt is disabled at this point
+	assert!(!is_int_enabled());
+	LEAVE_L2();
+}
+
+#[inline]
+/// handle_irq assumes the interrupt is **disabled** when called.
+/// this will also make sure interrupt is disabled when it returns
 unsafe fn handle_irq(nr: u16) {
 	let irq_gate = match IRQ_GATE_MAP.get(&nr) {
 		None => {
@@ -92,7 +112,24 @@ unsafe fn handle_irq(nr: u16) {
 	};
 	// execute the prologue
 	irq_gate.call_prologue();
-	if let Some(epi) = irq_gate.get_epilogue() {
+	let epi = irq_gate.get_epilogue();
+	if epi.is_none() {
+		// TODO? we could also take a look into the epilogue queue here when the
+		// current irq doesn't have an epilogue itself. But optimistically, if
+		// the epilogue queue is not empty, it's very likely someone else is
+		// already working on it, so we just leave for now....
+		return;
+	}
+	let epi = epi.unwrap();
+	if !IS_L2_AVAILABLE() {
+		EPILOGUE_QUEUE.l3_get_ref_mut().queue.push_back(epi);
+		return;
+	}
+	// L2 is available, we run the epilogue now, also clear the queue before
+	// return
+	ENTER_L2();
+	interrupt_enable();
+	unsafe {
 		epi.call();
 	}
 	// IRQ IS DISABLED BEFORE THIS POINT, HENCE IMPLICITLY L3

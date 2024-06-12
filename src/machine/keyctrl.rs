@@ -10,6 +10,7 @@
 //!
 
 use self::super::key::*;
+use crate::arch::x86_64::is_int_enabled;
 use crate::io::*;
 use crate::machine::device_io::*;
 use crate::proc::sync::IRQGate;
@@ -43,10 +44,12 @@ pub struct KeyboardDriver {}
 
 impl IRQHandlerEpilogue for KeyboardDriver {
 	unsafe fn do_prologue() {
-		println!("[PROLOGUE] keyboard driver");
+		let enabled = is_int_enabled();
+		println!("[PROLOGUE] keyboard driver irq {enabled}");
 	}
 	unsafe fn do_epilogue() {
-		println!("[EPILOGUE] keyboard driver");
+		let enabled = is_int_enabled();
+		println!("[EPILOGUE] keyboard driver irq {enabled}");
 	}
 }
 

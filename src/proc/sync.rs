@@ -4,14 +4,14 @@
 use crate::machine::interrupt::{irq_restore, irq_save};
 use alloc::collections::VecDeque;
 use core::cell::SyncUnsafeCell;
-use core::sync::atomic::AtomicBool;
+use core::sync::atomic::{AtomicBool, Ordering};
 pub static EPILOGUE_QUEUE: L3SyncCell<L2SyncQueue<EpilogueEntrant>> =
 	L3SyncCell::new(L2SyncQueue::new());
 /// indicates whether a task is running in L2. Maybe make it L3SyncCell as well.
-pub static L2_AVAILABLE: AtomicBool = AtomicBool::new(true);
+static L2_AVAILABLE: AtomicBool = AtomicBool::new(true);
 /// the synchronized queue for Level 2 epilogues
 pub struct L2SyncQueue<T> {
-	queue: VecDeque<T>,
+	pub queue: VecDeque<T>,
 }
 
 impl<T> L2SyncQueue<T> {
@@ -20,6 +20,22 @@ impl<T> L2SyncQueue<T> {
 			queue: VecDeque::new(),
 		}
 	}
+}
+
+#[allow(non_snake_case)]
+pub fn IS_L2_AVAILABLE() -> bool {
+	return L2_AVAILABLE.load(Ordering::Relaxed);
+}
+
+#[allow(non_snake_case)]
+pub fn ENTER_L2() {
+	let r = L2_AVAILABLE.compare_exchange(true, false, Ordering::Relaxed, Ordering::Relaxed);
+	assert_eq!(r, Ok(true));
+}
+#[allow(non_snake_case)]
+pub fn LEAVE_L2() {
+	let r = L2_AVAILABLE.compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed);
+	assert_eq!(r, Ok(false));
 }
 
 #[derive(Copy, Clone)]
