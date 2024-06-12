@@ -1,9 +1,12 @@
 pub mod pic_8259;
 pub mod pit;
+pub mod plugbox;
 use crate::arch::x86_64::arch_regs::TrapFrame;
 use crate::arch::x86_64::is_int_enabled;
 use crate::arch::x86_64::paging::fault;
+use crate::defs::IntNumber as INT;
 use crate::io::*;
+use crate::machine::interrupt::plugbox::IRQ_GATE_MAP;
 use core::arch::asm;
 use core::slice;
 // TODO use P2V for extern symbol addresses
@@ -65,31 +68,53 @@ impl GateDescriptor64 {
 
 #[no_mangle]
 #[cfg(target_arch = "x86_64")]
-extern "C" fn trap_gate(_nr: u16, fp: u64) {
-	interrupt_disable();
-	// let ctx_p = ptregs_addr as *mut PtRegs;
-	// let ctx_p = ctx_p.cast::<PtRegs>();
-	// let ctx = unsafe { &mut *ctx_p };
-	// NOTE: the interrupt handler should NEVER block on a lock; in this case
-	// the CGA screen is protected by a spinlock. The lock holder will never be
-	// able to release the lock if the interrupt handler blocks on it. Try
-	// spamming the keyboard with the following line of code uncommented: it
-	// will deadlock!
-	// TODO this is only a POC, use proper defines and match later
-	let _frame = unsafe { &mut *(fp as *mut TrapFrame) };
-	if _nr == 0xe {
-		// Pagefault
-		let fault_address = fault::get_fault_addr();
-		fault::page_fault_handler(_frame, fault_address)
-	} else if _nr < 0x20 {
-		println!("[trap[ {:#X?}", _frame);
-		unsafe {
-			asm!("hlt");
-		}
+extern "C" fn trap_gate(nr: u16, fp: u64) {
+	// cpu automatically masks interrupts so we are already in L3
+	if nr < 0x20 {
+		// handle exception
+		handle_exception(nr, fp);
 	} else {
-		// deal with irq
+		unsafe { handle_irq(nr) };
+		// handle irq
 	}
+
 	interrupt_enable();
+}
+
+#[inline]
+/// handle_irq assumes the interrupt is disabled when called
+unsafe fn handle_irq(nr: u16) {
+	let irq_gate = match IRQ_GATE_MAP.get(&nr) {
+		None => {
+			panic!("no handler for irq {}", nr);
+		}
+		Some(g) => g,
+	};
+	// execute the prologue
+	irq_gate.call_prologue();
+	if let Some(epi) = irq_gate.get_epilogue() {
+		epi.call();
+	}
+	// IRQ IS DISABLED BEFORE THIS POINT, HENCE IMPLICITLY L3
+}
+
+/// handles exception/faults (nr < 32);
+#[inline]
+fn handle_exception(nr: u16, fp: u64) {
+	let frame = unsafe { &mut *(fp as *mut TrapFrame) };
+	match nr {
+		INT::PAGEFAULT => {
+			// Pagefault
+			let fault_address = fault::get_fault_addr();
+			fault::page_fault_handler(frame, fault_address)
+		}
+		_ => {
+			println!("[trap[ {:#X?}", frame);
+			unsafe {
+				asm!("hlt");
+			}
+		}
+	}
 }
 
 #[inline(always)]

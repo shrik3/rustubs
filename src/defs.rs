@@ -109,3 +109,13 @@ pub fn P2V(pa: u64) -> Option<u64> {
 	}
 	return Some(pa + Mem::ID_MAP_START);
 }
+
+/// interrutp numbers. Not complete, add more when needed
+/// (see docs/interrupt.txt)
+pub struct IntNumber {}
+impl IntNumber {
+	pub const PAGEFAULT: u16 = 0xe;
+	pub const TIMER: u16 = 0x20;
+	pub const KEYBOARD: u16 = 0x21;
+	pub const SYSCALL: u16 = 0x80;
+}

@@ -12,6 +12,8 @@
 use self::super::key::*;
 use crate::io::*;
 use crate::machine::device_io::*;
+use crate::proc::sync::IRQGate;
+use crate::proc::sync::{IRQHandler, IRQHandlerEpilogue};
 use bitflags::bitflags;
 use core::cmp;
 use core::cmp::{Eq, PartialEq};
@@ -32,6 +34,20 @@ pub struct KeyboardController {
 	gather: Option<Key>, // if not collected timely it will be overwritten
 	cport: IOPort,
 	dport: IOPort,
+}
+
+/// we have a global controller, but we can't use it as the "driver" because
+/// drivers should be stateless.
+
+pub struct KeyboardDriver {}
+
+impl IRQHandlerEpilogue for KeyboardDriver {
+	unsafe fn do_prologue() {
+		println!("[PROLOGUE] keyboard driver");
+	}
+	unsafe fn do_epilogue() {
+		println!("[EPILOGUE] keyboard driver");
+	}
 }
 
 struct KeyState {
