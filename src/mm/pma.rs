@@ -1,3 +1,23 @@
+//! (deprecated) a simple stack based 4K physical frame allocator.
+//!
+//! Adcantages
+//! 1. allocation and deallocation is O(1).
+//! 2. can manage fragmented (non-consecutive) memory regions and doesn't suffer
+//!    fragmentation because memory is fully virtualized.
+//!
+//! Limitations
+//! 1. slow initialization: needs to traverse all available pages and push their
+//!    address one by one
+//! 2. can't give continous physical memory of more than 4K
+//! 3. the allocator stack itself requires continous space (it's an array), and
+//!    has a higher storage overhead: every page requires 8 bytes for the
+//!    address, that's `8/4096 == 1/512`.
+//! 4. (kinda?) conflicts kmalloc/vmalloc design in e.g. linux kernel, kmalloc
+//!    manages the __identically mapped__ virtual memory in the kernel address
+//!    space, that is `0xffff800000000000 + 64G` in rustubs, in another word,
+//!    the kmalloc manages the physical memory: obviously this one only gives 4K
+//!    memory and can't work as a kmalloc backend!
+
 use crate::defs::*;
 use crate::io::*;
 use crate::machine::multiboot::MultibootMmap;

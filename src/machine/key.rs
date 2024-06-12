@@ -21,10 +21,10 @@ impl convert::Into<u8> for Key {
 	}
 }
 
-// Technically the *Lock are special keys, instead of Modifiers
-// but we don't need another type FWIW.
-// Mask bits[2:0] to get the leds.
 bitflags! {
+	/// Technically the *Lock are special keys, instead of Modifiers
+	/// but we don't need another type FWIW.
+	/// Mask `bits[2:0]` to get the leds.
 	#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 	pub struct Modifiers:u8 {
 		const NONE			= 0;
@@ -92,7 +92,7 @@ impl Key {
 	}
 }
 
-// scan codes of a few specific keys
+/// scan codes of a few specific keys
 pub enum Scan {
 	F1 = 0x3b,
 	Del = 0x53,

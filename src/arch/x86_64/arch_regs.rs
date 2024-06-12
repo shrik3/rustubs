@@ -1,9 +1,14 @@
-use core::arch::asm;
+//! both [Context64] and [TrapFrame] define architecture specific registers and
+//! combine into the full execution context of a thread.
+//! [Context64] includes the callee saved registers plus FP state, and
+//! [TrapFrame] includes caller saved registers.
 
-/// arch specific registers
+use core::arch::asm;
 #[repr(C)]
 #[repr(packed)]
 #[derive(Debug)]
+/// the Context64 is part of the task struct; it's saved and restored explicitly
+/// on context swap.
 pub struct Context64 {
 	pub rbx: u64,
 	pub r12: u64,
@@ -30,7 +35,8 @@ impl Default for Context64 {
 	}
 }
 
-/// arch specific registers
+/// `TrapFrame` is saved and restored by the interrupt handler assembly code
+/// upon interrupt entry and exit.
 #[repr(C)]
 #[repr(packed)]
 #[derive(Debug)]
@@ -44,10 +50,13 @@ pub struct TrapFrame {
 	pub rdx: u64,
 	pub rcx: u64,
 	pub rax: u64,
+	/// for some exceptions, the CPU automatically pushes an error code (see
+	/// `docs/interrupt.txt`) to the stack. For those who don't have error code,
+	/// we manually push a dummy value (0)
 	pub err_code: u64,
 }
 
-// this will get the current (kernel) stack pointer
+/// get the current stack pointer
 #[inline]
 pub fn get_sp() -> u64 {
 	let sp: u64;

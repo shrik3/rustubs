@@ -1,3 +1,14 @@
+//! Driver for the PS/2 keybard/mouse controller
+//!
+//! beyound OOStuBS:
+//!
+//! The 'gather' field should NEVER have imcomplete state: it should either be a
+//! valid key, or nothing.
+//! TODO what if IO ops fails or timeout?
+//! TODO figure out how to abstract the "interrupt control" layer.
+//! Keyboard controller should not be arch dependent
+//!
+
 use self::super::key::*;
 use crate::io::*;
 use crate::machine::device_io::*;
@@ -6,13 +17,6 @@ use core::cmp;
 use core::cmp::{Eq, PartialEq};
 use core::ffi::c_uchar;
 
-// Driver for the PS/2 keybard/mouse controller
-// beyound OOStuBS:
-// The 'gather' field should NEVER have imcomplete state: it should either be a
-// valid key, or nothing.
-// TODO what if IO ops fails or timeout?
-// TODO figure out how to abstract the "interrupt control" layer.
-// Keyboard controller should not be arch dependent
 #[cfg(target_arch = "x86_64")]
 use crate::arch::x86_64::interrupt::{pic_8259, pic_8259::PicDeviceInt as PD};
 
@@ -82,10 +86,10 @@ impl KeyboardController {
 		self.keystate.modi.toggle(lock);
 		self.update_led();
 	}
-	// in some corner cases, e.g. keyboard control I/O may fail, while the
-	// CAPSLOCK is set and the uppcase table is used for key decoding. So we
-	// never set the leds explicitly, instead we update the leds from the
-	// current keyboard state i.e. keystate.modi
+	/// in some corner cases, e.g. keyboard control I/O may fail, while the
+	/// CAPSLOCK is set and the uppcase table is used for key decoding. So we
+	/// never set the leds explicitly, instead we update the leds from the
+	/// current keyboard state i.e. keystate.modi
 	fn update_led(&self) {
 		let leds = self.keystate.get_leds();
 		// TODO perhaps disable interrupts here

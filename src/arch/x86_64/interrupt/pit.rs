@@ -1,4 +1,5 @@
 // x86 programmable interrupt timer
+// TODO this is a device, should not live under interrupt module
 // TODO there should be an machine level timer abstraction
 use crate::machine::device_io::IOPort;
 pub struct PIT {}

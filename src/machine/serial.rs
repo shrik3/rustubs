@@ -1,6 +1,8 @@
+//! serial output through port 3f8 (qemu), stateless, non-blocking, non-locking,
+//! not thread safe.
+
 use crate::machine::device_io::IOPort;
 use core::{fmt, str};
-/// serial output through port 3f8 (qemu), stateless, not thread safe.
 pub struct Serial {}
 impl Serial {
 	const PORT: IOPort = IOPort::new(0x3f8);

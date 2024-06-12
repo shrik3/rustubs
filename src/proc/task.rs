@@ -10,7 +10,8 @@ use core::ptr;
 /// currently only kernelSp and Context are important.
 /// the task struct will be placed on the starting addr (low addr) of the kernel stack.
 /// therefore we can retrive the task struct at anytime by masking the kernel stack
-/// NOTE: we don't use repr(C) or repr(packed) here
+/// NOTE: we don't use `repr(C)` or `repr(packed)` here
+// TODO: use proper repr
 pub struct Task {
 	pub magic: u64,
 	pub pid: u32,
@@ -23,7 +24,7 @@ pub struct Task {
 
 /// not to confuse with a integer TID. A TaskID identifies a task and __locate__
 /// it. In this case the TaskID wraps around the task struct's address. The
-/// reason why the scheduler doesn't directly store Box<Task> (or alike) is that
+/// reason why the scheduler doesn't directly store `Box<Task>` (or alike) is that
 /// the smart pointer types automatically drops the owned values when their
 /// lifetime end. For now want to have manual control of when, where and how I
 /// drop the Task because there could be more plans than just freeing the memory
@@ -107,7 +108,9 @@ impl Task {
 		self.context.rsp = sp;
 	}
 
-	// stack pointer may have alignment requirement. We do 8 bytes
+	/// get the top kernel stack to initialize stack pointer of new tasks.
+	/// Note that there are often alignment requirements of stack pointer. We do
+	/// 8 bytes here
 	#[inline(always)]
 	fn get_init_kernel_sp(&self) -> u64 {
 		let mut sp = self.kernel_stack + Mem::KERNEL_STACK_SIZE - 1;
@@ -115,6 +118,14 @@ impl Task {
 		sp
 	}
 
+	/// return a reference of the current running task struct. Return none of
+	/// the magic number is currupted on the kernel stack, this is because
+	/// 1. the task struct is not currectly put on the stack
+	/// 2. trying to get the current of the initial task, who has no task struct
+	///       on the stack
+	/// 3. the stack is corrupted (due to e.g. stack overflow)
+	///
+	/// TODO add a canary also at the end of the task struct and check it.
 	pub fn current<'a>() -> Option<&'a mut Task> {
 		let addr = arch_regs::get_sp() & !Mem::KERNEL_STACK_MASK;
 		let t = unsafe { &mut *(addr as *mut Task) };

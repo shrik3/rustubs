@@ -1,11 +1,11 @@
-// use crate::defs::Range;
+//! provide functions to parse information provided by grub multiboot
+//! see docs/multiboot.txt
+
 use crate::io::*;
 use core::fmt;
 use core::mem::size_of;
 use core::ops::Range;
 use lazy_static::lazy_static;
-// provide functions to parse information provided by grub multiboot
-// see docs/multiboot.txt
 extern "C" {
 	static mb_magic: u32;
 	static mb_info_addr: u32;

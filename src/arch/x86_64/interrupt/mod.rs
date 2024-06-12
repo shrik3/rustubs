@@ -7,11 +7,11 @@ use crate::io::*;
 use core::arch::asm;
 use core::slice;
 // TODO use P2V for extern symbol addresses
-// number of entries in IDT
+/// number of entries in IDT
 pub const IDT_CAPACITY: usize = 256;
-// 32 exceptions + 16 irqs from PIC = 48 valid interrupts
+/// 32 exceptions + 16 irqs from PIC = 48 valid interrupts
 pub const IDT_VALID: usize = 48;
-// size of interrupt handler wrapper routine (vector)
+/// size of interrupt handler wrapper routine (vector)
 pub const VECTOR_SIZE: u64 = 16;
 extern "C" {
 	fn vectors_start();
@@ -19,18 +19,20 @@ extern "C" {
 	fn idt_descr();
 }
 
-// x86_64 gate descriptor (idt entry) format
-// [0 :15]  addr[0:15]
-// [16:31]  segment selector: must point to valid code segment in GDT
-// [32:39]  ist: index into Interrupt Stack Table; only lower 3 bit used,
-//          other bits are reserved to 0
-// [40:47]  attrs: attributes of the call gate:
-//          [0:3]    - Gate Type: 0xe for interrupt and 0xf for trap
-//          [ 4 ]    - Res0
-//          [5:6]    - DPL: allowed privilege levels (via INT)
-//          [ 7 ]    - Present (Valid)
-// [48:63] - addr[16:31]
-// [64:95] - addr[32:63]
+/// ```text
+/// <pre>
+/// [0 :15]  addr[0:15]
+/// [16:31]  segment selector: must point to valid code segment in GDT
+/// [32:39]  ist: index into Interrupt Stack Table; only lower 3 bit used,
+///          other bits are reserved to 0
+/// [40:47]  attrs: attributes of the call gate:
+///          [0:3]    - Gate Type: 0xe for interrupt and 0xf for trap
+///          [ 4 ]    - Res0
+///          [5:6]    - DPL: allowed privilege levels (via INT)
+///          [ 7 ]    - Present (Valid)
+/// [48:63] - addr[16:31]
+/// [64:95] - addr[32:63]
+/// ```
 #[repr(C)]
 #[repr(packed)]
 pub struct GateDescriptor64 {
@@ -125,6 +127,10 @@ pub fn irq_restore(was_enabled: bool) {
 	}
 }
 
+/// initialize the idt: we reserved space for idt in assembly code (and linker
+/// script) we write contents to them now. One purpose is to save binary space.
+/// This also allows more flexibility for some interrupt handlers (e.g. when
+/// they needs a dedicated stack...)
 #[inline(always)]
 fn _idt_init() {
 	println!("[init] idt: vectors_start: 0x{:x}", vectors_start as usize);
@@ -145,6 +151,7 @@ fn _idt_init() {
 	unsafe { asm! ("lidt [{}]", in(reg) idt_descr) }
 }
 
+/// initialize the idt and [pic_8259]
 pub fn init() {
 	// init idt
 	_idt_init();
