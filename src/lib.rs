@@ -4,6 +4,7 @@
 #![no_main]
 #![feature(const_option)]
 #![feature(try_with_capacity)]
+#![feature(sync_unsafe_cell)]
 pub mod arch;
 pub mod defs;
 pub mod ds;
@@ -12,6 +13,7 @@ pub mod machine;
 pub mod mm;
 pub mod proc;
 extern crate alloc;
+use crate::machine::interrupt::{irq_restore, irq_save};
 use crate::proc::sched::*;
 use alloc::vec::Vec;
 use arch::x86_64::interrupt;
@@ -23,6 +25,7 @@ use machine::cgascr::CGAScreen;
 use machine::key::Modifiers;
 use machine::multiboot;
 use machine::serial::Serial;
+use proc::sync::L3GetRef;
 use proc::task::Task;
 
 #[panic_handler]
@@ -87,11 +90,11 @@ pub unsafe fn _test_pf() {
 }
 
 pub fn _test_proc_switch_to() {
-	SCHEDULER.lock().insert_task(Task::create_dummy(1));
-	SCHEDULER.lock().insert_task(Task::create_dummy(2));
-	SCHEDULER.lock().insert_task(Task::create_dummy(3));
-	SCHEDULER.lock().insert_task(Task::create_dummy(4));
-	SCHEDULER.lock().insert_task(Task::create_dummy(5));
-	pic_8259::allow(PicDeviceInt::TIMER);
-	Scheduler::kickoff();
+	L3_CRITICAL! {
+		let sched = unsafe { GLOBAL_SCHEDULER.l3_get_ref_mut() };
+		sched.insert_task(Task::create_dummy(1));
+		sched.insert_task(Task::create_dummy(2));
+		sched.insert_task(Task::create_dummy(3));
+	}
+	unsafe { Scheduler::kickoff() };
 }

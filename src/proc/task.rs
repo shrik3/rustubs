@@ -65,9 +65,8 @@ pub extern "C" fn _task_entry() -> ! {
 		if let Some(k) = KBCTL_GLOBAL.lock().consume_key() {
 			println! {"thread {} got key: {}",t.pid ,k.asc}
 		}
-		Scheduler::do_schedule();
+		unsafe { Scheduler::do_schedule() };
 	}
-	panic!("should not reach");
 }
 
 extern "C" {
