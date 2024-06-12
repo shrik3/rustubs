@@ -11,7 +11,7 @@ pub const RFLAGS_IF_MASK: u64 = 1 << 9;
 pub fn read_rflags() -> u64 {
 	let rflags;
 	unsafe {
-		asm!("pushfq; popq {}", out(reg) rflags);
+		asm!("pushfq; pop {}", out(reg) rflags);
 	}
 	rflags
 }
