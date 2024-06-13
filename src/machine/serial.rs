@@ -3,16 +3,31 @@
 
 use crate::machine::device_io::IOPort;
 use core::{fmt, str};
-pub struct Serial {}
-impl Serial {
-	const PORT: IOPort = IOPort::new(0x3f8);
-	pub fn putchar(ch: char) {
-		Self::PORT.outb(ch as u8);
+pub struct SerialWritter {
+	port: IOPort,
+}
+
+impl SerialWritter {
+	pub const fn new(port: u16) -> Self {
+		Self {
+			port: IOPort::new(port),
+		}
 	}
 
-	pub fn print(s: &str) {
+	pub fn putchar(&self, ch: char) {
+		self.port.outb(ch as u8);
+	}
+
+	pub fn print(&self, s: &str) {
 		for c in s.bytes() {
-			Self::putchar(c as char);
+			self.putchar(c as char);
 		}
+	}
+}
+
+impl fmt::Write for SerialWritter {
+	fn write_str(&mut self, s: &str) -> fmt::Result {
+		self.print(s);
+		Ok(())
 	}
 }

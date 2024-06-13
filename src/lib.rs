@@ -24,7 +24,6 @@ use defs::*;
 use machine::cgascr::CGAScreen;
 use machine::key::Modifiers;
 use machine::multiboot;
-use machine::serial::Serial;
 use proc::sync::L3GetRef;
 use proc::task::Task;
 
@@ -39,6 +38,7 @@ pub extern "C" fn _entry() -> ! {
 	// init code
 	io::set_attr(0x1f);
 	io::clear_screen();
+	sprintln!("hello from the serial:");
 	assert!(multiboot::check(), "bad multiboot info from grub!");
 	// check mbi now. This will be later used to initilize the allocator
 	let _mbi = multiboot::get_mb_info().expect("bad multiboot info flags");
