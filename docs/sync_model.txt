@@ -168,10 +168,10 @@ here is how the interrupt handler work:
  |               V   V                    |                  |
  |      [SET L2 OCCUPIED]        [SET L2 FREE]               |
  |               |                        ^                  |
- |               V                        |                  |
- +--------[ENABLE IRQ]-----------[DISABLE IRQ]---------------+
- |               V                        |         LEVEL 2  |
- |     [EXEC. HANDLER.EPILOGUE]           |                  |
+ |               V                        |                  | <- TODO:
+ +--------[ENABLE IRQ]-----------[DISABLE IRQ]---------------+    need a limbo
+ |               V                        |         LEVEL 2  |    where we do
+ |     [EXEC. HANDLER.EPILOGUE]           |                  |    resschedule
  |               |                        |                  |
  |               +------------------------+                  |
  |               check and clear the epilogue queue          |

@@ -1,7 +1,13 @@
 // x86 programmable interrupt timer
 // TODO this is a device, should not live under interrupt module
 // TODO there should be an machine level timer abstraction
+use crate::io::*;
 use crate::machine::device_io::IOPort;
+use crate::proc::sched::SET_NEED_RESCHEDULE;
+// use crate::proc::sync::IRQHandler;
+use crate::proc::sync::IRQHandlerEpilogue;
+use crate::proc::task::Task;
+// use crate::proc::sched::
 pub struct PIT {}
 
 impl PIT {
@@ -25,4 +31,18 @@ impl PIT {
 		Self::DATA_PORT.outb(((divider & 0xff00) >> 8) as u8);
 		return divider * Self::PIT_BASE_NS;
 	}
+}
+
+impl IRQHandlerEpilogue for PIT {
+	unsafe fn do_prologue() {
+		// half measure: we can't set the resschedule flag when the first
+		// task is not yet running i.e. before kickoff(). We need an aditional
+		// check here to see if there is a valid task struct on the kernel stack;
+		let _task = Task::current();
+		if _task.is_none() {
+			return;
+		}
+		let _ = SET_NEED_RESCHEDULE();
+	}
+	unsafe fn do_epilogue() {}
 }

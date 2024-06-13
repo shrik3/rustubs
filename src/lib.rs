@@ -47,7 +47,19 @@ pub extern "C" fn _entry() -> ! {
 	// fatal and we want to catch them during system initilization.
 	interrupt::init();
 	mm::init();
+	print_init_mem_info();
+	// roughly ... 50 hz
+	let interval = interrupt::pit::PIT::set_interval(20000);
+	println!("[init] timer interrupt set to {} ns", interval);
+	// busy loop query keyboard
+	interrupt::interrupt_enable();
+	pic_8259::allow(PicDeviceInt::KEYBOARD);
+	pic_8259::allow(PicDeviceInt::TIMER);
+	_test_proc_switch_to();
+	panic!("should not reach");
+}
 
+pub fn print_init_mem_info() {
 	println!(
 		"[init] kernel mapped @ {:#X} - {:#X}",
 		unsafe { vmap_kernel_start() },
@@ -58,27 +70,6 @@ pub extern "C" fn _entry() -> ! {
 		bss_start(),
 		bss_end()
 	);
-	let interval = interrupt::pit::PIT::set_interval(500000);
-	println!("[init] timer interrupt set to {} ns", interval);
-	// busy loop query keyboard
-	interrupt::interrupt_enable();
-	pic_8259::allow(PicDeviceInt::KEYBOARD);
-	let mut test_vec = Vec::<&str>::new();
-	_test_proc_switch_to();
-	// default test, should not reach
-	test_vec.push("hello ");
-	test_vec.push("world");
-	for s in test_vec.iter() {
-		println!("{s}");
-	}
-	Serial::print("hello from serial");
-	loop {
-		io::KBCTL_GLOBAL.lock().fetch_key();
-		if let Some(k) = io::KBCTL_GLOBAL.lock().consume_key() {
-			println! {"key: {:?}", k}
-		}
-	}
-	// test heap
 }
 
 pub unsafe fn _test_pf() {

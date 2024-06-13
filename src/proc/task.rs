@@ -1,5 +1,6 @@
 use crate::arch::x86_64::arch_regs;
 use crate::arch::x86_64::arch_regs::Context64;
+use crate::arch::x86_64::misc::delay;
 use crate::defs::*;
 use crate::io::*;
 use crate::mm::KSTACK_ALLOCATOR;
@@ -59,13 +60,13 @@ pub enum TaskState {
 #[no_mangle]
 pub extern "C" fn _task_entry() -> ! {
 	let t = Task::current().unwrap();
-	println!("I'm Mr.Meeseeks {}, look at me~", t.pid);
+	sprintln!("I'm Mr.Meeseeks {}, look at me~", t.pid);
 	loop {
-		KBCTL_GLOBAL.lock().fetch_key();
-		if let Some(k) = KBCTL_GLOBAL.lock().consume_key() {
-			println! {"thread {} got key: {}",t.pid ,k.asc}
+		let t = Task::current().unwrap();
+		sprintln!("I'm {}", t.pid);
+		for _i in 0..1000000 {
+			delay();
 		}
-		unsafe { Scheduler::do_schedule() };
 	}
 }
 

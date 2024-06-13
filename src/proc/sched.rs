@@ -1,3 +1,4 @@
+use crate::arch::x86_64::is_int_enabled;
 use crate::io::*;
 use crate::machine::interrupt::{irq_restore, irq_save};
 use crate::proc::sync::*;
@@ -7,18 +8,36 @@ use core::cell::RefCell;
 use core::cell::SyncUnsafeCell;
 use core::cell::UnsafeCell;
 use core::ops::Deref;
+use core::sync::atomic::AtomicBool;
+use core::sync::atomic::Ordering;
 use lazy_static::lazy_static;
 use spin::Mutex;
-// the global scheduler takes a spinlock (will change later). Must be extra
-// careful with it: never do context swap before releasing the lock on scheduler,
-// otherwise the next task won't be able to aquire the lock again.
+
 pub static GLOBAL_SCHEDULER: L3SyncCell<Scheduler> = L3SyncCell::new(Scheduler::new());
+/// A global flag indicating whether reschedule is required.
+pub static NEED_RESCHEDULE: AtomicBool = AtomicBool::new(false);
+
+/// set NEED_RESCHEDULE to true regardless its value; return the previous state.
+#[inline(always)]
+#[allow(non_snake_case)]
+pub fn SET_NEED_RESCHEDULE() -> bool {
+	NEED_RESCHEDULE.swap(true, Ordering::Relaxed)
+}
+
+/// set NEED_RESCHEDULE to false regardless its value; return the previous
+/// state.
+#[inline(always)]
+#[allow(non_snake_case)]
+pub fn CLEAR_NEED_RESCHEDULE() -> bool {
+	NEED_RESCHEDULE.swap(false, Ordering::Relaxed)
+}
 
 // TODO the lifetime here is pretty much broken. Fix this later
 // the scheduler should be a per-cpu instance and it shall not lock.
 // Because the `do_schedule` does not return to release the lock
 pub struct Scheduler {
 	pub run_queue: VecDeque<TaskId>,
+	pub need_schedule: bool,
 }
 
 impl Scheduler {
@@ -27,6 +46,7 @@ impl Scheduler {
 		// btw. try_with_capacity is an unstable feature.
 		return Self {
 			run_queue: VecDeque::new(),
+			need_schedule: false,
 		};
 	}
 
@@ -40,6 +60,21 @@ impl Scheduler {
 		// something special if the task is in the wait queue but we are not
 		// there yet.
 		todo!("not implemented");
+	}
+
+	/// unsafe because this must be called on a linearization point on Epilogue
+	/// level (l2); It will check the NEED_RESCHEDULE flag.
+	pub unsafe fn try_reschedule() {
+		// this assert doesn't check if you own the L2, but at least a sanity
+		// check.
+		assert!(is_int_enabled());
+		assert!(IS_L2_AVAILABLE());
+		// TODO maybe refine memory ordering here
+		let r = NEED_RESCHEDULE.compare_exchange(true, false, Ordering::Relaxed, Ordering::Relaxed);
+		if r != Ok(true) {
+			return;
+		}
+		Self::do_schedule();
 	}
 
 	pub unsafe fn do_schedule_coperative() {}
@@ -60,6 +95,7 @@ impl Scheduler {
 		if me.pid == next_task.pid {
 			return;
 		}
+		use alloc::format;
 		unsafe {
 			context_swap(
 				&(me.context) as *const _ as u64,

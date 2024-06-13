@@ -22,16 +22,20 @@ impl<T> L2SyncQueue<T> {
 	}
 }
 
+#[inline(always)]
 #[allow(non_snake_case)]
 pub fn IS_L2_AVAILABLE() -> bool {
 	return L2_AVAILABLE.load(Ordering::Relaxed);
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub fn ENTER_L2() {
 	let r = L2_AVAILABLE.compare_exchange(true, false, Ordering::Relaxed, Ordering::Relaxed);
 	assert_eq!(r, Ok(true));
 }
+
+#[inline(always)]
 #[allow(non_snake_case)]
 pub fn LEAVE_L2() {
 	let r = L2_AVAILABLE.compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed);

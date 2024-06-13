@@ -44,12 +44,10 @@ pub struct KeyboardDriver {}
 
 impl IRQHandlerEpilogue for KeyboardDriver {
 	unsafe fn do_prologue() {
-		let enabled = is_int_enabled();
-		println!("[PROLOGUE] keyboard driver irq {enabled}");
+		assert!(!is_int_enabled());
 	}
 	unsafe fn do_epilogue() {
-		let enabled = is_int_enabled();
-		println!("[EPILOGUE] keyboard driver irq {enabled}");
+		assert!(is_int_enabled());
 	}
 }
 

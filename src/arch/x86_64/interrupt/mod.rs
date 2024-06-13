@@ -7,6 +7,7 @@ use crate::arch::x86_64::paging::fault;
 use crate::defs::IntNumber as INT;
 use crate::io::*;
 use crate::machine::interrupt::plugbox::IRQ_GATE_MAP;
+use crate::proc::sched::Scheduler;
 use crate::proc::sync::*;
 use core::arch::asm;
 use core::slice;
@@ -83,20 +84,38 @@ extern "C" fn trap_gate(nr: u16, fp: u64) {
 }
 
 #[inline]
-/// handle_irq assumes the interrupt is **enabled** when called
+/// handle_irq assumes the interrupt is **enabled** when called;
+/// Analogue to OOStuBS guard::leave(), but we do it slightly differently.
+/// See code comments and docs/sync_model.txt
 unsafe fn clear_epilogue_queue() {
 	let mut epi: Option<EpilogueEntrant>;
+	let mut done;
 	loop {
-		interrupt_disable();
-		epi = EPILOGUE_QUEUE.l3_get_ref_mut().queue.pop_front();
-		if epi.is_none() {
+		L3_CRITICAL! {
+			let rq = EPILOGUE_QUEUE.l3_get_ref_mut();
+			epi = rq.queue.pop_front();
+			done = rq.queue.is_empty();
+		}
+		if let Some(e) = epi {
+			e.call();
+		}
+		// This is a linearization point where we may do rescheduling
+		// unlike OOStuBS, we don't do rescheduling in the epilogues. this
+		// decouples the scheduler from the timer interrupt driver, also has
+		// better "real-time" guarantee: rescheduling will not be delayed by
+		// more than one epilogue execution; OOStuBS doesn't have the delay
+		// issue because every epilogue is enqueued at most once due to the
+		// limitation of having no memory management.
+		LEAVE_L2();
+		Scheduler::try_reschedule();
+		ENTER_L2();
+		// but this approach is unfair and there is no realtime guarantee (if
+		// that's ever the case for us...)
+		if done {
 			break;
 		}
-		interrupt_enable();
-		epi.unwrap().call();
 	}
 	// you need to make sure the interrupt is disabled at this point
-	assert!(!is_int_enabled());
 	LEAVE_L2();
 }
 
@@ -132,7 +151,9 @@ unsafe fn handle_irq(nr: u16) {
 	unsafe {
 		epi.call();
 	}
-	// IRQ IS DISABLED BEFORE THIS POINT, HENCE IMPLICITLY L3
+	// we need to clear the epilogue queue on behalf of others. Modifying the
+	// epilogue is a level 3 critical section
+	clear_epilogue_queue();
 }
 
 /// handles exception/faults (nr < 32);

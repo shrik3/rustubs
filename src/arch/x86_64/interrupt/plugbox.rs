@@ -1,5 +1,6 @@
 //! Registrar of IRQ handling routines
 
+use crate::arch::x86_64::interrupt::pit::PIT;
 use crate::defs::IntNumber as INT;
 use crate::machine::interrupt::pic_8259::PicDeviceInt;
 use crate::machine::keyctrl::KeyboardDriver;
@@ -12,8 +13,9 @@ use core::cell::Cell;
 use lazy_static::lazy_static;
 lazy_static! {
 	/// interrupt handler lookup table. For now it's built at compile time and
-	/// is immutable. Later we may ... make it how pluggable?
+	/// is immutable. Later we may ... make it hot pluggable?
 	pub static ref IRQ_GATE_MAP: BTreeMap<u16, IRQGate> = [
+		(INT::TIMER,    PIT::get_gate()),
 		(INT::KEYBOARD, KeyboardDriver::get_gate()),
 	].iter().copied().collect();
 }
