@@ -1,3 +1,4 @@
+//! system level definitions
 extern "C" {
 	fn ___KERNEL_PM_START__();
 	fn ___KERNEL_PM_END__();
@@ -49,6 +50,7 @@ pub fn rounddown_4k(addr: u64) -> u64 {
 	return addr & !0xfff;
 }
 
+/// memory definitions
 pub struct Mem;
 impl Mem {
 	// units
@@ -89,9 +91,9 @@ impl Mem {
 	pub const KERNEL_STACK_TASK_MAGIC: u64 = 0x1A2B3C4D5E6F6969;
 }
 
-// convert VA <-> PA wrt. the kernel id mapping
-// from 0xffff_8000_0000_0000 ~ 0xffff_800f_ffff_ffff virtual
-// to 0x0 ~ 0xf_ffff_ffff physical (64G)
+/// convert VA <-> PA wrt. the kernel id mapping
+/// from 0xffff_8000_0000_0000 ~ 0xffff_800f_ffff_ffff virtual
+/// to 0x0 ~ 0xf_ffff_ffff physical (64G)
 #[allow(non_snake_case)]
 #[inline]
 pub fn V2P(va: u64) -> Option<u64> {
@@ -101,6 +103,7 @@ pub fn V2P(va: u64) -> Option<u64> {
 	return Some(va - Mem::ID_MAP_START);
 }
 
+/// physical address to virtual. reverse of [V2P]
 #[allow(non_snake_case)]
 #[inline]
 pub fn P2V(pa: u64) -> Option<u64> {
@@ -110,7 +113,7 @@ pub fn P2V(pa: u64) -> Option<u64> {
 	return Some(pa + Mem::ID_MAP_START);
 }
 
-/// interrutp numbers. Not complete, add more when needed
+/// interrut numbers. Not complete, add more when needed
 /// (see docs/interrupt.txt)
 pub struct IntNumber {}
 impl IntNumber {

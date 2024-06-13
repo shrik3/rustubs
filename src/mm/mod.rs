@@ -1,3 +1,5 @@
+//! memory management unit
+
 use crate::defs::*;
 use crate::machine::multiboot;
 use alloc::alloc::{alloc, dealloc, Layout};

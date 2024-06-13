@@ -1,3 +1,5 @@
+//! I/O with keyboard, cga screen and serial
+
 use crate::machine::cgascr::CGAScreen;
 use crate::machine::keyctrl::KeyboardController;
 use crate::machine::serial::SerialWritter;
@@ -15,12 +17,14 @@ lazy_static! {
 pub static SERIAL_GLOBAL: SyncUnsafeCell<SerialWritter> =
 	SyncUnsafeCell::new(SerialWritter::new(0x3f8));
 
+/// CGA screen print, synchronized. NEVER use in prologue
 #[macro_export]
 macro_rules! print {
     ($($arg:tt)*) => ($crate::io::_print(format_args!($($arg)*)));
 }
 pub(crate) use print;
 
+/// CGA screen println, synchronized. NEVER use in prologue
 #[macro_export]
 macro_rules! println {
     () => ($crate::print!("\n"));
@@ -28,6 +32,7 @@ macro_rules! println {
 }
 pub(crate) use println;
 
+/// serial (0x3f8 for qemu) print, not synchronized. can use in prologue
 #[macro_export]
 macro_rules! sprint {
     ($($arg:tt)*) => ($crate::io::_serial_print(format_args!($($arg)*)));
@@ -35,6 +40,7 @@ macro_rules! sprint {
 pub(crate) use sprint;
 
 #[macro_export]
+/// serial (0x3f8 for qemu) println, not synchronized. can use in prologue
 macro_rules! sprintln{
     () => ($crate::sprint!("\n"));
     ($($arg:tt)*) => (sprint!("{}\n", format_args!($($arg)*)));

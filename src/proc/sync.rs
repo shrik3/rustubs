@@ -108,7 +108,7 @@ pub trait IRQHandlerEpilogue {
 	}
 }
 
-/// L3GetRef provides unsafe function [l3_get_ref] and [l3_get_ref_mut], they
+/// L3GetRef provides unsafe function `l3_get_ref` and `l3_get_ref_mut`, they
 /// can only be safely used in level 3
 pub trait L3GetRef<T> {
 	unsafe fn l3_get_ref(&self) -> &T;
@@ -130,6 +130,8 @@ impl<T> L3GetRef<T> for L3SyncCell<T> {
 	}
 }
 
+/// a handy function to wrap a (brief) block with `irq_save` and `irq_restore`
+/// this must be used with caution. See docs/sync_model for how this work.
 #[macro_export]
 macro_rules! L3_CRITICAL{
 	($($s:stmt;)*) => {
