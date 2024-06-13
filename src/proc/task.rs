@@ -57,19 +57,6 @@ pub enum TaskState {
 	Angry,
 }
 
-#[no_mangle]
-pub extern "C" fn _task_entry() -> ! {
-	let t = Task::current().unwrap();
-	sprintln!("I'm Mr.Meeseeks {}, look at me~", t.pid);
-	loop {
-		let t = Task::current().unwrap();
-		sprintln!("I'm {}", t.pid);
-		for _i in 0..1000000 {
-			delay();
-		}
-	}
-}
-
 extern "C" {
 	pub fn context_swap(from_ctx: u64, to_ctx: u64);
 	pub fn context_swap_to(to_ctx: u64);
@@ -135,8 +122,9 @@ impl Task {
 		return Some(t);
 	}
 
-	/// used for trivial tests
-	pub fn create_dummy(pid: u32) -> TaskId {
+	/// create a kernel thread, you need to add it to the scheduler run queue
+	/// manually
+	pub fn create_task(pid: u32, entry: u64) -> TaskId {
 		let sp = unsafe { KSTACK_ALLOCATOR.lock().allocate() };
 		let tid = TaskId::new(sp);
 		println!("new task on {:#X}", sp);
@@ -152,7 +140,7 @@ impl Task {
 				},
 			)
 		};
-		nt.prepare_context(_task_entry as u64);
+		nt.prepare_context(entry);
 		tid
 	}
 }

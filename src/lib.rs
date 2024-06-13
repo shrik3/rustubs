@@ -9,6 +9,7 @@ pub mod arch;
 pub mod defs;
 pub mod ds;
 pub mod io;
+pub mod kthread;
 pub mod machine;
 pub mod mm;
 pub mod proc;
@@ -21,6 +22,7 @@ use arch::x86_64::interrupt::pic_8259;
 use arch::x86_64::interrupt::pic_8259::PicDeviceInt;
 use core::panic::PanicInfo;
 use defs::*;
+use kthread::KThread;
 use machine::cgascr::CGAScreen;
 use machine::key::Modifiers;
 use machine::multiboot;
@@ -83,9 +85,17 @@ pub unsafe fn _test_pf() {
 pub fn _test_proc_switch_to() {
 	L3_CRITICAL! {
 		let sched = unsafe { GLOBAL_SCHEDULER.l3_get_ref_mut() };
-		sched.insert_task(Task::create_dummy(1));
-		sched.insert_task(Task::create_dummy(2));
-		sched.insert_task(Task::create_dummy(3));
+		sched.insert_task(
+			Task::create_task(1, kthread::Meeseeks::get_entry())
+		);
+
+		sched.insert_task(
+			Task::create_task(2, kthread::Meeseeks::get_entry())
+		);
+
+		sched.insert_task(
+			Task::create_task(3, kthread::Meeseeks::get_entry())
+		);
 	}
 	unsafe { Scheduler::kickoff() };
 }
