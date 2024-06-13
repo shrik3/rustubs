@@ -1,7 +1,6 @@
 //! the sync module defines the OOStuBS prologue/epilogue synchronization model
 //! for interrupt and preemptive scheduling. Read `docs/sync_model.txt` for
 //! details
-use crate::machine::interrupt::{irq_restore, irq_save};
 use alloc::collections::VecDeque;
 use core::cell::SyncUnsafeCell;
 use core::sync::atomic::{AtomicBool, Ordering};

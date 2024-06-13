@@ -1,6 +1,4 @@
 //! kernel threads
-use crate::proc::task::Task;
-use crate::proc::task::TaskId;
 pub mod meeseeks;
 pub use meeseeks::Meeseeks;
 

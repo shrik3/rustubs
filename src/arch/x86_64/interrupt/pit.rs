@@ -1,7 +1,6 @@
 // x86 programmable interrupt timer
 // TODO this is a device, should not live under interrupt module
 // TODO there should be an machine level timer abstraction
-use crate::io::*;
 use crate::machine::device_io::IOPort;
 use crate::proc::sched::SET_NEED_RESCHEDULE;
 // use crate::proc::sync::IRQHandler;

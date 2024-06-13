@@ -1,17 +1,9 @@
 use crate::arch::x86_64::is_int_enabled;
-use crate::io::*;
-use crate::machine::interrupt::{irq_restore, irq_save};
 use crate::proc::sync::*;
 use crate::proc::task::*;
 use alloc::collections::VecDeque;
-use core::cell::RefCell;
-use core::cell::SyncUnsafeCell;
-use core::cell::UnsafeCell;
-use core::ops::Deref;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
-use lazy_static::lazy_static;
-use spin::Mutex;
 
 pub static GLOBAL_SCHEDULER: L3SyncCell<Scheduler> = L3SyncCell::new(Scheduler::new());
 /// A global flag indicating whether reschedule is required.
@@ -95,7 +87,6 @@ impl Scheduler {
 		if me.pid == next_task.pid {
 			return;
 		}
-		use alloc::format;
 		unsafe {
 			context_swap(
 				&(me.context) as *const _ as u64,

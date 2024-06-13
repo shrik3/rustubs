@@ -7,24 +7,19 @@
 #![feature(sync_unsafe_cell)]
 pub mod arch;
 pub mod defs;
-pub mod ds;
 pub mod io;
 pub mod kthread;
 pub mod machine;
 pub mod mm;
 pub mod proc;
 extern crate alloc;
-use crate::machine::interrupt::{irq_restore, irq_save};
 use crate::proc::sched::*;
-use alloc::vec::Vec;
 use arch::x86_64::interrupt;
 use arch::x86_64::interrupt::pic_8259;
 use arch::x86_64::interrupt::pic_8259::PicDeviceInt;
 use core::panic::PanicInfo;
 use defs::*;
 use kthread::KThread;
-use machine::cgascr::CGAScreen;
-use machine::key::Modifiers;
 use machine::multiboot;
 use proc::sync::L3GetRef;
 use proc::task::Task;

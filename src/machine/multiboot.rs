@@ -3,7 +3,6 @@
 
 use crate::io::*;
 use core::fmt;
-use core::mem::size_of;
 use core::ops::Range;
 use lazy_static::lazy_static;
 extern "C" {

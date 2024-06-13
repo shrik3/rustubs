@@ -2,7 +2,6 @@
 // https://docs.rs/x86_64/latest/src/x86_64/addr.rs.html
 // see ATTRIBUTIONS
 pub mod fault;
-use crate::defs::*;
 use bitflags::bitflags;
 #[repr(align(4096))]
 #[repr(C)]

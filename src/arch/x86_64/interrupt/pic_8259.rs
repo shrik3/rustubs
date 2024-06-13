@@ -1,7 +1,6 @@
 // For now, the PIC is stateless, i.e. we don'e need a struct for it.
 // Perhaps I need a Mutex handle later...
 use crate::arch::x86_64::io_port::*;
-use crate::arch::x86_64::misc::*;
 const IMR1: u16 = 0x21;
 const IMR2: u16 = 0xa1;
 const CTRL1: u16 = 0x20;

@@ -19,8 +19,6 @@
 //!    memory and can't work as a kmalloc backend!
 
 use crate::defs::*;
-use crate::io::*;
-use crate::machine::multiboot::MultibootMmap;
 use core::ops::Range;
 use core::slice;
 

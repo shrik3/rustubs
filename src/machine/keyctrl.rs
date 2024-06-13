@@ -13,12 +13,9 @@ use self::super::key::*;
 use crate::arch::x86_64::is_int_enabled;
 use crate::io::*;
 use crate::machine::device_io::*;
-use crate::proc::sync::IRQGate;
-use crate::proc::sync::{IRQHandler, IRQHandlerEpilogue};
+use crate::proc::sync::IRQHandlerEpilogue;
 use bitflags::bitflags;
-use core::cmp;
 use core::cmp::{Eq, PartialEq};
-use core::ffi::c_uchar;
 
 #[cfg(target_arch = "x86_64")]
 use crate::arch::x86_64::interrupt::{pic_8259, pic_8259::PicDeviceInt as PD};

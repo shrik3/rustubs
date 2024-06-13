@@ -1,11 +1,8 @@
 use crate::arch::x86_64::arch_regs;
 use crate::arch::x86_64::arch_regs::Context64;
-use crate::arch::x86_64::misc::delay;
 use crate::defs::*;
 use crate::io::*;
 use crate::mm::KSTACK_ALLOCATOR;
-use crate::proc::sched::*;
-use core::arch::asm;
 use core::ptr;
 
 /// currently only kernelSp and Context are important.
