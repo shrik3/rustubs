@@ -1,12 +1,33 @@
 use bitflags::bitflags;
 use core::convert;
 use core::ffi::c_uchar;
+use core::mem::transmute;
 
 #[derive(Copy, Clone, Debug)]
+#[repr(C, align(4))]
+/// packed into 32bit C struct so that we can use AtomicU32 for L2/L3
+/// synchronization. We mask the highest byte to indicate "None"
 pub struct Key {
 	pub asc: c_uchar,
 	pub scan: u8,
 	pub modi: Modifiers,
+}
+
+impl Key {
+	pub const NONE_KEY: u32 = 0xff00_0000;
+	pub fn to_u32(&self) -> u32 {
+		unsafe { transmute::<Key, u32>(*self) }
+	}
+	pub fn from_u32(k: u32) -> Option<Self> {
+		if Self::is_none(k) {
+			return None;
+		} else {
+			return Some(unsafe { transmute::<u32, Self>(k) });
+		}
+	}
+	pub fn is_none(k: u32) -> bool {
+		k & Self::NONE_KEY != 0
+	}
 }
 
 impl convert::Into<char> for Key {

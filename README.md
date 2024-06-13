@@ -24,8 +24,10 @@ shitty code, I'm a rust beginner.
 - [X] kmalloc (using the [linked-list-allocator ](https://github.com/rust-osdev/linked-list-allocator))
     TODO: implement my own
 - [X] intrrupt sync (pro-/epilogue model)
+    - [X] synchronized input buffer
 - [X] Threading
 - [X] Scheduler (single CPU)
+    - [X] synchronized scheduling
     - [ ] waiting tasks
 - [X] Timer Interrupt
 - [?] Synchronization Primitives

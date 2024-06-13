@@ -14,22 +14,37 @@ use crate::arch::x86_64::is_int_enabled;
 use crate::io::*;
 use crate::machine::device_io::*;
 use crate::proc::sync::IRQHandlerEpilogue;
+use crate::proc::sync::{L3GetRef, L3SyncCell};
+use alloc::collections::VecDeque;
 use bitflags::bitflags;
 use core::cmp::{Eq, PartialEq};
+use core::sync::atomic::AtomicU32;
+use core::sync::atomic::Ordering;
+use lazy_static::lazy_static;
+use spin::Mutex;
 
 #[cfg(target_arch = "x86_64")]
 use crate::arch::x86_64::interrupt::{pic_8259, pic_8259::PicDeviceInt as PD};
 
 use super::key::Modifiers;
 
-// TODO
-// reboot()
-// set_led(char led,bool on)
-// set_repeat_rate(int speed,int delay)
+/// this is the global keybard controller. It can only be used in prologue level,
+/// except for the `gather` field (consume_key is safe), which is atomic that can be safely used.
+/// (TODO maybe we can change this L3/L2 shared state abstraction)
+pub static KBCTL_GLOBAL: L3SyncCell<KeyboardController> =
+	L3SyncCell::new(KeyboardController::new());
+
+lazy_static! {
+	/// global input buffer protected by mutex, it must not be used in prologue level (L3).
+	/// TODO implement sleeping mutex or semaphore
+	pub static ref KEY_BUFFER: Mutex<VecDeque<Key>> = Mutex::new(VecDeque::new());
+}
 
 pub struct KeyboardController {
 	keystate: KeyState,
-	gather: Option<Key>, // if not collected timely it will be overwritten
+	/// gather require synchronization between L2 and L3, therefore we pack the
+	/// Key into a u32 and use an Atomic type here.
+	gather: AtomicU32,
 	cport: IOPort,
 	dport: IOPort,
 }
@@ -42,9 +57,18 @@ pub struct KeyboardDriver {}
 impl IRQHandlerEpilogue for KeyboardDriver {
 	unsafe fn do_prologue() {
 		assert!(!is_int_enabled());
+		KBCTL_GLOBAL.l3_get_ref_mut().fetch_key();
 	}
 	unsafe fn do_epilogue() {
 		assert!(is_int_enabled());
+		let k = KBCTL_GLOBAL.l3_get_ref_mut().consume_key();
+		if k.is_some() {
+			// this is not ideal. starvation can happen if a thread is
+			// intentionally holding the lock forever. This could also starve
+			// the other threads because context swap can only happen in-between
+			// epilogue execution.
+			KEY_BUFFER.lock().push_back(k.unwrap());
+		}
 	}
 }
 
@@ -72,7 +96,7 @@ impl Prefix {
 }
 
 impl KeyState {
-	pub fn new() -> Self {
+	pub const fn new() -> Self {
 		Self {
 			modi: Modifiers::NONE,
 			prefix: Prefix::NONE,
@@ -86,12 +110,12 @@ impl KeyState {
 }
 
 impl KeyboardController {
-	pub fn new() -> Self {
+	pub const fn new() -> Self {
 		Self {
 			keystate: KeyState::new(),
 			cport: IOPort::new(Defs::CTRL),
 			dport: IOPort::new(Defs::DATA),
-			gather: None,
+			gather: AtomicU32::new(Key::NONE_KEY),
 		}
 	}
 
@@ -223,11 +247,11 @@ impl KeyboardController {
 		}
 	}
 
-	// this should be called by the "epilogue"
+	/// this is safe to be called from all sync levels
+	#[inline]
 	pub fn consume_key(&mut self) -> Option<Key> {
-		let res = self.gather.clone();
-		self.gather = None;
-		res
+		let res = self.gather.swap(Key::NONE_KEY, Ordering::Relaxed);
+		return Key::from_u32(res);
 	}
 
 	pub fn decode_key(&mut self) {
@@ -239,11 +263,12 @@ impl KeyboardController {
 		let p = self.keystate.prefix;
 
 		if c == 53 && p == Prefix::PREFIX1 {
-			self.gather = Some(Key {
+			let k = Key {
 				asc: b'/',
 				modi: m,
 				scan: s,
-			});
+			};
+			self.gather.store(k.to_u32(), Ordering::Relaxed);
 			return;
 		}
 
@@ -263,11 +288,13 @@ impl KeyboardController {
 			NORMAL_TAB[c as usize]
 		};
 
-		self.gather = Some(Key {
+		let k = Key {
 			asc,
 			modi: m,
 			scan: s,
-		});
+		};
+
+		self.gather.store(k.to_u32(), Ordering::Relaxed);
 	}
 
 	pub fn cycle_repeat_rate() {

@@ -1,7 +1,8 @@
 //! I/O with keyboard, cga screen and serial
 
 use crate::machine::cgascr::CGAScreen;
-use crate::machine::keyctrl::KeyboardController;
+use crate::machine::key::Key;
+use crate::machine::keyctrl::KEY_BUFFER;
 use crate::machine::serial::SerialWritter;
 use core::cell::SyncUnsafeCell;
 use core::fmt;
@@ -10,7 +11,6 @@ use spin::Mutex;
 // TODO I want my own locking primitive for practice, instead of stock spin lock
 lazy_static! {
 	pub static ref CGASCREEN_GLOBAL: Mutex<CGAScreen> = Mutex::new(CGAScreen::new());
-	pub static ref KBCTL_GLOBAL: Mutex<KeyboardController> = Mutex::new(KeyboardController::new());
 }
 /// the global serial writer, this is not synchronized. Used for debugging
 /// where locking is not available
@@ -46,6 +46,24 @@ macro_rules! sprintln{
     ($($arg:tt)*) => (sprint!("{}\n", format_args!($($arg)*)));
 }
 pub(crate) use sprintln;
+
+/// this is a blocking function that tries to read a key from the key buffer.
+/// with a spinlock, if we also spin until getting a valid key, then we should
+/// leave a time window for the epilogue level to acquire the lock.
+/// TODO use semaphore, sleep if the buffer is empty; This will solve the above
+/// issue.
+pub fn read_key() -> Key {
+	loop {
+		let k = KEY_BUFFER.lock().pop_front();
+		if let Some(key) = k {
+			return key;
+		}
+		for _ in 0..10000 {
+			use crate::arch::x86_64::misc::delay;
+			delay();
+		}
+	}
+}
 
 pub fn _print(args: fmt::Arguments) {
 	use core::fmt::Write;

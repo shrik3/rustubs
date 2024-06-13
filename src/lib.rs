@@ -86,11 +86,7 @@ pub fn _test_proc_switch_to() {
 		);
 
 		sched.insert_task(
-			Task::create_task(2, kthread::Meeseeks::get_entry())
-		);
-
-		sched.insert_task(
-			Task::create_task(3, kthread::Meeseeks::get_entry())
+			Task::create_task(2, kthread::Echo::get_entry())
 		);
 	}
 	unsafe { Scheduler::kickoff() };
