@@ -23,11 +23,15 @@ shitty code, I'm a rust beginner.
 - [X] Interrupt handler
 - [X] kmalloc (using the [linked-list-allocator ](https://github.com/rust-osdev/linked-list-allocator))
     TODO: implement my own
-- [?] intrrupt sync (pro-/epilogue model)
-- [x] Threading
-- [x] Scheduler (single CPU)
-- [ ] Timer Interrupt
-- [ ] Synchronization Primitives
+- [X] intrrupt sync (pro-/epilogue model)
+- [X] Threading
+- [X] Scheduler (single CPU)
+    - [ ] waiting tasks
+- [X] Timer Interrupt
+- [?] Synchronization Primitives
+    - [X] level3 (prologue) and level2 (epilogue) Synchronization
+    - [ ] sleeping locks
+    - [ ] semaphore (to serialize critical sections on epilogue level)
 - [ ] asm! Wrappers for basic instructions
 
 MISC
