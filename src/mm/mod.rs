@@ -1,5 +1,4 @@
 use crate::defs::*;
-use crate::io::*;
 use crate::machine::multiboot;
 use alloc::alloc::{alloc, dealloc, Layout};
 use alloc::vec::Vec;

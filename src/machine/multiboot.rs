@@ -1,7 +1,6 @@
 //! provide functions to parse information provided by grub multiboot
 //! see docs/multiboot.txt
 
-use crate::io::*;
 use core::fmt;
 use core::ops::Range;
 use lazy_static::lazy_static;

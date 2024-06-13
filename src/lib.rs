@@ -7,6 +7,7 @@
 #![feature(sync_unsafe_cell)]
 pub mod arch;
 pub mod defs;
+#[macro_use]
 pub mod io;
 pub mod kthread;
 pub mod machine;

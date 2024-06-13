@@ -1,6 +1,5 @@
 //! a noisy dummy task to test the system
 use crate::arch::x86_64::misc::delay;
-use crate::io::*;
 use crate::kthread::KThread;
 use crate::proc::task::Task;
 

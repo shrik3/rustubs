@@ -1,7 +1,6 @@
 use crate::arch::x86_64::arch_regs;
 use crate::arch::x86_64::arch_regs::Context64;
 use crate::defs::*;
-use crate::io::*;
 use crate::mm::KSTACK_ALLOCATOR;
 use core::ptr;
 
