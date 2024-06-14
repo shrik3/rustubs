@@ -5,6 +5,7 @@ use crate::machine::device_io::IOPort;
 use crate::proc::sched::SET_NEED_RESCHEDULE;
 use crate::machine::time;
 use crate::proc::sync::IRQHandlerEpilogue;
+use crate::proc::sync::bellringer::BellRinger;
 use crate::proc::task::Task;
 // use crate::proc::sched::
 pub struct PIT {}
@@ -44,5 +45,7 @@ impl IRQHandlerEpilogue for PIT {
 		}
 		let _ = SET_NEED_RESCHEDULE();
 	}
-	unsafe fn do_epilogue() {}
+	unsafe fn do_epilogue() {
+		BellRinger::check_all();
+	}
 }

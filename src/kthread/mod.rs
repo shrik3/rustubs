@@ -5,6 +5,9 @@ pub use meeseeks::Meeseeks;
 pub mod echo;
 pub use echo::Echo;
 
+pub mod lazy;
+pub use lazy::Lazy;
+
 pub trait KThread {
 	extern "C" fn entry() -> !;
 	fn get_entry() -> u64 {

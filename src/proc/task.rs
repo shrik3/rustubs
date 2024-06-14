@@ -159,6 +159,15 @@ impl Task {
 		sched.insert_task(self.taskid());
 	}
 
+	// TODO this is very similar to the semaphore wait ... maybe extract a trait
+	pub fn nanosleep(&mut self, ns: u64) {
+		assert!(self.state == TaskState::Run);
+		self.state = TaskState::Wait;
+		BellRinger::check_in(Sleeper::new(self.taskid(), ns));
+		assert!(is_int_enabled());
+		unsafe { Scheduler::do_schedule() };
+	}
+
 	/// create a kernel thread, you need to add it to the scheduler run queue
 	/// manually
 	pub fn create_task(pid: u32, entry: u64) -> TaskId {

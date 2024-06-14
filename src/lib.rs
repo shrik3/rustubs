@@ -5,6 +5,7 @@
 #![feature(const_option)]
 #![feature(try_with_capacity)]
 #![feature(sync_unsafe_cell)]
+#![feature(linked_list_retain)]
 pub mod arch;
 pub mod defs;
 #[macro_use]
