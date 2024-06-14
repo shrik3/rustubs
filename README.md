@@ -9,6 +9,10 @@
 
 # RuStuBS: a rust tutorial operating system inspired by OOStuBS.
 
+**Disclaimer**
+Despite the name, this project has **absolutely nothing to do** with rstubs (Uni
+Hannover) or RuStuBS (FAU). See [Remarks](#remarks)
+
 **RuStuBS documentations**
 - [code documentations](https://rustubs.shrik3.com/rustubs/index.html).
 - [basic concepts](https://git.sr.ht/~shrik3/rustubs/tree/master/item/docs).
@@ -71,7 +75,7 @@ Please take a look at the CI manifest:
     ```
 - `GNU ld (GNU Binutils)`
 - `nasm` for the assembly sources
-- `xorriso` and `grub` to create bootdisk image. 
+- `xorriso` and `grub` to create bootdisk image.
 - `Gnu Make`
 
 
@@ -123,7 +127,7 @@ Anyone can contribute to rustubs. Please refer to
 
 This project is licensed under **EUPL 1.2.**. See `LICENSE` and `ATTRIBUTIONS`.
 
-**Notes on OOStuBS**  
+**Notes on OOStuBS**
 The OOStuBS, which this project takes inspirations from, doesn't allow
 re-distribution without written consent from its copyright holders. This project
 contains some small pieces of boilerplate code and comments from OOStuBS (such
@@ -133,7 +137,7 @@ such snippets.
 
 ## Remarks
 
-**Relationship w. OOStuBS**  
+**Relationship w. OOStuBS**
 This project is inspired by OOStuBS. It started as a mere copy, but the path
 quickly diverged.
 
@@ -145,7 +149,7 @@ quickly diverged.
 
 - This project DOES NOT try to complete and/or disclose the solutions to OOStuBS
   lab assignments. (There are indeed overlapping parts, but it would be the same
-  amount of difficulty, if not more difficult, to read, understand and 
+  amount of difficulty, if not more difficult, to read, understand and
   translate rust code into the OOStuBS CPP code, than to read manuals and write
   CPP code yourself).
 - This project DOES NOT aim to be a 1:1 port. (i.e. do the same thing but in
@@ -154,46 +158,50 @@ quickly diverged.
   that "data" and "code" magically belong to "object", which is never the case.
   I personally prefer NOT to use too much OOP in system programming.
 
-**Relationship w. [rstubs](https://www.sra.uni-hannover.de/Lehre/WS23/L_BST/rdoc/rstubs/)**  
-NONE. This project has nothing to do the Uni Hannover rstubs project, a OOStuBS
-spin-off written in rust. As a matter of fact, I didn't know its existence until
-I accidentally came across it recently. People come up with similar ideas, it
-happens.
+**Relationship w. [rstubs](https://www.sra.uni-hannover.de/Lehre/WS23/L_BST/rdoc/rstubs/)**
+**NONE**. This project has nothing to do the Uni Hannover rstubs project, a
+OOStuBS spin-off written in rust. As a matter of fact, I didn't know its
+existence until I accidentally came across it recently. People come up with
+similar ideas, it happens.
 
-**Why not projects like [blog_os](https://os.phil-opp.com/)?**  
+**Relationship w. [RuStuBS (FAW)](https://sys.cs.fau.de/research/ergoo)**
+**NONE**. We happen to share the name (unluckily...). Actually I think I started
+before FAU's.
+
+**Why not projects like [blog_os](https://os.phil-opp.com/)?**
 firstly, because it's my own practice. "What I can't create, I don't understand".
 Secondly, the newest revision of *blog_os* can only be booted with BIOS, not
 UEFI. And the complexity (e.g. the sartup.s) is hidden behind the `bootimage`,
 I feel necessary to go through the painful part.
 
-**Your code sucks**  
+**Your code sucks**
 yes.
 
 ## Documentation Sources
 
-x86_64 calling conventions  
+x86_64 calling conventions
 https://aaronbloomfield.github.io/pdr/book/x86-64bit-ccc-chapter.pdf
 
-Rust inline asm  
+Rust inline asm
 https://rust-lang.github.io/rfcs/2873-inline-asm.html
 
-asm Syntax : (we use nasm in assembly and .intel_syntax noprefix in rust asm)  
+asm Syntax : (we use nasm in assembly and .intel_syntax noprefix in rust asm)
 https://en.wikipedia.org/wiki/X86_assembly_language#Syntax
 
-naming conventions  
+naming conventions
 https://rust-lang.github.io/api-guidelines/naming.html
 
-Makefile Cheatsheet:  
+Makefile Cheatsheet:
 https://devhints.io/makefile
 
-AT Keyboard Controller:  
+AT Keyboard Controller:
 https://homepages.cwi.nl/~aeb/linux/kbd/scancodes-8.html
 
-PS/2 Keyboard Controller:  
+PS/2 Keyboard Controller:
 https://wiki.osdev.org/PS/2_Keyboard
 
-TU Dresden OSC labs (the baseline for this project):  
+TU Dresden OSC labs (the baseline for this project):
 https://tu-dresden.de/ing/informatik/sya/professur-fuer-betriebssysteme/studium/vorlesungen/betriebssystembau/lab-tasks
 
-Unwinding the stack the hard way  
+Unwinding the stack the hard way
 https://lesenechal.fr/en/linux/unwinding-the-stack-the-hard-way
