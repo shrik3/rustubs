@@ -11,3 +11,13 @@ pub trait KThread {
 		Self::entry as u64
 	}
 }
+
+pub struct Idle {}
+impl KThread for Idle {
+	extern "C" fn entry() -> ! {
+		use core::arch::asm;
+		loop {
+			unsafe { asm!("sti; hlt") };
+		}
+	}
+}

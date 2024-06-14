@@ -83,7 +83,7 @@ pub fn _test_proc_switch_to() {
 	L3_CRITICAL! {
 		let sched = unsafe { GLOBAL_SCHEDULER.l3_get_ref_mut() };
 		sched.insert_task(
-			Task::create_task(1, kthread::Meeseeks::get_entry())
+			Task::create_task(1, kthread::Idle::get_entry())
 		);
 
 		sched.insert_task(
