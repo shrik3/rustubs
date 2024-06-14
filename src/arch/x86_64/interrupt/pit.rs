@@ -3,7 +3,7 @@
 // TODO there should be an machine level timer abstraction
 use crate::machine::device_io::IOPort;
 use crate::proc::sched::SET_NEED_RESCHEDULE;
-// use crate::proc::sync::IRQHandler;
+use crate::machine::time;
 use crate::proc::sync::IRQHandlerEpilogue;
 use crate::proc::task::Task;
 // use crate::proc::sched::
@@ -37,6 +37,7 @@ impl IRQHandlerEpilogue for PIT {
 		// half measure: we can't set the resschedule flag when the first
 		// task is not yet running i.e. before kickoff(). We need an aditional
 		// check here to see if there is a valid task struct on the kernel stack;
+		time::tick();
 		let _task = Task::current();
 		if _task.is_none() {
 			return;
