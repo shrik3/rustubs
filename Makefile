@@ -71,7 +71,7 @@ $(BUILD):
 .PHONY: check
 check:
 	@echo "---CHECKING FORMATTING---"
-	@cargo fmt --all -- --check -l
+	@cargo +nightly fmt --all -- --check -l
 
 clean:
 	cargo clean

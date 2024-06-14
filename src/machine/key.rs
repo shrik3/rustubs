@@ -115,13 +115,13 @@ impl Key {
 
 /// scan codes of a few specific keys
 pub enum Scan {
-	F1 = 0x3b,
-	Del = 0x53,
-	Up = 72,
-	Down = 80,
-	Left = 75,
+	F1    = 0x3b,
+	Del   = 0x53,
+	Up    = 72,
+	Down  = 80,
+	Left  = 75,
 	Right = 77,
-	Div = 8,
+	Div   = 8,
 }
 
 // Decoding tables ... this shit is so ugly, thanks to rust's strong typing system!!!

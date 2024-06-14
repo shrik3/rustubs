@@ -387,7 +387,7 @@ impl KeyboardController {
 
 enum Cmd {
 	// these commands are sent through DATA port
-	SetLed = 0xed,
+	SetLed   = 0xed,
 	ScanCode = 0xf0, // Get or set current scancode set
 	SetSpeed = 0xf3,
 	CpuReset = 0xfe,
