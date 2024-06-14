@@ -91,9 +91,12 @@ qemu-gdb: bootdisk.iso
 	@echo "target remote localhost:9876" > /tmp/gdbcommands.$(shell id -u)
 	@qemu-system-x86_64 -drive file=bootdisk.iso,format=raw -k en-us -S -gdb tcp::9876 -serial mon:stdio
 
-.PHONY: rust-docs
+.PHONY: rust-docs docs
 rust-docs:
-	cargo doc --document-private-items --all-features --target $(CARGO_XBUILD_TARGET) --open
+	cargo doc --document-private-items --all-features --no-deps --target $(CARGO_XBUILD_TARGET)
+
+docs:
+	cargo doc --document-private-items --all-features --no-deps --target $(CARGO_XBUILD_TARGET) --open
 
 test:
 	@echo "---BUILD DIR---"
