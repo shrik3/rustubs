@@ -12,7 +12,7 @@ impl KThread for Meeseeks {
 		loop {
 			let t = Task::current().unwrap();
 			sprintln!("I'm {}", t.pid);
-			for _i in 0..1000000 {
+			for _i in 0..10000000 {
 				delay();
 			}
 		}
