@@ -1,4 +1,5 @@
 pub mod arch_regs;
+pub mod gdt;
 pub mod interrupt;
 pub mod io_port;
 pub mod misc;

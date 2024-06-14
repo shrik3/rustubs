@@ -29,6 +29,8 @@ MAX_MEM: equ 512
 [GLOBAL startup]
 [GLOBAL mb_magic]
 [GLOBAL mb_info_addr]
+[GLOBAL gdt]
+[GLOBAL gdt_80]
 ; functions from other parts of rustubs
 ; NOTE: this are all from 64bit code, so do not use them in 32bit assembly
 [EXTERN ___BSS_START__]

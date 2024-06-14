@@ -43,6 +43,7 @@ pub extern "C" fn _entry() -> ! {
 	// initialize the idt and re-program the pic. Must do this before enabling irq
 	// also must initialize the idt before mm, because the later may trigger page faults, which is
 	// fatal and we want to catch them during system initilization.
+	arch::x86_64::gdt::init();
 	interrupt::init();
 	mm::init();
 	print_init_mem_info();
