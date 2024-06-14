@@ -39,10 +39,10 @@ shitty code, I'm a rust beginner.
     - [X] synchronized scheduling
     - [X] waiting tasks
 - [X] Timer Interrupt
-- [?] Synchronization Primitives
+- [X] Synchronization Primitives
     - [X] level3 (prologue) and level2 (epilogue) Synchronization
     - [X] semaphore (spinning and sleeping variants)
-- [ ] watch, sleep and system clock
+- [X] watch, sleep and system clock
 
 MISC
 - [ ] FP and SSE state
