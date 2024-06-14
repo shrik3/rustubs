@@ -47,22 +47,9 @@ macro_rules! sprintln{
 }
 pub(crate) use sprintln;
 
-/// this is a blocking function that tries to read a key from the key buffer.
-/// with a spinlock, if we also spin until getting a valid key, then we should
-/// leave a time window for the epilogue level to acquire the lock.
-/// TODO use semaphore, sleep if the buffer is empty; This will solve the above
-/// issue.
 pub fn read_key() -> Key {
-	loop {
-		let k = KEY_BUFFER.lock().pop_front();
-		if let Some(key) = k {
-			return key;
-		}
-		for _ in 0..10000 {
-			use crate::arch::x86_64::misc::delay;
-			delay();
-		}
-	}
+	use crate::proc::sync::semaphore::Semaphore;
+	KEY_BUFFER.p().unwrap()
 }
 
 pub fn _print(args: fmt::Arguments) {

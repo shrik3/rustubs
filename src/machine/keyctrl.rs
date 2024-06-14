@@ -13,6 +13,7 @@ use self::super::key::*;
 use crate::arch::x86_64::is_int_enabled;
 use crate::io::*;
 use crate::machine::device_io::*;
+use crate::proc::sync::semaphore::{Semaphore, SleepSemaphore};
 use crate::proc::sync::IRQHandlerEpilogue;
 use crate::proc::sync::{L3GetRef, L3SyncCell};
 use alloc::collections::VecDeque;
@@ -33,12 +34,7 @@ use super::key::Modifiers;
 /// (TODO maybe we can change this L3/L2 shared state abstraction)
 pub static KBCTL_GLOBAL: L3SyncCell<KeyboardController> =
 	L3SyncCell::new(KeyboardController::new());
-
-lazy_static! {
-	/// global input buffer protected by mutex, it must not be used in prologue level (L3).
-	/// TODO implement sleeping mutex or semaphore
-	pub static ref KEY_BUFFER: Mutex<VecDeque<Key>> = Mutex::new(VecDeque::new());
-}
+pub static KEY_BUFFER: SleepSemaphore<VecDeque<Key>> = SleepSemaphore::new(VecDeque::new());
 
 pub struct KeyboardController {
 	keystate: KeyState,
@@ -67,7 +63,7 @@ impl IRQHandlerEpilogue for KeyboardDriver {
 			// intentionally holding the lock forever. This could also starve
 			// the other threads because context swap can only happen in-between
 			// epilogue execution.
-			KEY_BUFFER.lock().push_back(k.unwrap());
+			KEY_BUFFER.v(k.unwrap());
 		}
 	}
 }
