@@ -57,8 +57,21 @@ files:
 source:
 	https://docs.rs/x86_64/latest/src/x86_64/structures/paging/page_table.rs
 
------------------------------------------------------------
++---------------------------------------------------------+
+|   I learned stuffs from ..                              |
++---------------------------------------------------------+
+what:
+	learned how to use atomic primitives in semaphore implementation;
+	license is unknown.
 
+files:
+	src/proc/sync/semaphore.rs
+
+Source:
+	https://neosmart.net/blog/implementing-truly-safe-semaphores-in-rust/
+
+author:
+	Mahmoud Al-Qudsi
 
 +---------------------------------------------------------+
 |   rust-osdev/bootloader (inspiration)                   |

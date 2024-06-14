@@ -1,6 +1,7 @@
 //! the sync module defines the OOStuBS prologue/epilogue synchronization model
 //! for interrupt and preemptive scheduling. Read `docs/sync_model.txt` for
 //! details
+pub mod semaphore;
 use alloc::collections::VecDeque;
 use core::cell::SyncUnsafeCell;
 use core::sync::atomic::{AtomicBool, Ordering};
