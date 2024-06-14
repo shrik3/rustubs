@@ -9,6 +9,11 @@
 
 # RuStuBS: a rust tutorial operating system inspired by OOStuBS.
 
+**RuStuBS documentations**
+- [code documentations](https://rustubs.shrik3.com/rustubs/index.html).
+- [basic concepts](https://git.sr.ht/~shrik3/rustubs/tree/master/item/docs).
+   Most importantly, the [Synchronization model](https://git.sr.ht/~shrik3/rustubs/tree/master/item/docs/sync_model.txt)
+
 This is a toy bare metal operation system implemented in Rust. Apologies for my
 shitty code, I'm a rust beginner.
 

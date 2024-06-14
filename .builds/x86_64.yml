@@ -1,10 +1,14 @@
 image: archlinux
+oauth: pages.sr.ht/PAGES:RW
 packages:
+  - hut
   - mtools
   - rustup
   - nasm
   - grub
   - libisoburn
+environment:
+  site: rustubs.shrik3.com
 
 sources:
   - https://git.sr.ht/~shrik3/rustubs
@@ -17,6 +21,11 @@ tasks:
       cd rustubs
       mkdir build
       make
+      make rust-docs
+      echo "<head><meta http-equiv='refresh' content='0; URL=rustubs/index.html'></head>" > target/x86_64-rustubs/doc/index.html
+      tar -C target/x86_64-rustubs/doc -cvz . > ../site.tar.gz
+  - upload: |
+      hut pages publish -d $site site.tar.gz
 
 artifacts:
    - rustubs/bootdisk.iso
