@@ -8,7 +8,7 @@ use core::ptr;
 /// the task struct will be placed on the starting addr (low addr) of the kernel stack.
 /// therefore we can retrive the task struct at anytime by masking the kernel stack
 /// NOTE: we don't use `repr(C)` or `repr(packed)` here
-// TODO: use proper repr
+#[repr(C)]
 pub struct Task {
 	pub magic: u64,
 	pub pid: u32,
