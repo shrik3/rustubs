@@ -37,13 +37,12 @@ shitty code, I'm a rust beginner.
 - [X] Threading
 - [X] Scheduler (single CPU)
     - [X] synchronized scheduling
-    - [ ] waiting tasks
+    - [X] waiting tasks
 - [X] Timer Interrupt
 - [?] Synchronization Primitives
     - [X] level3 (prologue) and level2 (epilogue) Synchronization
-    - [ ] sleeping locks
-    - [ ] semaphore (to serialize critical sections on epilogue level)
-- [ ] asm! Wrappers for basic instructions
+    - [X] semaphore (spinning and sleeping variants)
+- [ ] watch, sleep and system clock
 
 MISC
 - [ ] FP and SSE state

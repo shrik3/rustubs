@@ -82,6 +82,7 @@ impl Scheduler {
 			let sched = GLOBAL_SCHEDULER.l3_get_ref_mut();
 			next_tid = sched.run_queue.pop_front().expect("empty run queue, how?");
 			next_task = next_tid.get_task_ref_mut();
+			assert_eq!(next_task.state, TaskState::Run);
 			sched.run_queue.push_back(next_tid);
 		}
 		if me.pid == next_task.pid {

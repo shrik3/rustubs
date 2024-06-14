@@ -1,13 +1,18 @@
 use crate::arch::x86_64::arch_regs;
 use crate::arch::x86_64::arch_regs::Context64;
-use crate::defs::*;
 use crate::mm::KSTACK_ALLOCATOR;
+use crate::proc::sched::GLOBAL_SCHEDULER;
+use crate::proc::sync::L3GetRef;
+use crate::{defs::*, Scheduler};
+use alloc::collections::VecDeque;
 use core::ptr;
-
 /// currently only kernelSp and Context are important.
 /// the task struct will be placed on the starting addr (low addr) of the kernel stack.
 /// therefore we can retrive the task struct at anytime by masking the kernel stack
 /// NOTE: we don't use `repr(C)` or `repr(packed)` here
+/// NOTE: we assume all fields in [Task] are only modified by the task itself,
+/// i.e. no task should modify another task's state. (this may change though, in
+/// which case we will need some atomics)
 #[repr(C)]
 pub struct Task {
 	pub magic: u64,
@@ -25,7 +30,7 @@ pub struct Task {
 /// the smart pointer types automatically drops the owned values when their
 /// lifetime end. For now want to have manual control of when, where and how I
 /// drop the Task because there could be more plans than just freeing the memory
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TaskId(u64);
 
 impl TaskId {
@@ -42,9 +47,13 @@ impl TaskId {
 	}
 }
 
-#[derive(Debug)]
+/// currently don't differentiate between running and ready states because the
+/// scheduler push the next task to the back of the queue. i.e. the running task
+/// is also "ready" in the run_queue
+#[derive(Debug, PartialEq)]
 pub enum TaskState {
 	Run,
+	Wait,
 	Block,
 	Dead,
 	Eating,
@@ -118,6 +127,38 @@ impl Task {
 		return Some(t);
 	}
 
+	#[inline]
+	pub fn taskid(&self) -> TaskId {
+		TaskId::new(self as *const _ as u64)
+	}
+
+	/// a task may be present in multiple wait rooms; this is logically not
+	/// possible at the moment, but would be necessary for stuffs like EPoll
+	/// unsafe because this must be used in L3 critical section
+	pub unsafe fn wait_in(&mut self, wait_room: &mut VecDeque<TaskId>) {
+		assert_ne!(self.state, TaskState::Wait);
+		self.state = TaskState::Wait;
+		wait_room.push_back(self.taskid());
+		let rq = &mut GLOBAL_SCHEDULER.l3_get_ref_mut().run_queue;
+		let idx = rq.binary_search(&self.taskid());
+		let idx = idx.expect("how can you call wait_in if you are not already in the run queue?");
+		rq.remove(idx)
+			.expect("failed to remove task from run queue");
+		Scheduler::do_schedule();
+	}
+
+	/// unsafe because this must be used in L3 critical section
+	pub unsafe fn wakeup(&mut self) {
+		if self.state != TaskState::Wait {
+			// already awake. why? I don't know.
+			return;
+		}
+		// TODO: makesure you don't put a task in the run queue more than once.
+		self.state = TaskState::Run;
+		let sched = GLOBAL_SCHEDULER.l3_get_ref_mut();
+		sched.insert_task(self.taskid());
+	}
+
 	/// create a kernel thread, you need to add it to the scheduler run queue
 	/// manually
 	pub fn create_task(pid: u32, entry: u64) -> TaskId {
@@ -131,7 +172,7 @@ impl Task {
 					magic: Mem::KERNEL_STACK_TASK_MAGIC,
 					pid,
 					kernel_stack: sp,
-					state: TaskState::Meow,
+					state: TaskState::Run,
 					context: Context64::default(),
 				},
 			)

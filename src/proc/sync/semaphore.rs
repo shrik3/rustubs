@@ -1,4 +1,6 @@
+use crate::proc::sync::{L3GetRef, L3SyncCell};
 use crate::proc::task::{Task, TaskId};
+use crate::L3_CRITICAL;
 use alloc::collections::VecDeque;
 use core::sync::atomic::Ordering;
 use core::{cell::SyncUnsafeCell, sync::atomic::AtomicU64};
@@ -60,7 +62,7 @@ impl<T> SpinSemaphore<T> {
 impl<T, E> Semaphore<T, E> for SpinSemaphore<T>
 where
 	T: ResourceMan<E>,
-	E: Copy + Clone + core::fmt::Debug,
+	E: Copy + Clone,
 {
 	// https://neosmart.net/blog/implementing-truly-safe-semaphores-in-rust/
 	fn p(&self) -> Option<E> {
@@ -99,8 +101,95 @@ where
 }
 
 // sleeping SpinSemaphore is toddo
-// pub struct SleepSemaphore<T> {
-// 	reource_pool: SyncUnsafeCell<T>,
-// 	sema: AtomicU64,
-// 	wait_room: VecDeque<TaskId>,
-// }
+pub struct SleepSemaphore<T> {
+	reource_pool: SyncUnsafeCell<T>,
+	sema: AtomicU64,
+	// the wait_room must be synchronized at level 3 (or???)
+	// TODO make a type alias for VecDeque<TaskId>
+	wait_room: L3SyncCell<VecDeque<TaskId>>,
+}
+
+impl<T> SleepSemaphore<T> {
+	pub const fn new(t: T) -> Self {
+		Self {
+			reource_pool: SyncUnsafeCell::new(t),
+			sema: AtomicU64::new(0),
+			wait_room: L3SyncCell::new(VecDeque::new()),
+		}
+	}
+
+	fn wait(&self) {
+		L3_CRITICAL! {
+			unsafe {
+				let wq = self.wait_room.l3_get_ref_mut();
+				Task::current().unwrap().wait_in(wq);
+			};
+		}
+	}
+
+	fn wakeup_all(&self) {
+		L3_CRITICAL! {
+			unsafe {
+				let wq = self.wait_room.l3_get_ref_mut();
+				let mut tid;
+				loop {
+					tid = wq.pop_front();
+					if tid.is_none() {break;}
+					tid.unwrap().get_task_ref_mut().wakeup();
+				}
+			};
+		};
+	}
+
+	fn wakeup_one(&self) {
+		L3_CRITICAL! {
+			unsafe {
+				let wq = self.wait_room.l3_get_ref_mut();
+				let tid = wq.pop_front();
+				if tid.is_some() {
+					tid.unwrap().get_task_ref_mut().wakeup();
+				}
+			};
+		};
+	}
+}
+
+// like the spinning one, but sleep; perhaps consider reusing code..
+impl<T, E> Semaphore<T, E> for SleepSemaphore<T>
+where
+	T: ResourceMan<E>,
+	E: Copy + Clone,
+{
+	fn p(&self) -> Option<E> {
+		let mut c: u64;
+		loop {
+			c = self.sema.load(Ordering::Relaxed);
+			if c == 0 {
+				self.wait();
+				continue;
+			}
+
+			let r = self
+				.sema
+				.compare_exchange(c, c - 1, Ordering::Acquire, Ordering::Relaxed);
+			match r {
+				Ok(_) => break,
+				Err(_) => continue,
+			}
+		}
+
+		let thing = unsafe { &mut *self.reource_pool.get() }.get_resource();
+		return thing;
+	}
+	fn v(&self, e: E) {
+		unsafe { &mut *self.reource_pool.get() }.insert_resource(e);
+		let _ = self.sema.fetch_add(1, Ordering::SeqCst);
+		self.wakeup_one();
+	}
+	fn is_empty(&self) -> bool {
+		todo!()
+	}
+	fn is_full(&self) -> bool {
+		todo!()
+	}
+}
