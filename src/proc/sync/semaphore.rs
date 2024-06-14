@@ -1,6 +1,6 @@
 use crate::proc::sync::{L3GetRef, L3SyncCell};
 use crate::proc::task::{Task, TaskId};
-use crate::L3_CRITICAL;
+use crate::{Scheduler, L3_CRITICAL};
 use alloc::collections::VecDeque;
 use core::sync::atomic::Ordering;
 use core::{cell::SyncUnsafeCell, sync::atomic::AtomicU64};
@@ -125,6 +125,7 @@ impl<T> SleepSemaphore<T> {
 				Task::current().unwrap().wait_in(wq);
 			};
 		}
+		unsafe { Scheduler::do_schedule() };
 	}
 
 	fn wakeup_all(&self) {

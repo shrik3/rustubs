@@ -1,8 +1,10 @@
-use crate::arch::x86_64::arch_regs;
 use crate::arch::x86_64::arch_regs::Context64;
+use crate::arch::x86_64::{arch_regs, is_int_enabled};
+use crate::machine::interrupt::{irq_restore, irq_save};
 use crate::mm::KSTACK_ALLOCATOR;
 use crate::proc::sched::GLOBAL_SCHEDULER;
-use crate::proc::sync::L3GetRef;
+use crate::proc::sync::bellringer::{BellRinger, Sleeper};
+use crate::proc::sync::{L3GetRef, L3_CRITICAL};
 use crate::{defs::*, Scheduler};
 use alloc::collections::VecDeque;
 use core::ptr;
@@ -139,12 +141,6 @@ impl Task {
 		assert_ne!(self.state, TaskState::Wait);
 		self.state = TaskState::Wait;
 		wait_room.push_back(self.taskid());
-		let rq = &mut GLOBAL_SCHEDULER.l3_get_ref_mut().run_queue;
-		let idx = rq.binary_search(&self.taskid());
-		let idx = idx.expect("how can you call wait_in if you are not already in the run queue?");
-		rq.remove(idx)
-			.expect("failed to remove task from run queue");
-		Scheduler::do_schedule();
 	}
 
 	/// unsafe because this must be used in L3 critical section
