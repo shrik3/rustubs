@@ -1,10 +1,10 @@
 use crate::arch::x86_64::is_int_enabled;
+use crate::machine::interrupt::{irq_restore, irq_save};
 use crate::proc::sync::*;
 use crate::proc::task::*;
 use alloc::collections::VecDeque;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
-
 pub static GLOBAL_SCHEDULER: L3SyncCell<Scheduler> = L3SyncCell::new(Scheduler::new());
 /// A global flag indicating whether reschedule is required.
 pub static NEED_RESCHEDULE: AtomicBool = AtomicBool::new(false);
@@ -73,19 +73,29 @@ impl Scheduler {
 
 	// pop front, push back
 	pub unsafe fn do_schedule() {
+		assert!(is_int_enabled());
 		let me = Task::current().unwrap();
 		let next_task;
 		let next_tid;
-		L3_CRITICAL! {
-			// the L3 critical section
+		{
+			let r = irq_save();
+			// begin L3 critical section
 			// make sure we drop the mutable borrow before doing context swap
 			let sched = GLOBAL_SCHEDULER.l3_get_ref_mut();
-			next_tid = sched.run_queue.pop_front().expect("empty run queue, how?");
+			if sched.run_queue.is_empty() && me.state == TaskState::Run {
+				// I'm the only one, just return;
+				return;
+			}
+			next_tid = sched.run_queue.pop_front().expect("no runnable task");
 			next_task = next_tid.get_task_ref_mut();
 			assert_eq!(next_task.state, TaskState::Run);
-			sched.run_queue.push_back(next_tid);
+			if me.state == TaskState::Run {
+				sched.run_queue.push_back(me.taskid());
+			}
+			// end L3 critical section
+			irq_restore(r);
 		}
-		if me.pid == next_task.pid {
+		if me.taskid() == next_task.taskid() {
 			return;
 		}
 		unsafe {
@@ -94,6 +104,7 @@ impl Scheduler {
 				&(next_task.context) as *const _ as u64,
 			);
 		}
+		assert!(is_int_enabled());
 	}
 
 	// like do_schedule but we there is no running context to save
@@ -107,7 +118,6 @@ impl Scheduler {
 				.pop_front()
 				.expect("run queue empty, can't start");
 			first_task = tid.get_task_ref_mut();
-			sched.run_queue.push_back(tid);
 		}
 		unsafe {
 			context_swap_to(&(first_task.context) as *const _ as u64);
