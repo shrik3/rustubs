@@ -2,10 +2,10 @@
 // TODO this is a device, should not live under interrupt module
 // TODO there should be an machine level timer abstraction
 use crate::machine::device_io::IOPort;
-use crate::proc::sched::SET_NEED_RESCHEDULE;
 use crate::machine::time;
-use crate::proc::sync::IRQHandlerEpilogue;
+use crate::proc::sched::SET_NEED_RESCHEDULE;
 use crate::proc::sync::bellringer::BellRinger;
+use crate::proc::sync::IRQHandlerEpilogue;
 use crate::proc::task::Task;
 // use crate::proc::sched::
 pub struct PIT {}
