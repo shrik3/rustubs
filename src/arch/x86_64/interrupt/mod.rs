@@ -28,42 +28,6 @@ extern "C" fn trap_gate(nr: u16, fp: u64) {
 }
 
 #[inline]
-/// handle_irq assumes the interrupt is **enabled** when called;
-/// Analogue to OOStuBS guard::leave(), but we do it slightly differently.
-/// See code comments and docs/sync_model.txt
-unsafe fn clear_epilogue_queue() {
-	let mut epi: Option<EpilogueEntrant>;
-	let mut done;
-	loop {
-		L3_CRITICAL! {
-			let rq = EPILOGUE_QUEUE.l3_get_ref_mut();
-			epi = rq.queue.pop_front();
-			done = rq.queue.is_empty();
-		}
-		if let Some(e) = epi {
-			e.call();
-		}
-		// This is a linearization point where we may do rescheduling
-		// unlike OOStuBS, we don't do rescheduling in the epilogues. this
-		// decouples the scheduler from the timer interrupt driver, also has
-		// better "real-time" guarantee: rescheduling will not be delayed by
-		// more than one epilogue execution; OOStuBS doesn't have the delay
-		// issue because every epilogue is enqueued at most once due to the
-		// limitation of having no memory management.
-		LEAVE_L2();
-		Scheduler::try_reschedule();
-		ENTER_L2();
-		// but this approach is unfair and there is no realtime guarantee (if
-		// that's ever the case for us...)
-		if done {
-			break;
-		}
-	}
-	// you need to make sure the interrupt is disabled at this point
-	LEAVE_L2();
-}
-
-#[inline]
 /// handle_irq assumes the interrupt is **disabled** when called.
 /// this will also make sure interrupt is disabled when it returns
 unsafe fn handle_irq(nr: u16) {
@@ -97,7 +61,37 @@ unsafe fn handle_irq(nr: u16) {
 	}
 	// we need to clear the epilogue queue on behalf of others. Modifying the
 	// epilogue is a level 3 critical section
-	clear_epilogue_queue();
+	let mut epi: Option<EpilogueEntrant>;
+	let mut done;
+	loop {
+		let r = irq_save();
+		let rq = EPILOGUE_QUEUE.l3_get_ref_mut();
+		epi = rq.queue.pop_front();
+		done = rq.queue.is_empty();
+		irq_restore(r);
+
+		if let Some(e) = epi {
+			assert!(is_int_enabled());
+			e.call();
+		}
+		// This is a linearization point where we may do rescheduling
+		// unlike OOStuBS, we don't do rescheduling in the epilogues. this
+		// decouples the scheduler from the timer interrupt driver, also has
+		// better "real-time" guarantee: rescheduling will not be delayed by
+		// more than one epilogue execution; OOStuBS doesn't have the delay
+		// issue because every epilogue is enqueued at most once due to the
+		// limitation of having no memory management.
+		LEAVE_L2();
+		Scheduler::try_reschedule();
+		ENTER_L2();
+		// but this approach is unfair and there is no realtime guarantee (if
+		// that's ever the case for us...)
+		if done {
+			break;
+		}
+	}
+	// you need to make sure the interrupt is disabled at this point
+	LEAVE_L2();
 }
 
 /// handles exception/faults (nr < 32);
