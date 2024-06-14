@@ -28,7 +28,7 @@ use proc::task::Task;
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-	println!("{}", info);
+	println!("[{}] {}", Task::current().unwrap().pid, info);
 	loop {}
 }
 
@@ -88,7 +88,15 @@ pub fn _test_proc_switch_to() {
 		);
 
 		sched.insert_task(
-			Task::create_task(2, kthread::Echo::get_entry())
+			Task::create_task(2, kthread::Meeseeks::get_entry())
+		);
+
+		sched.insert_task(
+			Task::create_task(3, kthread::Echo::get_entry())
+		);
+
+		sched.insert_task(
+			Task::create_task(4, kthread::Lazy::get_entry())
 		);
 	}
 	unsafe { Scheduler::kickoff() };
