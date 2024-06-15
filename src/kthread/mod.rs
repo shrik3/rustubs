@@ -8,16 +8,23 @@ pub use echo::Echo;
 pub mod lazy;
 pub use lazy::Lazy;
 
+use crate::proc::sync::LEAVE_L2;
+
 pub trait KThread {
-	extern "C" fn entry() -> !;
+	fn entry() -> !;
+	/// the actual entry, where we also explicitly release L2
+	extern "C" fn _entry() {
+		LEAVE_L2();
+		Self::entry();
+	}
 	fn get_entry() -> u64 {
-		Self::entry as u64
+		Self::_entry as u64
 	}
 }
 
 pub struct Idle {}
 impl KThread for Idle {
-	extern "C" fn entry() -> ! {
+	fn entry() -> ! {
 		use core::arch::asm;
 		loop {
 			unsafe { asm!("sti; hlt") };

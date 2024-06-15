@@ -7,7 +7,7 @@ use crate::proc::task::Task;
 pub struct Echo {}
 
 impl KThread for Echo {
-	extern "C" fn entry() -> ! {
+	fn entry() -> ! {
 		let t = Task::current().unwrap();
 		println!("[PID {}] WAITING FOR INPUT", t.pid);
 		loop {

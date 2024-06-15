@@ -1,3 +1,4 @@
+use crate::arch::x86_64::is_int_enabled;
 use crate::proc::sync::{L3GetRef, L3SyncCell};
 use crate::proc::task::{Task, TaskId};
 use crate::{Scheduler, L3_CRITICAL};
@@ -125,7 +126,8 @@ impl<T> SleepSemaphore<T> {
 				Task::current().unwrap().wait_in(wq);
 			};
 		}
-		unsafe { Scheduler::do_schedule() };
+		assert!(is_int_enabled());
+		unsafe { Scheduler::do_schedule_l2() };
 	}
 
 	fn wakeup_all(&self) {

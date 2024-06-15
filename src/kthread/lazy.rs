@@ -8,7 +8,7 @@ use crate::proc::task::Task;
 pub struct Lazy {}
 
 impl KThread for Lazy {
-	extern "C" fn entry() -> ! {
+	fn entry() -> ! {
 		let t = Task::current().unwrap();
 		loop {
 			sprintln!("CLOCK: {} s", time::sec());

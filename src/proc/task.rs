@@ -161,7 +161,7 @@ impl Task {
 		self.state = TaskState::Wait;
 		BellRinger::check_in(Sleeper::new(self.taskid(), ns));
 		assert!(is_int_enabled());
-		unsafe { Scheduler::do_schedule() };
+		unsafe { Scheduler::do_schedule_l2() };
 	}
 
 	/// create a kernel thread, you need to add it to the scheduler run queue

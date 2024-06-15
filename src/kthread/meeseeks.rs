@@ -6,7 +6,7 @@ use crate::proc::task::Task;
 pub struct Meeseeks {}
 
 impl KThread for Meeseeks {
-	extern "C" fn entry() -> ! {
+	fn entry() -> ! {
 		let t = Task::current().unwrap();
 		sprintln!("I'm Mr.Meeseeks {}, look at me~", t.pid);
 		loop {

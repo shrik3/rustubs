@@ -60,7 +60,6 @@ impl Scheduler {
 		// this assert doesn't check if you own the L2, but at least a sanity
 		// check.
 		assert!(is_int_enabled());
-		assert!(IS_L2_AVAILABLE());
 		// TODO maybe refine memory ordering here
 		let r = NEED_RESCHEDULE.compare_exchange(true, false, Ordering::Relaxed, Ordering::Relaxed);
 		if r != Ok(true) {
@@ -73,7 +72,6 @@ impl Scheduler {
 
 	// pop front, push back
 	pub unsafe fn do_schedule() {
-		assert!(is_int_enabled());
 		let me = Task::current().unwrap();
 		let next_task;
 		let next_tid;
@@ -104,7 +102,14 @@ impl Scheduler {
 				&(next_task.context) as *const _ as u64,
 			);
 		}
+	}
+	/// guards do_schedule and makes sure it's also sequentialized at L2
+	/// unsafe because you must make sure interrupt is enabled when spinning
+	pub unsafe fn do_schedule_l2() {
 		assert!(is_int_enabled());
+		SPIN_ENTER_L2();
+		Self::do_schedule();
+		LEAVE_L2();
 	}
 
 	// like do_schedule but we there is no running context to save
@@ -119,6 +124,9 @@ impl Scheduler {
 				.expect("run queue empty, can't start");
 			first_task = tid.get_task_ref_mut();
 		}
+		// kickoff simulates a do_schedule, so we need to enter l2 here.
+		// new tasks must leave l2 explicitly on their first run
+		ENTER_L2();
 		unsafe {
 			context_swap_to(&(first_task.context) as *const _ as u64);
 		}

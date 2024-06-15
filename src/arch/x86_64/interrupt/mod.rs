@@ -81,11 +81,18 @@ unsafe fn handle_irq(nr: u16) {
 		// more than one epilogue execution; OOStuBS doesn't have the delay
 		// issue because every epilogue is enqueued at most once due to the
 		// limitation of having no memory management.
-		LEAVE_L2();
+		//
+		// this also means that ALL rescheduling must be done in the level 2.
+		// otherwise 1) rescheduling may not be strictly linearized, if the CPU
+		// is not running fast enough there might be issues caused by spurious
+		// (timer) interrupts. 2) even if you can guarantee linearization, there
+		// is still a dead lock situation that, if the try_reschedule /
+		// do_reschedule was called the at a wrong place, the execution may not
+		// release the L2 lock when they are scheduled back. 3) this also
+		// requires you do explicitly release L2 lock on new task entrance (when
+		// they are scheduled for the first time). I'm not a big fan of this but
+		// there is nothing much I can do right now.
 		Scheduler::try_reschedule();
-		ENTER_L2();
-		// but this approach is unfair and there is no realtime guarantee (if
-		// that's ever the case for us...)
 		if done {
 			break;
 		}
