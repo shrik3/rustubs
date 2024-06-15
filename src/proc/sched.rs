@@ -82,6 +82,7 @@ impl Scheduler {
 			let sched = GLOBAL_SCHEDULER.l3_get_ref_mut();
 			if sched.run_queue.is_empty() && me.state == TaskState::Run {
 				// I'm the only one, just return;
+				irq_restore(r);
 				return;
 			}
 			next_tid = sched.run_queue.pop_front().expect("no runnable task");
