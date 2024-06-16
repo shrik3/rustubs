@@ -29,6 +29,8 @@ else
 	RUST_BUILD = debug
 endif
 
+FSIMAGE = fsimage.o
+
 all: bootdisk.iso
 
 bootdisk.iso : $(BUILD)/kernel
@@ -38,11 +40,18 @@ bootdisk.iso : $(BUILD)/kernel
 		--locales=en@piglatin --themes=none \
 		-o bootdisk.iso isofiles > /dev/null 2>&1
 
+$(FSIMAGE): fs.ustar
+	@echo "---BUILDING RAMFS---"
+	@objcopy --input-target binary --output-target pe-x86-64 --binary-architecture i386 --rename-section .data=.fs $< $@
+
+fs.ustar:
+	@tar -cvf $@ --format=ustar docs/*
+
 # Note: explicitly tell the linker to use startup: as the entry point (we have
 # no main here)
-$(BUILD)/kernel : rust_kernel startup.o $(ASMOBJ_PREFIXED)
+$(BUILD)/kernel : rust_kernel startup.o $(ASMOBJ_PREFIXED) $(FSIMAGE)
 	@echo "---LINKING ... ---"
-	$(VERBOSE) ld $(LDFLAGS) -T $(LINKER_SCRIPT) -o $@ $(BUILD)/startup.o $(ASMOBJ_PREFIXED) $(RUST_OBJECT)
+	$(VERBOSE) ld $(LDFLAGS) -T $(LINKER_SCRIPT) -o $@ $(BUILD)/startup.o $(ASMOBJ_PREFIXED) $(RUST_OBJECT) $(FSIMAGE)
 
 # Note: this target works when the VPATH is set correctly
 $(BUILD)/_%.o : %.s | $(BUILD)
@@ -80,6 +89,8 @@ clean:
 	rm -f kernel
 	rm -f isofiles/boot/kernel
 	rm -f build/*
+	rm -f $(FSIMAGE)
+	rm -f fs.ustar
 
 qemu: bootdisk.iso
 	qemu-system-x86_64 -drive file=./bootdisk.iso,format=raw -k en-us -serial mon:stdio

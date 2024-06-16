@@ -2,4 +2,5 @@
 /target
 *.iso
 *.o
+fs.ustar
 kernel

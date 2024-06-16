@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
+#![allow(non_snake_case)]
 #![no_std]
 #![no_main]
 #![feature(const_option)]
@@ -10,6 +11,7 @@ pub mod arch;
 pub mod defs;
 #[macro_use]
 pub mod io;
+pub mod fs;
 pub mod kthread;
 pub mod machine;
 pub mod mm;
@@ -52,6 +54,9 @@ pub extern "C" fn _entry() -> ! {
 	let interval = interrupt::pit::PIT::set_interval(20000);
 	println!("[init] timer interrupt set to {} ns", interval);
 	// busy loop query keyboard
+	//
+	println!("[init] ustar fs:");
+	fs::test_print_fs_raw();
 	interrupt::interrupt_enable();
 	pic_8259::allow(PicDeviceInt::KEYBOARD);
 	pic_8259::allow(PicDeviceInt::TIMER);

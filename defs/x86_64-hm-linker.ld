@@ -119,5 +119,12 @@ SECTIONS
 		*(".lrodata.*")
 	}
 
+	.fs : AT(ADDR(.fs) - KERNEL_OFFSET)
+	{
+		PROVIDE (___RAMFS_START__ = .);
+		*(".fs")
+		PROVIDE (___RAMFS_END__ = .);
+	}
+
 	PROVIDE (___KERNEL_PM_END__ = . - KERNEL_OFFSET);
 }
