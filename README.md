@@ -1,5 +1,6 @@
 [![builds.sr.ht status](https://builds.sr.ht/~shrik3/rustubs/commits/master/x86_64.yml.svg)](https://builds.sr.ht/~shrik3/rustubs/commits/master/x86_64.yml?)
 
+* [Roadmap](#roadmap)
 * [Build](#build)
 * [Structure](#structure)
 * [Contributing](#contributing)
@@ -23,43 +24,52 @@ Hannover) or RuStuBS (FAU). See [Remarks](#remarks)
 This is a toy bare metal operation system implemented in Rust. Apologies for my
 shitty code, I'm a rust beginner.
 
-**Status / Roadmap**
+## Roadmap
+`[X]` means complete, `[?]` means half-baked
+
+**in the name of OOStuBS**
 - [X] GDB support (qemu stub)
-- [X] Basic code structure
-- [X] Build minimal iso image
-- [X] bootable using grub
-- [X] Setting up CGA display, print something (hello world)
-- [X] Intigrate print into rust println! etc.
-- [X] Keyboard controller and input handler
+- [X] synchronized CGA display
+- [X] rust `println!` integration
 - [X] Interrupt handler
-- [X] kmalloc (using the [linked-list-allocator ](https://github.com/rust-osdev/linked-list-allocator))
-    TODO: implement my own
-- [X] intrrupt sync (pro-/epilogue model)
-    - [X] synchronized input buffer
-- [X] Threading
+- [X] **interrupt sync (pro-/epilogue model)**
+- [X] Keyboard controller and semaphore input handler
+- [X] multi-threading
 - [X] Scheduler (single CPU)
     - [X] synchronized scheduling
     - [X] waiting tasks
-- [X] Timer Interrupt
-- [X] Synchronization Primitives
+- [X] Timer Interrupt and preemptive scheduling
+- [X] **Synchronization Primitives**
     - [X] level3 (prologue) and level2 (epilogue) Synchronization
     - [X] semaphore (spinning and sleeping variants)
-- [X] watch, sleep and system clock
+- [X] wall clock and sleep (w. cooperative scheduling)
+- [ ] multicore (MPStuBS)
 
-MISC
-- [ ] FP and SSE state
-
-Beyond StuBS
-- [X] Upperhalf Kernel
-- [X] Task Descriptor structures
-- [X] Paging: PMA and paging structures
-- [?] Paging: pagefault handler (WIP)
-- [?] Address Space for each Process
+**Beyond StuBS**
+- [X] kernel heap management (using the [linked-list-allocator ](https://github.com/rust-osdev/linked-list-allocator))
+    TODO: implement my own
+- [X] higher half Kernel
+- [?] Task Descriptor structures
+- [?] more control over hardware
+    - [X] serial output
+    - [X] custom IDT
+    - [X] multiboot info
+    - [?] VGA graphic mode
+- [?] full-fledged Paging and virtual memory
+    - [X] mapping for kernel heap and kernel code (higher half mem)
+    - [?] pagefault handler
+    - [?] Address Space for each Process + virtual memory management
+- [?] in memory FS
+    - [?] ustar FS, read-only & statically linked
+- [ ] parse and load user elf
 - [ ] user heap and mmap
-- [ ] in memory FS
 - [ ] user library
 - [ ] syscall
 - [ ] aarch64 support
+
+**MISC**
+- [ ] FP and SSE state
+- [ ] Decouple architecture specific code
 
 ## Build
 
