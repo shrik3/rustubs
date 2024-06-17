@@ -87,7 +87,9 @@ pub struct FileHdr(&'static [u8]);
 impl FileHdr {
 	pub fn name(&self) -> &str {
 		let file_name = to_cstr(&self.0[0..100]);
-		str::from_utf8(file_name.unwrap()).unwrap()
+		str::from_utf8(file_name.unwrap())
+			.unwrap()
+			.trim_matches(char::from(0))
 	}
 	pub fn owner(&self) -> &str {
 		let user_name = to_cstr(&self.0[265..265 + 32]);
