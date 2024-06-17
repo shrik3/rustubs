@@ -1,5 +1,5 @@
 //! the sync module defines the OOStuBS prologue/epilogue synchronization model
-//! for interrupt and preemptive scheduling. Read `docs/sync_model.txt` for
+//! for interrupt and preemptive scheduling. Read `docs/sync_model.md` for
 //! details
 #![doc = include_str!("../../../docs/sync_model.md")]
 pub mod bellringer;
