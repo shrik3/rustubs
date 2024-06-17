@@ -64,12 +64,22 @@ pub fn _serial_print(args: fmt::Arguments) {
 	}
 }
 
+/// [clear_screen] removes the content but doesn't reset the cursor
 pub fn clear_screen() {
 	CGASCREEN_GLOBAL.lock().clear();
 }
 
+/// [reset_screen] also resets the cursor
+pub fn reset_screen() {
+	CGASCREEN_GLOBAL.lock().reset();
+}
+
 pub fn back_space() {
 	CGASCREEN_GLOBAL.lock().backspace();
+}
+
+pub fn print_help(s: &str, attr: u8) {
+	CGASCREEN_GLOBAL.lock().print_at_bottom(s, attr);
 }
 
 pub fn set_attr(attr: u8) {

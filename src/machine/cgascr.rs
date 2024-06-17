@@ -165,6 +165,13 @@ impl CGAScreen {
 		}
 	}
 
+	pub fn reset(&mut self) {
+		self.clear();
+		self.cursor_c = 0;
+		self.cursor_r = 0;
+		self.setpos(0, 0);
+	}
+
 	fn clearline(&self, line: usize) {
 		let b: u8 = self.attr;
 		let mut base: u64 = (b as u64) << 8;
@@ -244,6 +251,26 @@ impl CGAScreen {
 		for c in s.bytes() {
 			self.putchar(c as char);
 		}
+	}
+
+	/// this is helpful for some helper text.
+	/// this will clear the bottom line
+	/// this will not update the cursor location.
+	pub fn print_at_bottom(&mut self, s: &str, attr: u8) {
+		self.clearline(24);
+		let s = if s.len() >= MAX_COLS { &s[0..MAX_COLS] } else { s };
+		// ugly!
+		let orig_r = self.cursor_r;
+		let orig_c = self.cursor_c;
+		let orig_a = self.attr;
+		self.cursor_r = 24;
+		self.cursor_c = 0;
+		self.setattr(attr);
+		self.print(s);
+
+		self.setattr(orig_a);
+		self.cursor_r = orig_r;
+		self.cursor_c = orig_c;
 	}
 
 	pub fn setattr(&mut self, attr: u8) {
