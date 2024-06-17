@@ -60,28 +60,36 @@ impl CGAScreen {
 	}
 
 	#[inline(always)]
+	/// put a char at a position, it doesn't care about the stored
+	/// cursor location.
 	pub fn show(&mut self, row: usize, col: usize, c: char, attr: u8) {
 		let index = cal_offset(row, col);
 		self.cga_mem[index * 2] = c as u8;
 		self.cga_mem[index * 2 + 1] = attr;
 	}
 
+	/// print a char at the current cursor location and update the
+	/// cursor. Scroll the screen if needed.
 	pub fn putchar(&mut self, ch: char) {
-		// TODO use match syntax.
-		if ch == '\n' {
-			self.cursor_r += 1;
-			self.cursor_c = 0;
-			self._check_scroll();
-		} else {
-			self.show(self.cursor_r, self.cursor_c, ch, self.attr);
-			self.cursor_c += 1;
-			if self.cursor_c >= MAX_COLS {
-				self.cursor_c = 0;
+		// TODO align to next tabstop on \t ... but this will make backspace
+		// trickier ..
+		match ch {
+			'\n' => {
 				self.cursor_r += 1;
+				self.cursor_c = 0;
 				self._check_scroll();
 			}
+			_ => {
+				self.show(self.cursor_r, self.cursor_c, ch, self.attr);
+				self.cursor_c += 1;
+				if self.cursor_c >= MAX_COLS {
+					self.cursor_c = 0;
+					self.cursor_r += 1;
+					self._check_scroll();
+				}
+			}
 		}
-		// bruh, what are you thinking about ...
+		// update the on-screen cursor.
 		self.setpos(self.cursor_r, self.cursor_c);
 	}
 
@@ -109,8 +117,6 @@ impl CGAScreen {
 	}
 
 	pub fn scroll(&self, lines: u32) {
-		// TODO
-		// sanity check
 		if lines >= MAX_ROWS as u32 {
 			self.clear();
 		}
@@ -173,6 +179,9 @@ impl CGAScreen {
 		}
 	}
 
+	/// the on-screen cursor position is decoupled with the system's own book
+	/// keeping, i.e. we update the cursor position based on our own record, but
+	/// we never read this position back.
 	pub fn setpos(&mut self, row: usize, col: usize) {
 		// io ports for instruction register and data register
 		let offset = cal_offset(row, col);
