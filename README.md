@@ -9,6 +9,8 @@
 
 # RuStuBS: a rust tutorial operating system inspired by OOStuBS.
 
+![screenshot](docs/screenshot.png)
+
 **Disclaimer**
 Despite the name, this project has **absolutely nothing to do** with rstubs (Uni
 Hannover) or RuStuBS (FAU). See [Remarks](#remarks)
