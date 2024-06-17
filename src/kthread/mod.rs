@@ -8,6 +8,9 @@ pub use echo::Echo;
 pub mod lazy;
 pub use lazy::Lazy;
 
+pub mod kshell;
+pub use kshell::Kshell;
+
 use crate::proc::sync::LEAVE_L2;
 
 pub trait KThread {

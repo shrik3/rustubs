@@ -53,10 +53,6 @@ pub extern "C" fn _entry() -> ! {
 	// roughly ... 50 hz
 	let interval = interrupt::pit::PIT::set_interval(20000);
 	println!("[init] timer interrupt set to {} ns", interval);
-	// busy loop query keyboard
-	//
-	println!("[init] ustar fs:");
-	fs::test_print_fs_raw();
 	interrupt::interrupt_enable();
 	pic_8259::allow(PicDeviceInt::KEYBOARD);
 	pic_8259::allow(PicDeviceInt::TIMER);
@@ -97,12 +93,13 @@ pub fn _test_proc_switch_to() {
 		);
 
 		sched.insert_task(
-			Task::create_task(3, kthread::Echo::get_entry())
+			Task::create_task(3, kthread::Kshell::get_entry())
 		);
 
 		sched.insert_task(
 			Task::create_task(4, kthread::Lazy::get_entry())
 		);
+
 	}
 	unsafe { Scheduler::kickoff() };
 }
