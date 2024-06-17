@@ -9,6 +9,7 @@ use linked_list_allocator::LockedHeap;
 
 // this mod is deprecated.
 mod pma;
+pub mod vmm;
 
 use lazy_static::lazy_static;
 use spin::Mutex;

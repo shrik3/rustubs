@@ -77,6 +77,12 @@ impl FileType {
 	}
 }
 
+// Actually this is chanllenging: how do you justify lifetimes of these things?
+// - a "opened file"
+// - page cache that buffers the file content
+// - the reference to the backing file in the VMA...
+// well, it seems we need the abstraction of file descriptors, if we can't
+// guarantee the lifetime of a file to outlive ther tasks
 #[derive(Clone)]
 pub struct UstarFile<'a> {
 	pub hdr: FileHdr<'a>,

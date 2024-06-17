@@ -8,6 +8,10 @@ impl KThread for Meeseeks {
 	fn entry() -> ! {
 		let t = Task::current().unwrap();
 		sprintln!("I'm Mr.Meeseeks {}, look at me~", t.pid);
+		let mm = &t.mm;
+		for vma in &mm.vmas {
+			println!("{:#?}", vma);
+		}
 		loop {
 			let t = Task::current().unwrap();
 			sprintln!("I'm {}", t.pid);

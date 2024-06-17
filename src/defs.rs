@@ -102,6 +102,9 @@ impl Mem {
 	pub const KERNEL_STACK_SIZE: u64 = 0x4000;
 	pub const KERNEL_STACK_MASK: u64 = Self::KERNEL_STACK_SIZE - 1;
 	pub const KERNEL_STACK_TASK_MAGIC: u64 = 0x1A2B3C4D5E6F6969;
+	// user (psuedo)
+	pub const USER_STACK_START: u64 = 0x0000_7000_0000_0000;
+	pub const USER_STACK_SIZE: u64 = 8 * Self::M;
 }
 
 /// convert VA <-> PA wrt. the kernel id mapping

@@ -1,12 +1,16 @@
 use crate::arch::x86_64::arch_regs::Context64;
 use crate::arch::x86_64::{arch_regs, is_int_enabled};
+use crate::mm::vmm::{VMArea, VMMan, VMPerms, VMType};
 use crate::mm::KSTACK_ALLOCATOR;
 use crate::proc::sched::GLOBAL_SCHEDULER;
 use crate::proc::sync::bellringer::{BellRinger, Sleeper};
 use crate::proc::sync::L3GetRef;
 use crate::{defs::*, Scheduler};
 use alloc::collections::VecDeque;
+use alloc::string::String;
+use core::ops::Range;
 use core::ptr;
+use core::str::FromStr;
 /// currently only kernelSp and Context are important.
 /// the task struct will be placed on the starting addr (low addr) of the kernel stack.
 /// therefore we can retrive the task struct at anytime by masking the kernel stack
@@ -20,6 +24,7 @@ pub struct Task {
 	pub pid: u32,
 	/// note that this points to the stack bottom (low addr)
 	pub kernel_stack: u64,
+	pub mm: VMMan,
 	// pub user_stack: u64,
 	pub state: TaskState,
 	pub context: arch_regs::Context64,
@@ -178,9 +183,40 @@ impl Task {
 					kernel_stack: sp,
 					state: TaskState::Run,
 					context: Context64::default(),
+					mm: VMMan::new(),
 				},
 			)
 		};
+		// KERNEL ID MAPPING
+		nt.mm.vmas.push(VMArea {
+			vm_range: Range::<u64> {
+				start: Mem::ID_MAP_START,
+				end: Mem::ID_MAP_END,
+			},
+			tag: String::from_str("KERNEL IDMAP").unwrap(),
+			user_perms: VMPerms::NONE,
+			backing: VMType::ANOM,
+		});
+		// KERNEL
+		nt.mm.vmas.push(VMArea {
+			vm_range: Range::<u64> {
+				start: Mem::KERNEL_OFFSET,
+				end: Mem::KERNEL_OFFSET + 64 * Mem::G,
+			},
+			tag: String::from_str("KERNEL").unwrap(),
+			user_perms: VMPerms::NONE,
+			backing: VMType::ANOM,
+		});
+		// KERNEL
+		nt.mm.vmas.push(VMArea {
+			vm_range: Range::<u64> {
+				start: Mem::USER_STACK_START,
+				end: Mem::USER_STACK_START + Mem::USER_STACK_SIZE,
+			},
+			tag: String::from_str("USER STACK").unwrap(),
+			user_perms: VMPerms::R | VMPerms::W,
+			backing: VMType::ANOM,
+		});
 		nt.prepare_context(entry);
 		tid
 	}
