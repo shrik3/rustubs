@@ -68,6 +68,10 @@ pub fn clear_screen() {
 	CGASCREEN_GLOBAL.lock().clear();
 }
 
+pub fn back_space() {
+	CGASCREEN_GLOBAL.lock().backspace();
+}
+
 pub fn set_attr(attr: u8) {
 	CGASCREEN_GLOBAL.lock().setattr(attr);
 }

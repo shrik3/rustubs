@@ -81,8 +81,23 @@ impl CGAScreen {
 				self._check_scroll();
 			}
 		}
-
+		// bruh, what are you thinking about ...
 		self.setpos(self.cursor_r, self.cursor_c);
+	}
+
+	#[inline(always)]
+	pub fn backspace(&mut self) {
+		if self.cursor_c == 0 && self.cursor_r == 0 {
+			return;
+		}
+		if self.cursor_c == 0 {
+			self.cursor_r -= 1;
+			self.cursor_c = MAX_COLS;
+		} else {
+			self.cursor_c -= 1;
+		}
+		self.setpos(self.cursor_r, self.cursor_c);
+		self.show(self.cursor_r, self.cursor_c, 0 as char, self.attr);
 	}
 
 	#[inline(always)]
