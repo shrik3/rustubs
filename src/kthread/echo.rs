@@ -12,7 +12,7 @@ impl KThread for Echo {
 		println!("[PID {}] WAITING FOR INPUT", t.pid);
 		loop {
 			let k = read_key();
-			print!("{}", k.asc as char);
+			sprintln!("asc {}, char {}, scan {}", k.asc, k.asc as char, k.scan);
 		}
 	}
 }

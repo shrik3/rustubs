@@ -10,7 +10,6 @@ pub struct Kshell {}
 
 impl KThread for Kshell {
 	fn entry() -> ! {
-		let t = Task::current().unwrap();
 		let files = ls();
 		event_loop(&files);
 	}
