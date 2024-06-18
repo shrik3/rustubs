@@ -7,7 +7,8 @@ use alloc::vec::Vec;
 use core::ops::Range;
 use linked_list_allocator::LockedHeap;
 
-pub mod pma;
+// this mod is deprecated.
+mod pma;
 
 use lazy_static::lazy_static;
 use spin::Mutex;

@@ -23,6 +23,10 @@ use core::ops::Range;
 use core::slice;
 
 extern "C" {
+	/// a chunk (8M) of reserved memory, optionally used by the stack based
+	/// physical frame allocator. This naive pma is deprecated, and you must not
+	/// use this symbol unless you adjust the startup code to reserve
+	/// memory of cooresponding size and alignment
 	fn ___FREE_PAGE_STACK__();
 }
 
