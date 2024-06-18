@@ -2,6 +2,8 @@
 use crate::fs::*;
 use crate::io::{back_space, read_key};
 use crate::kthread::KThread;
+use crate::proc::exec::exec;
+use crate::proc::task::Task;
 use alloc::vec::Vec;
 use core::str;
 pub struct Kshell {}
@@ -58,8 +60,12 @@ fn handle(cmd: &str, files: &Vec<File>) {
 				println!("{}: no such file or directory", file_name,);
 			}
 		}
-		_ => {
-			println!("invalid command: {}", cmd);
+		whatever => {
+			exec(whatever);
+			let mm = &Task::current().unwrap().mm;
+			for vma in &mm.vmas {
+				println!("{:#?}", vma);
+			}
 		}
 	}
 }
