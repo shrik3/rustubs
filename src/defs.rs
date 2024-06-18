@@ -6,6 +6,16 @@ extern "C" {
 	fn ___BSS_END__();
 }
 
+/// multiboot magic value, it must be 0x2BAD8002. This value is set at runtime
+/// by init asm code
+#[no_mangle]
+pub static mb_magic: u64 = 0;
+/// _physical_ address of multiboot info block. This value is set at run time by
+/// init asm code. Both values are safe to read, but [mb_info_pm_addr] must be
+/// converted to the virtual mapping via P2V before dereferencing.
+#[no_mangle]
+pub static mb_info_pm_addr: u64 = 0;
+
 // ANY ADDRESS FROM PHYSICAL MAPPING IS UNSAFE BECAUSE THE LOW MEMORY MAPPING
 // WILL BE DROPPED FOR USERSPACE
 // TODO: create VMAs in the MM struct
@@ -96,7 +106,7 @@ impl Mem {
 /// to 0x0 ~ 0xf_ffff_ffff physical (64G)
 #[allow(non_snake_case)]
 #[inline]
-pub fn V2P(va: u64) -> Option<u64> {
+pub const fn V2P(va: u64) -> Option<u64> {
 	if va >= Mem::ID_MAP_END || va < Mem::ID_MAP_START {
 		return None;
 	}
@@ -106,7 +116,7 @@ pub fn V2P(va: u64) -> Option<u64> {
 /// physical address to virtual. reverse of [V2P]
 #[allow(non_snake_case)]
 #[inline]
-pub fn P2V(pa: u64) -> Option<u64> {
+pub const fn P2V(pa: u64) -> Option<u64> {
 	if pa >= Mem::MAX_PHY_MEM {
 		return None;
 	}

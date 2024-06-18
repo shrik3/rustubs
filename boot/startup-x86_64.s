@@ -27,8 +27,8 @@ MAX_MEM: equ 512
 
 ; exported symbols
 [GLOBAL startup]
-[GLOBAL mb_magic]
-[GLOBAL mb_info_addr]
+[EXTERN mb_magic]
+[EXTERN mb_info_pm_addr]
 [GLOBAL gdt]
 [GLOBAL gdt_80]
 ; functions from other parts of rustubs
@@ -50,27 +50,29 @@ MAX_MEM: equ 512
 startup:
 	cld
 	cli
-	; with multiboot specs, grub initialzes the registers:
-	; EAX: magic value 0x2BADB002
-	; EBX: 32-bit physical address of the multiboot information struct we store
-	; them in global variables for future uses in rust code. TODO place them on
-	; the stack and pass as parameters to _entry
-	mov     dword [mb_magic], eax
-	mov     dword [mb_info_addr], ebx
 	; setup GDT by loading GDT descriptor
 	; see docs/x86_gdt.txt
 	lgdt    [gdt_80]
 	; use the 3rd gdt entry for protected mode segmentations
-	mov     eax, 3 * 0x8
-	mov     ds, ax
-	mov     es, ax
-	mov     fs, ax
-	mov     gs, ax
-
+	mov     ecx, 3 * 0x8
+	mov     ds, cx
+	mov     es, cx
+	mov     fs, cx
+	mov     gs, cx
 	; define stack
-	mov     ss, ax
+	mov     ss, cx
 	lea	esp, init_stack+STACKSIZE
-
+	; with multiboot specs, grub initialzes the registers for us
+	; EAX: magic value 0x2BADB002
+	; EBX: 32-bit physical address of the multiboot information struct
+	; we store these values into extern rust data, but we can't do it yet
+	; because the variables are mapped to 64 bit high memory addresses.
+	; Therefore we push the values to the stack and set the global variables
+	; later in long mode
+	push    0
+	push    eax
+	push    0
+	push    ebx
 init_longmode:
 	; activate address extension (PAE)
 	mov     eax, cr4
@@ -188,6 +190,12 @@ clear_bss:
 	; NOTE: must NOT use sse target features for rust compiler, if sse not
 	; enabled here.
 
+	pop     rbx
+	mov     rax, mb_info_pm_addr
+	mov     qword [rax], rbx
+	pop     rbx
+	mov     rax, mb_magic
+	mov     qword [rax], rbx
 	; shift the rsp to high memory mapping:
 	mov     rax, KERNEL_OFFSET,
 	or      rsp, rax
@@ -244,11 +252,6 @@ gdt_80:
 	dw      4*8 - 1   ; GDT limit=24, 4 GDT entries - 1
 	dq      gdt       ; GDT address
 
-; multiboot info
-mb_magic:
-	dd      0x00000000
-mb_info_addr:
-	dd      0x00000000
 
 [SECTION .reserved_0.init_stack]
 global init_stack:data (init_stack.end - init_stack)
