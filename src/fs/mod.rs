@@ -2,6 +2,7 @@
 
 // symbols provided by linker
 pub mod ustar;
+use crate::proc::loader;
 use alloc::vec::Vec;
 use core::slice;
 use core::str;
@@ -29,7 +30,16 @@ pub fn test_print_fs_raw() {
 }
 
 pub fn cat(f: &File) {
-	println!("{}", str::from_utf8(f.file).unwrap())
+	match str::from_utf8(f.file) {
+		Ok(s) => {
+			println!("{}", s)
+		}
+		_ => {
+			// print raw
+			// println!("{} is not a text file", f.hdr.name());
+			loader::cat_elf(f);
+		}
+	}
 }
 
 pub fn test_ls(archive: &[u8]) {

@@ -45,7 +45,7 @@ $(FSIMAGE): fs.ustar
 	@objcopy --input-target binary --output-target pe-x86-64 --binary-architecture i386 --rename-section .data=.fs $< $@
 
 fs.ustar:
-	@tar -cvf $@ --format=ustar docs/*
+	@tar -cvf $@ --format=ustar docs/* progs/hello
 
 # Note: explicitly tell the linker to use startup: as the entry point (we have
 # no main here)

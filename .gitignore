@@ -1,5 +1,7 @@
 /build
 /target
+/progs/*.o
+/progs/hello
 *.iso
 *.o
 fs.ustar
