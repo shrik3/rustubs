@@ -1,6 +1,7 @@
 //! this asume a read-only; in memory filesystem, and we assume the FS has a
 //! static lifetime . This makes slice type much easier.
 use alloc::vec::Vec;
+use core::iter::Iterator;
 use core::str;
 
 // yes, I want this naming, shut up rust.
@@ -18,6 +19,54 @@ pub enum FileType {
 	EXTHDR_METANXT,
 	// RESERVED includes vender specifics ('A' - 'Z')
 	RESERVED(u8),
+}
+
+pub struct UstarArchive {
+	raw_archive: &'static [u8],
+}
+
+#[derive(Clone)]
+pub struct UstarArchiveIter<'a> {
+	pub archive: &'a UstarArchive,
+	pub iter_curr: usize,
+}
+
+impl<'a> UstarArchive {
+	pub fn new_from_slice(slice: &'static [u8]) -> Self {
+		Self { raw_archive: slice }
+	}
+	pub fn iter(&'a self) -> UstarArchiveIter<'a> {
+		UstarArchiveIter {
+			archive: self,
+			iter_curr: 0,
+		}
+	}
+}
+
+impl<'a> Iterator for UstarArchiveIter<'a> {
+	type Item = UstarFile;
+	fn next(&mut self) -> Option<Self::Item> {
+		if self.iter_curr >= self.archive.raw_archive.len() {
+			return None;
+		}
+
+		let hdr = FileHdr::from_slice(&self.archive.raw_archive[self.iter_curr..]);
+		if hdr.is_none() {
+			return None;
+		}
+		let hdr = hdr.unwrap();
+		if !hdr.is_ustar() {
+			return None;
+		}
+		let file_sz = hdr.size() as usize;
+		let ret = Some(UstarFile {
+			hdr,
+			file: &self.archive.raw_archive
+				[(self.iter_curr + 512)..(self.iter_curr + 512 + file_sz)],
+		});
+		self.iter_curr += ((((file_sz + 511) / 512) + 1) * 512) as usize;
+		return ret;
+	}
 }
 
 impl FileType {
@@ -56,30 +105,9 @@ pub fn test_ls(archive: &'static [u8]) {
 }
 
 pub fn ls(archive: &'static [u8]) -> Vec<UstarFile> {
-	let mut ptr: usize = 0;
-	let mut files = Vec::<UstarFile>::new();
-	loop {
-		if ptr >= archive.len() {
-			break;
-		}
-		if let Some(hdr) = FileHdr::from_slice(&archive[ptr..]) {
-			if !hdr.is_ustar() {
-				break;
-			}
-			// "valid" ustar file
-			let file_sz = hdr.size() as usize;
-			files.push(UstarFile {
-				hdr,
-				file: &archive[(ptr + 512)..(ptr + 512 + file_sz)],
-			});
-			// get the next file hdr: jump over current hdr and file, round up
-			// to 512 bytes
-			ptr += ((((file_sz + 511) / 512) + 1) * 512) as usize;
-		} else {
-			break;
-		}
-	}
-	files
+	let fs = UstarArchive::new_from_slice(archive);
+	let res: Vec<UstarFile> = fs.iter().collect();
+	return res;
 }
 
 pub struct FileHdr(&'static [u8]);
