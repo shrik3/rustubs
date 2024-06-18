@@ -112,7 +112,7 @@ fn handle_exception(nr: u16, fp: u64) {
 			fault::page_fault_handler(frame, fault_address)
 		}
 		_ => {
-			println!("[trap[ {:#X?}", frame);
+			sprint!("[trap {}] {:#X?}", nr, frame);
 			unsafe {
 				asm!("hlt");
 			}
