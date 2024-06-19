@@ -5,22 +5,19 @@ pub mod ustar;
 use alloc::vec::Vec;
 use core::slice;
 use core::str;
-
+use ustar::UstarArchiveIter;
 extern "C" {
 	fn ___RAMFS_START__();
 	fn ___RAMFS_END__();
 }
 
-pub type File = ustar::UstarFile;
-pub fn ls() -> Vec<File> {
-	let ramfs = get_archive();
-	ustar::ls(ramfs)
-}
+pub use ustar::iter;
+pub use ustar::UstarFile as File;
 
-pub fn get_archive() -> &'static [u8] {
+/// get an raw archive of the fstar fs slice
+pub fn get_archive<'a>() -> &'a [u8] {
 	let len = ___RAMFS_END__ as usize - ___RAMFS_START__ as usize;
-	let ramfs: &'static [u8] =
-		unsafe { slice::from_raw_parts_mut(___RAMFS_START__ as *mut u8, len) };
+	let ramfs: &[u8] = unsafe { slice::from_raw_parts_mut(___RAMFS_START__ as *mut u8, len) };
 	ramfs
 }
 
@@ -35,9 +32,8 @@ pub fn cat(f: &File) {
 	println!("{}", str::from_utf8(f.file).unwrap())
 }
 
-pub fn test_ls(archive: &'static [u8]) {
-	let files = ustar::ls(archive);
-	for f in files {
+pub fn test_ls(archive: &[u8]) {
+	for f in ustar::iter(archive) {
 		println!(
 			"{}:{} - {:6} bytes {}",
 			f.hdr.owner(),

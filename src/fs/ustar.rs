@@ -21,36 +21,28 @@ pub enum FileType {
 	RESERVED(u8),
 }
 
-pub struct UstarArchive {
-	raw_archive: &'static [u8],
-}
-
 #[derive(Clone)]
 pub struct UstarArchiveIter<'a> {
-	pub archive: &'a UstarArchive,
+	pub archive: &'a [u8],
 	pub iter_curr: usize,
 }
 
-impl<'a> UstarArchive {
-	pub fn new_from_slice(slice: &'static [u8]) -> Self {
-		Self { raw_archive: slice }
-	}
-	pub fn iter(&'a self) -> UstarArchiveIter<'a> {
-		UstarArchiveIter {
-			archive: self,
-			iter_curr: 0,
-		}
+/// gives you an ustar file iterator over an read only u8 slice archive
+pub fn iter<'a>(archive: &'a [u8]) -> UstarArchiveIter<'a> {
+	UstarArchiveIter {
+		archive,
+		iter_curr: 0,
 	}
 }
 
 impl<'a> Iterator for UstarArchiveIter<'a> {
-	type Item = UstarFile;
+	type Item = UstarFile<'a>;
 	fn next(&mut self) -> Option<Self::Item> {
-		if self.iter_curr >= self.archive.raw_archive.len() {
+		if self.iter_curr >= self.archive.len() {
 			return None;
 		}
 
-		let hdr = FileHdr::from_slice(&self.archive.raw_archive[self.iter_curr..]);
+		let hdr = FileHdr::from_slice(&self.archive[self.iter_curr..]);
 		if hdr.is_none() {
 			return None;
 		}
@@ -60,9 +52,8 @@ impl<'a> Iterator for UstarArchiveIter<'a> {
 		}
 		let file_sz = hdr.size() as usize;
 		let ret = Some(UstarFile {
-			hdr,
-			file: &self.archive.raw_archive
-				[(self.iter_curr + 512)..(self.iter_curr + 512 + file_sz)],
+			hdr: hdr.clone(),
+			file: &self.archive[(self.iter_curr + 512)..(self.iter_curr + 512 + file_sz)],
 		});
 		self.iter_curr += ((((file_sz + 511) / 512) + 1) * 512) as usize;
 		return ret;
@@ -86,14 +77,14 @@ impl FileType {
 	}
 }
 
-pub struct UstarFile {
-	pub hdr: FileHdr,
-	pub file: &'static [u8],
+#[derive(Clone)]
+pub struct UstarFile<'a> {
+	pub hdr: FileHdr<'a>,
+	pub file: &'a [u8],
 }
 
 pub fn test_ls(archive: &'static [u8]) {
-	let files = ls(archive);
-	for f in files {
+	for f in iter(archive) {
 		println!(
 			"{}:{} - {:6} bytes {}",
 			f.hdr.owner(),
@@ -104,14 +95,9 @@ pub fn test_ls(archive: &'static [u8]) {
 	}
 }
 
-pub fn ls(archive: &'static [u8]) -> Vec<UstarFile> {
-	let fs = UstarArchive::new_from_slice(archive);
-	let res: Vec<UstarFile> = fs.iter().collect();
-	return res;
-}
-
-pub struct FileHdr(&'static [u8]);
-impl FileHdr {
+#[derive(Clone)]
+pub struct FileHdr<'a>(&'a [u8]);
+impl<'a> FileHdr<'a> {
 	pub fn name(&self) -> &str {
 		let file_name = to_cstr(&self.0[0..100]);
 		str::from_utf8(file_name.unwrap())
@@ -137,7 +123,7 @@ impl FileHdr {
 		}
 		return false;
 	}
-	pub fn from_slice(ustar_slice: &'static [u8]) -> Option<Self> {
+	pub fn from_slice(ustar_slice: &'a [u8]) -> Option<Self> {
 		if ustar_slice.len() < 512 {
 			return None;
 		}
@@ -145,6 +131,7 @@ impl FileHdr {
 	}
 }
 
+/// helper function to convert oct literals into number
 fn oct2bin(s: &[u8]) -> u32 {
 	let mut n: u32 = 0;
 	for u in s {
@@ -155,7 +142,7 @@ fn oct2bin(s: &[u8]) -> u32 {
 	n
 }
 
-// this is kinda ugly, is there a builtin funciton?
+/// cut the slice at the first null
 fn to_cstr(s: &[u8]) -> Option<&[u8]> {
 	let mut end = 0;
 	for c in s {

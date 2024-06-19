@@ -8,7 +8,8 @@ pub struct Kshell {}
 
 impl KThread for Kshell {
 	fn entry() -> ! {
-		let files = ls();
+		let fsarchive = get_archive();
+		let files = ustar::iter(fsarchive).collect();
 		event_loop(&files);
 	}
 }
