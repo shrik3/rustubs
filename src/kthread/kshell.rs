@@ -1,9 +1,9 @@
 //! a simple shell...
-use crate::fs::*;
 use crate::io::{back_space, read_key};
 use crate::kthread::KThread;
 use crate::proc::exec::exec;
 use crate::proc::task::Task;
+use crate::{fs::*, io};
 use alloc::vec::Vec;
 use core::str;
 pub struct Kshell {}
@@ -58,6 +58,18 @@ fn handle(cmd: &str, files: &Vec<File>) {
 				cat(file)
 			} else {
 				println!("{}: no such file or directory", file_name,);
+			}
+		}
+		"" => {
+			return;
+		}
+		"clear" => {
+			io::reset_screen();
+		}
+		"mem" => {
+			let mm = &Task::current().unwrap().mm;
+			for vma in &mm.vmas {
+				println!("{:#?}", vma);
 			}
 		}
 		whatever => {
