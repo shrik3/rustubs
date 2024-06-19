@@ -37,12 +37,14 @@ extern "C" {
 // }
 
 /// There should only be one global instance of this.
+#[allow(dead_code)]
 pub struct PageStackAllocator {
 	page_stack: &'static mut [u64],
 	size: usize,
 	head: usize,
 }
 
+#[allow(dead_code)]
 impl PageStackAllocator {
 	// covering 4GiB physical memory of 4K frames
 	const STACK_SIZE: usize = 0x100000;

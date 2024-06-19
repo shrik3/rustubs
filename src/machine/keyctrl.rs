@@ -21,8 +21,6 @@ use bitflags::bitflags;
 use core::cmp::{Eq, PartialEq};
 use core::sync::atomic::AtomicU32;
 use core::sync::atomic::Ordering;
-use lazy_static::lazy_static;
-use spin::Mutex;
 
 #[cfg(target_arch = "x86_64")]
 use crate::arch::x86_64::interrupt::{pic_8259, pic_8259::PicDeviceInt as PD};
@@ -350,15 +348,6 @@ impl KeyboardController {
 	#[inline(always)]
 	fn enable_keyboard_int() {
 		pic_8259::allow(PD::KEYBOARD);
-	}
-
-	#[inline(always)]
-	fn toggle_keyboard_int(enable: bool) {
-		if enable {
-			Self::enable_keyboard_int()
-		} else {
-			Self::disable_keyboard_int()
-		}
 	}
 
 	#[inline(always)]

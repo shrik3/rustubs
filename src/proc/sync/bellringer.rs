@@ -2,7 +2,7 @@
 //! the bellringer is very much like a SleepSemaphore
 use crate::machine::time;
 use crate::proc::sync::{L3GetRef, L3SyncCell, L3_CRITICAL};
-use crate::proc::task::{Task, TaskId};
+use crate::proc::task::TaskId;
 use alloc::collections::LinkedList;
 pub struct BellRinger {
 	bedroom: LinkedList<Sleeper>,

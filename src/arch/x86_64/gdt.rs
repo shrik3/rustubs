@@ -15,8 +15,9 @@ struct GDTDescriptor {
 	pub table_addr: u64,
 }
 
-/// promote the gdt to high address
-pub fn init() {
+/// promote the gdt to high address. unsafe: only call this before dropping low
+/// memory mapping. and only call this once
+pub unsafe fn init() {
 	let gdtd = unsafe { &mut *(gdt_80 as *mut GDTDescriptor) };
 	// sanity check
 	assert!(gdtd.table_size == 4 * 8 - 1);

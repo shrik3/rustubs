@@ -1,6 +1,5 @@
 //! system level timer
 
-use core::arch::asm;
 use core::sync::atomic::{AtomicU64, Ordering};
 // using PIT: this is not really accurate
 // 64 bit nanosecond timer takes hundreds of years to wrap around.

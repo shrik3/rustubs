@@ -1,10 +1,9 @@
 use crate::arch::x86_64::arch_regs::Context64;
 use crate::arch::x86_64::{arch_regs, is_int_enabled};
-use crate::machine::interrupt::{irq_restore, irq_save};
 use crate::mm::KSTACK_ALLOCATOR;
 use crate::proc::sched::GLOBAL_SCHEDULER;
 use crate::proc::sync::bellringer::{BellRinger, Sleeper};
-use crate::proc::sync::{L3GetRef, L3_CRITICAL};
+use crate::proc::sync::L3GetRef;
 use crate::{defs::*, Scheduler};
 use alloc::collections::VecDeque;
 use core::ptr;

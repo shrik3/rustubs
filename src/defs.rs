@@ -1,4 +1,7 @@
 //! system level definitions
+
+// all extern symbols should be named here and only here. For sanity checks they
+// must not be used directly, especially for dereferencing.
 extern "C" {
 	fn ___KERNEL_PM_START__();
 	fn ___KERNEL_PM_END__();

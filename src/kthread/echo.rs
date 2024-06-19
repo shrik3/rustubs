@@ -1,5 +1,4 @@
 //! read input buffer and print
-use crate::arch::x86_64::misc::delay;
 use crate::io::read_key;
 use crate::kthread::KThread;
 use crate::proc::task::Task;

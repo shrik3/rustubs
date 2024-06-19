@@ -1,9 +1,7 @@
 //! a simple shell...
-use crate::arch::x86_64::misc::delay;
 use crate::fs::*;
 use crate::io::{back_space, read_key};
 use crate::kthread::KThread;
-use crate::proc::task::Task;
 use alloc::vec::Vec;
 use core::str;
 pub struct Kshell {}

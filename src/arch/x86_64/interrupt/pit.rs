@@ -13,7 +13,6 @@ pub struct PIT {}
 impl PIT {
 	const CTRL_PORT: IOPort = IOPort::new(0x43);
 	const DATA_PORT: IOPort = IOPort::new(0x40);
-	const PIT_BASE_FREQ: u64 = 1193182;
 	// 1193182 Hz is roughly 838 ns
 	const PIT_BASE_NS: u64 = 838;
 	// max is around 54918 us (54 ms)
