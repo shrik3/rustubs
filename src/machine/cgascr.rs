@@ -1,5 +1,5 @@
-use crate::arch::x86_64::misc::*;
 use crate::machine::device_io::*;
+use crate::{arch::x86_64::misc::*, P2V};
 use core::{fmt, ptr, slice, str};
 
 // I would consider these cga parameters constant.
@@ -12,15 +12,17 @@ use core::{fmt, ptr, slice, str};
 // (one for char and one for attribute)
 // Therefore the MAX_COLS should be a multiple of 4
 // broken..
+//
+// TODO: clean me up
 const MAX_COLS: usize = 80;
 const MAX_ROWS: usize = 25;
-const CGA_BUFFER_START: *mut u8 = 0xb8000 as *mut u8;
+const CGA_BUFFER_START: *mut u8 = P2V(0xb8000).unwrap() as *mut u8;
+const CGA_BUFFER_START_64: *mut u64 = P2V(0xb8000).unwrap() as *mut u64;
 const CGA_BUFFER_BYTE_SIZE: usize = MAX_COLS * MAX_ROWS * 2;
 
 // THESE TWO ARE USED TO DO BATCH OPERATIONS ON CGA BUFFER
 // MEMORY, HOPEFULLY MAKE IT FASTER.
 // I.E. SETTING 4 CHARACTERS AT ONCE.
-const CGA_BUFFER_START_64: *mut u64 = 0xb8000 as *mut u64;
 const CGA_BUFFER_QWORD_SIZE: usize = CGA_BUFFER_BYTE_SIZE / 8;
 const CGA_BUFFER_QWORDS_PER_ROW: usize = MAX_COLS / 4;
 
