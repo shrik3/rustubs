@@ -47,6 +47,11 @@ $(FSIMAGE): fs.ustar
 fs.ustar:
 	@tar -cvf $@ --format=ustar docs/* progs/hello
 
+rebuild_fs:
+	@$(MAKE) -C progs
+	@rm -f $(FSIMAGE) fs.ustar
+	@$(MAKE) all
+
 # Note: explicitly tell the linker to use startup: as the entry point (we have
 # no main here)
 $(BUILD)/kernel : rust_kernel startup.o $(ASMOBJ_PREFIXED) $(FSIMAGE)
