@@ -3,11 +3,14 @@
 // see ATTRIBUTIONS
 pub mod fault;
 use bitflags::bitflags;
+use core::arch::asm;
+
+use crate::P2V;
 #[repr(align(4096))]
 #[repr(C)]
 #[derive(Clone)]
 pub struct Pagetable {
-	entries: [PTE; Self::ENTRY_COUNT],
+	pub entries: [PTE; Self::ENTRY_COUNT],
 }
 
 #[derive(Clone)]
@@ -26,6 +29,7 @@ pub struct VAddr(u64);
 pub struct PAddr(u64);
 
 bitflags! {
+#[derive(Debug)]
 pub struct PTEFlags:u64 {
 	const ZERO      = 0;
 	const PRESENT   = 1 << 0;
@@ -194,6 +198,11 @@ impl PAddr {
 			None
 		}
 	}
+
+	#[inline]
+	pub const fn as_u64(&self) -> u64 {
+		self.0
+	}
 }
 
 impl PTE {
@@ -222,4 +231,26 @@ impl PTE {
 	pub const fn addr(&self) -> PAddr {
 		PAddr::new(self.entry & 0x000f_ffff_ffff_f000)
 	}
+
+	#[inline]
+	pub fn clear(&mut self) {
+		self.entry = 0;
+	}
+}
+
+/// for x86_64, return the CR3 register. this is the **physical** address of the
+/// page table root.
+/// TODO: use page root in task struct instead of raw cr3
+#[inline]
+pub fn get_cr3() -> u64 {
+	let cr3: u64;
+	unsafe {
+		asm!("mov {}, cr3", out(reg) cr3);
+	}
+	return cr3;
+}
+
+#[inline]
+pub fn get_root() -> u64 {
+	return P2V(get_cr3()).unwrap();
 }

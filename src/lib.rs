@@ -52,6 +52,8 @@ pub extern "C" fn _entry() -> ! {
 	interrupt::init();
 	// initialize memory manager
 	mm::init();
+	// point of no return: low memory can no longer be accessed after this point
+	unsafe { mm::drop_init_mapping() };
 	// initialize interrupt timer to roughly ... 50 hz
 	let _interval = interrupt::pit::PIT::set_interval(20000);
 	pic_8259::allow(PicDeviceInt::KEYBOARD);

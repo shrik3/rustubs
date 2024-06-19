@@ -1,5 +1,6 @@
 //! memory management unit
 
+use crate::arch::x86_64::paging::{get_root, Pagetable};
 use crate::defs::*;
 use crate::machine::multiboot;
 use alloc::alloc::{alloc, dealloc, Layout};
@@ -135,4 +136,16 @@ impl KStackAllocator {
 			self.pool.push(alloc(Self::KSTACK_LAYOUT) as u64);
 		}
 	}
+}
+
+/// drop the low memory mapping from the current pagetable by removing the first
+/// entry from pml4 table (which mapps to 0~512G). The PDP table is unchanged,
+/// wasting 4K of memory but there is nothing we can do now since the heap
+/// allocator doesn't manage this address.
+///
+/// after calling this function, the system can no longer directly access memory
+/// by physical address
+pub unsafe fn drop_init_mapping() {
+	let pt: &mut Pagetable = unsafe { &mut *(get_root() as *mut Pagetable) };
+	pt.entries[0].clear();
 }

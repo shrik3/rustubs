@@ -12,17 +12,6 @@ pub fn page_fault_handler(frame: &mut TrapFrame, fault_addr: u64) {
 }
 
 /// for x86_64, return the CR3 register.
-/// TODO: use page root in task struct instead of raw cr3
-#[inline]
-pub fn get_root() -> u64 {
-	let cr3: u64;
-	unsafe {
-		asm!("mov {}, cr3", out(reg) cr3);
-	}
-	return cr3;
-}
-
-/// for x86_64, return the CR3 register.
 #[inline]
 pub fn get_fault_addr() -> u64 {
 	let cr2: u64;
