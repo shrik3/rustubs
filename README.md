@@ -43,7 +43,6 @@ shitty code, I'm a rust beginner.
     - [X] level3 (prologue) and level2 (epilogue) Synchronization
     - [X] semaphore (spinning and sleeping variants)
 - [X] wall clock and sleep (w. cooperative scheduling)
-- [ ] multicore (MPStuBS)
 
 **Beyond StuBS**
 - [X] kernel heap management (using the [linked-list-allocator ](https://github.com/rust-osdev/linked-list-allocator))
@@ -54,22 +53,22 @@ shitty code, I'm a rust beginner.
     - [X] serial output
     - [X] custom IDT
     - [X] multiboot info
-    - [?] VGA graphic mode
+- [X] in memory FS
+    - [X] ustar FS, read-only & statically linked
+- [X] parse and load user elf
 - [?] full-fledged Paging and virtual memory
     - [X] mapping for kernel heap and kernel code (higher half mem)
     - [?] pagefault handler
     - [?] Address Space for each Process + virtual memory management
-- [?] in memory FS
-    - [?] ustar FS, read-only & statically linked
-- [ ] parse and load user elf
 - [ ] user heap and mmap
 - [ ] user library
 - [ ] syscall
-- [ ] aarch64 support
 
 **MISC**
+- [?] VGA graphic mode
 - [ ] FP and SSE state
-- [ ] Decouple architecture specific code
+- [ ] multicore (MPStuBS)
+- [ ] aarch64 support
 
 ## Build
 
