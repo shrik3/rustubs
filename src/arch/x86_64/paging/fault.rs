@@ -7,7 +7,8 @@ use core::arch::asm;
 /// TODO: improve this later
 pub fn page_fault_handler(frame: &mut TrapFrame, fault_addr: u64) {
 	let err_code = frame.err_code;
-	println!("pagefault @ {:#X}, err {:#X?}", fault_addr, err_code);
+	sprintln!("pagefault @ {:#X}, err {:#X?}", fault_addr, err_code);
+	sprintln!("{:#X?}", frame);
 	unsafe { asm!("hlt") };
 }
 
