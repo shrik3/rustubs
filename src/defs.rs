@@ -63,6 +63,11 @@ pub fn rounddown_4k(addr: u64) -> u64 {
 	return addr & !0xfff;
 }
 
+#[inline]
+pub fn is_aligned_4k(addr: u64) -> bool {
+	return (addr & 0xfff) == 0;
+}
+
 /// memory definitions
 pub struct Mem;
 impl Mem {

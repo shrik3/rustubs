@@ -11,6 +11,7 @@ pub mod arch;
 pub mod defs;
 #[macro_use]
 pub mod io;
+pub mod black_magic;
 pub mod fs;
 pub mod kthread;
 pub mod machine;

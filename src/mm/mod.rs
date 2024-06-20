@@ -3,8 +3,9 @@
 use crate::arch::x86_64::paging::{get_root, Pagetable};
 use crate::defs::*;
 use crate::machine::multiboot;
-use alloc::alloc::{alloc, dealloc, Layout};
+use alloc::alloc::{alloc, alloc_zeroed, dealloc, Layout};
 use alloc::vec::Vec;
+use core::arch::asm;
 use core::ops::Range;
 use linked_list_allocator::LockedHeap;
 
@@ -138,6 +139,35 @@ impl KStackAllocator {
 	}
 }
 
+const LAYOUT_4K_ALIGNED: Layout = unsafe { Layout::from_size_align_unchecked(0x1000, 0x1000) };
+/// allocate 4k aligned memory.
+/// TODO create a buffer (like in KStackAllocator) for performance.
+pub fn allocate_4k() -> u64 {
+	return unsafe { alloc(LAYOUT_4K_ALIGNED) } as u64;
+}
+pub fn allocate_4k_zeroed() -> u64 {
+	return unsafe { alloc_zeroed(LAYOUT_4K_ALIGNED) } as u64;
+}
+
+/// invalidate a single page mapping in tlb
+pub fn invlpg(va: u64) {
+	unsafe { asm!("invlpg [{0}]", in(reg) va) };
+}
+
+/// flush the whole tlb
+pub fn flush_tlb() {
+	unsafe {
+		asm!(
+			"
+		push rax;
+		mov rax, cr3;
+		mov cr3, rax;
+		pop rax;
+		"
+		)
+	}
+}
+
 /// drop the low memory mapping from the current pagetable by removing the first
 /// entry from pml4 table (which mapps to 0~512G). The PDP table is unchanged,
 /// wasting 4K of memory but there is nothing we can do now since the heap
@@ -147,5 +177,6 @@ impl KStackAllocator {
 /// by physical address
 pub unsafe fn drop_init_mapping() {
 	let pt: &mut Pagetable = unsafe { &mut *(get_root() as *mut Pagetable) };
-	pt.entries[0].clear();
+	pt.entries[0].set_unused();
+	flush_tlb();
 }
