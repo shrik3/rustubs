@@ -1,243 +1,16 @@
-// code derived from the x86_64 crate
-// https://docs.rs/x86_64/latest/src/x86_64/addr.rs.html
-// see ATTRIBUTIONS
 pub mod fault;
-use bitflags::bitflags;
+pub mod pagetable;
+use crate::defs;
+use crate::defs::rounddown_4k;
+use crate::defs::P2V;
+use crate::io::*;
+use crate::mm::allocate_4k_zeroed;
+use crate::mm::vmm::VMArea;
+use crate::mm::vmm::VMType;
 use core::arch::asm;
-
-use crate::P2V;
-#[repr(align(4096))]
-#[repr(C)]
-#[derive(Clone)]
-pub struct Pagetable {
-	pub entries: [PTE; Self::ENTRY_COUNT],
-}
-
-#[derive(Clone)]
-#[repr(transparent)]
-pub struct PTE {
-	entry: u64,
-}
-
-// use wrapped VA and PA instead of simply u64 as a sanity check:
-// VA must be sign extended, PA has at most 52 bits
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-#[repr(transparent)]
-pub struct VAddr(u64);
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-#[repr(transparent)]
-pub struct PAddr(u64);
-
-bitflags! {
-#[derive(Debug)]
-pub struct PTEFlags:u64 {
-	const ZERO      = 0;
-	const PRESENT   = 1 << 0;
-	const WRITABLE  = 1 << 1;
-	const USER      = 1 << 2;
-	const WT        = 1 << 3;
-	const NC        = 1 << 4;
-	const ACCESSED  = 1 << 5;
-	const DIRTY     = 1 << 6;
-	const HUGE_PAGE = 1 << 7;
-	const GLOBAL    = 1 << 8;
-	const B9        = 1 << 9;
-	const B10       = 1 << 10;
-	const B11       = 1 << 11;
-	// [51:12] is used for translation address
-	// [62:52] are user defined.
-	// [63] NO_EXECUTE, needs to be enabled in EFER.
-	const NE        = 1 << 63;
-}
-}
-
-impl Pagetable {
-	const ENTRY_COUNT: usize = 512;
-	/// Creates an empty page table.
-	#[inline]
-	pub const fn new() -> Self {
-		const EMPTY: PTE = PTE::new();
-		Pagetable {
-			entries: [EMPTY; Self::ENTRY_COUNT],
-		}
-	}
-
-	/// Clears all entries.
-	#[inline]
-	pub fn zero(&mut self) {
-		for entry in self.iter_mut() {
-			entry.set_unused();
-		}
-	}
-
-	/// Returns an iterator over the entries of the page table.
-	#[inline]
-	pub fn iter(&self) -> impl Iterator<Item = &PTE> {
-		(0..512).map(move |i| &self.entries[i])
-	}
-
-	/// Returns an iterator that allows modifying the entries of the page table.
-	#[inline]
-	pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut PTE> {
-		// Note that we intentionally don't just return `self.entries.iter()`:
-		// Some users may choose to create a reference to a page table at
-		// `0xffff_ffff_ffff_f000`. This causes problems because calculating
-		// the end pointer of the page tables causes an overflow. Therefore
-		// creating page tables at that address is unsound and must be avoided.
-		// Unfortunately creating such page tables is quite common when
-		// recursive page tables are used, so we try to avoid calculating the
-		// end pointer if possible. `core::slice::Iter` calculates the end
-		// pointer to determine when it should stop yielding elements. Because
-		// we want to avoid calculating the end pointer, we don't use
-		// `core::slice::Iter`, we implement our own iterator that doesn't
-		// calculate the end pointer. This doesn't make creating page tables at
-		// that address sound, but it avoids some easy to trigger
-		// miscompilations.
-		let ptr = self.entries.as_mut_ptr();
-		(0..512).map(move |i| unsafe { &mut *ptr.add(i) })
-	}
-
-	/// Checks if the page table is empty (all entries are zero).
-	#[inline]
-	pub fn is_empty(&self) -> bool {
-		self.iter().all(|entry| entry.is_unused())
-	}
-
-	/// walk the page table, create missing tables, return mapped physical frame
-	pub fn map_page(&self, _va: VAddr) {
-		todo!()
-	}
-}
-
-impl VAddr {
-	#[inline]
-	pub const fn new(addr: u64) -> VAddr {
-		return Self::try_new(addr).expect("VA must be sign extended in 16 MSBs");
-	}
-
-	#[inline]
-	pub const fn try_new(addr: u64) -> Option<VAddr> {
-		let v = Self::new_truncate(addr);
-		if v.0 == addr {
-			Some(v)
-		} else {
-			None
-		}
-	}
-
-	#[inline]
-	pub const fn new_truncate(addr: u64) -> VAddr {
-		// sign extend the upper bits
-		VAddr(((addr << 16) as i64 >> 16) as u64)
-	}
-
-	#[inline]
-	pub const fn as_u64(self) -> u64 {
-		self.0
-	}
-
-	/// Converts the address to a raw pointer.
-	#[cfg(target_pointer_width = "64")]
-	#[inline]
-	pub const fn as_ptr<T>(self) -> *const T {
-		self.as_u64() as *const T
-	}
-
-	/// Converts the address to a mutable raw pointer.
-	#[cfg(target_pointer_width = "64")]
-	#[inline]
-	pub const fn as_mut_ptr<T>(self) -> *mut T {
-		self.as_ptr::<T>() as *mut T
-	}
-
-	/// Returns the 9-bit level 1 page table index.
-	#[inline]
-	pub const fn p1_index(self) -> usize {
-		(self.0 >> 12) as usize
-	}
-
-	/// Returns the 9-bit level 2 page table index.
-	#[inline]
-	pub const fn p2_index(self) -> usize {
-		(self.0 >> 12 >> 9) as usize
-	}
-
-	/// Returns the 9-bit level 3 page table index.
-	#[inline]
-	pub const fn p3_index(self) -> usize {
-		(self.0 >> 12 >> 9 >> 9) as usize
-	}
-
-	/// Returns the 9-bit level 4 page table index.
-	#[inline]
-	pub const fn p4_index(self) -> usize {
-		(self.0 >> 12 >> 9 >> 9 >> 9) as usize
-	}
-}
-
-impl PAddr {
-	#[inline]
-	pub const fn new(addr: u64) -> Self {
-		Self::try_new(addr).expect("PA shall not have more than 52 bits")
-	}
-
-	/// Creates a new physical address, throwing bits 52..64 away.
-	#[inline]
-	pub const fn new_truncate(addr: u64) -> PAddr {
-		PAddr(addr % (1 << 52))
-	}
-
-	/// Tries to create a new physical address.
-	/// Fails if any bits in the range 52 to 64 are set.
-	#[inline]
-	pub const fn try_new(addr: u64) -> Option<Self> {
-		let p = Self::new_truncate(addr);
-		if p.0 == addr {
-			Some(p)
-		} else {
-			None
-		}
-	}
-
-	#[inline]
-	pub const fn as_u64(&self) -> u64 {
-		self.0
-	}
-}
-
-impl PTE {
-	#[inline]
-	pub const fn new() -> Self {
-		PTE { entry: 0 }
-	}
-
-	#[inline]
-	pub const fn is_unused(&self) -> bool {
-		self.entry == 0
-	}
-
-	#[inline]
-	pub fn set_unused(&mut self) -> bool {
-		self.entry == 0
-	}
-
-	#[inline]
-	pub const fn flags(&self) -> PTEFlags {
-		// from_bits_truncate ignores undefined bits.
-		PTEFlags::from_bits_truncate(self.entry)
-	}
-
-	#[inline]
-	pub const fn addr(&self) -> PAddr {
-		PAddr::new(self.entry & 0x000f_ffff_ffff_f000)
-	}
-
-	#[inline]
-	pub fn clear(&mut self) {
-		self.entry = 0;
-	}
-}
-
+use core::ops::Range;
+use core::ptr;
+pub use pagetable::*;
 /// for x86_64, return the CR3 register. this is the **physical** address of the
 /// page table root.
 /// TODO: use page root in task struct instead of raw cr3
@@ -250,7 +23,110 @@ pub fn get_cr3() -> u64 {
 	return cr3;
 }
 
+/// returns the identically mapped (+ kernel offset) virtual address of the page
+/// table
 #[inline]
 pub fn get_root() -> u64 {
 	return P2V(get_cr3()).unwrap();
+}
+
+/// unsafe as it dereferences raw pointer pt_root. Must make sure it's a valid,
+/// 4k aligned _virtual_ address.
+pub unsafe fn map_vma(pt_root: u64, vma: &VMArea, do_copy: bool) -> bool {
+	// create mappings in pagetable
+	let flags = PTEFlags::PRESENT | PTEFlags::WRITABLE | PTEFlags::USER;
+	if !map_range(pt_root, &vma.vm_range, flags) {
+		println!("failed to map range");
+		return false;
+	}
+	if !do_copy {
+		return true;
+	}
+	match vma.backing {
+		VMType::ANOM => {
+			return true;
+		}
+		VMType::FILE(f) => {
+			if !do_copy {
+				return true;
+			}
+			let sz = (vma.vm_range.end - vma.vm_range.start) as usize;
+			sprintln!("copy from {:p} to {:#X}", &f[0], vma.vm_range.start);
+			unsafe {
+				ptr::copy_nonoverlapping(&f[0] as *const u8, vma.vm_range.start as *mut u8, sz)
+			}
+			return true;
+		}
+		_ => {
+			println!("unknown backing");
+			return false;
+		}
+	}
+}
+
+pub fn map_range(pt_root: u64, r: &Range<u64>, flags: PTEFlags) -> bool {
+	let mut va_aligned = rounddown_4k(r.start);
+	while va_aligned < r.end {
+		if !map_page(pt_root, va_aligned, flags) {
+			println!("failed to map page @ {:#X}", va_aligned);
+			return false;
+		}
+		va_aligned += defs::Mem::PAGE_SIZE;
+	}
+	return true;
+}
+
+/// walk the page table, create missing tables, return mapped physical frame
+pub fn map_page(pt_root: u64, va: u64, _flags: PTEFlags) -> bool {
+	let pt = pt_root as *mut Pagetable;
+	if !defs::is_aligned_4k(va) {
+		println!("not aligned");
+		return false;
+	}
+	let flags: u64 = _flags.bits();
+	let l4idx = pagetable::p4idx(va) as usize;
+	let l3idx = pagetable::p3idx(va) as usize;
+	let l2idx = pagetable::p2idx(va) as usize;
+	let l1idx = pagetable::p1idx(va) as usize;
+	let mut require_new = false;
+	unsafe {
+		let l4_ent = &mut (*pt).entries[l4idx];
+		let l3_tbl: *mut Pagetable;
+		if l4_ent.is_unused() || require_new {
+			l3_tbl = allocate_4k_zeroed() as *mut Pagetable;
+			l4_ent.entry = defs::V2P(l3_tbl as u64).unwrap() | flags;
+			require_new = true
+		} else {
+			l3_tbl = defs::P2V(l4_ent.addr()).unwrap() as *mut Pagetable;
+		}
+		let l3_ent = &mut (*l3_tbl).entries[l3idx];
+		let l2_tbl: *mut Pagetable;
+		if l3_ent.is_unused() || require_new {
+			l2_tbl = allocate_4k_zeroed() as *mut Pagetable;
+			l3_ent.entry = defs::V2P(l2_tbl as u64).unwrap() | flags;
+			require_new = true
+		} else {
+			l2_tbl = defs::P2V(l3_ent.addr()).unwrap() as *mut Pagetable;
+		}
+		let l2_ent = &mut (*l2_tbl).entries[l2idx];
+		let l1_tbl: *mut Pagetable;
+		if l2_ent.is_unused() || require_new {
+			l1_tbl = allocate_4k_zeroed() as *mut Pagetable;
+			l2_ent.entry = defs::V2P(l1_tbl as u64).unwrap() | flags;
+			require_new = true
+		} else {
+			l1_tbl = defs::P2V(l2_ent.addr()).unwrap() as *mut Pagetable;
+		}
+		let pte = &mut (*l1_tbl).entries[l1idx];
+		if pte.is_unused() || require_new {
+			let page = allocate_4k_zeroed();
+			pte.entry = defs::V2P(page as u64).unwrap() | flags;
+		} else {
+			// TODO we need to free this frame
+			panic!("PTE already taken: {:#X}", pte.entry);
+		}
+		// flush tlb
+		asm!("invlpg [{0}]", in(reg) va);
+	}
+	return true;
 }

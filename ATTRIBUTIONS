@@ -52,7 +52,7 @@ license:
 	https://docs.rs/crate/x86_64/latest/source/LICENSE-MIT
 
 files:
-	src/arch/x86_64/paging
+	src/arch/x86_64/paging/pagetable.rs
 
 source:
 	https://docs.rs/x86_64/latest/src/x86_64/structures/paging/page_table.rs

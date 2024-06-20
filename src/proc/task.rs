@@ -18,6 +18,9 @@ use core::str::FromStr;
 /// NOTE: we assume all fields in [Task] are only modified by the task itself,
 /// i.e. no task should modify another task's state. (this may change though, in
 /// which case we will need some atomics)
+/// TODO: the mm is heap allocated object (vec of vmas). But the task struct
+/// doesn't have a lifetime. Must cleanup the memory used by the mm itself when
+/// exiting a task.
 #[repr(C)]
 pub struct Task {
 	pub magic: u64,
