@@ -56,12 +56,12 @@ impl IRQHandlerEpilogue for KeyboardDriver {
 	unsafe fn do_epilogue() {
 		assert!(is_int_enabled());
 		let k = KBCTL_GLOBAL.l3_get_ref_mut().consume_key();
-		if k.is_some() {
+		if let Some(key) = k {
 			// this is not ideal. starvation can happen if a thread is
 			// intentionally holding the lock forever. This could also starve
 			// the other threads because context swap can only happen in-between
 			// epilogue execution.
-			KEY_BUFFER.v(k.unwrap());
+			KEY_BUFFER.v(key);
 		}
 	}
 }
@@ -266,14 +266,14 @@ impl KeyboardController {
 			return;
 		}
 
-		let asc = if m.contains(Modifiers::NUMLOCK) && p == Prefix::NONE && c >= 71 && c <= 83 {
+		let asc = if m.contains(Modifiers::NUMLOCK) && p == Prefix::NONE && (71..=83).contains(&c) {
 			ASC_NUM_TAB[c as usize - 71]
 		} else if m.contains(Modifiers::ALT_RIGHT) {
 			ALT_TAB[c as usize]
 		} else if m.contains(Modifiers::SHIFT) {
 			SHIFT_TAB[c as usize]
 		} else if m.contains(Modifiers::CAPSLOCK) {
-			if (c >= 16 && c <= 26) || (c >= 30 && c <= 40) || (c >= 44 && c <= 50) {
+			if (16..=26).contains(&c) || (30..=40).contains(&c) || (44..=50).contains(&c) {
 				SHIFT_TAB[c as usize]
 			} else {
 				NORMAL_TAB[c as usize]

@@ -27,7 +27,7 @@ pub struct UstarArchiveIter<'a> {
 }
 
 /// gives you an ustar file iterator over an read only u8 slice archive
-pub fn iter<'a>(archive: &'a [u8]) -> UstarArchiveIter<'a> {
+pub fn iter(archive: &[u8]) -> UstarArchiveIter<'_> {
 	UstarArchiveIter {
 		archive,
 		iter_curr: 0,
@@ -42,10 +42,7 @@ impl<'a> Iterator for UstarArchiveIter<'a> {
 		}
 
 		let hdr = FileHdr::from_slice(&self.archive[self.iter_curr..]);
-		if hdr.is_none() {
-			return None;
-		}
-		let hdr = hdr.unwrap();
+		let hdr = hdr?;
 		if !hdr.is_ustar() {
 			return None;
 		}
@@ -54,7 +51,7 @@ impl<'a> Iterator for UstarArchiveIter<'a> {
 			hdr: hdr.clone(),
 			file: &self.archive[(self.iter_curr + 512)..(self.iter_curr + 512 + file_sz)],
 		});
-		self.iter_curr += ((((file_sz + 511) / 512) + 1) * 512) as usize;
+		self.iter_curr += (((file_sz + 511) / 512) + 1) * 512;
 		return ret;
 	}
 }
@@ -88,18 +85,6 @@ pub struct UstarFile<'a> {
 	pub file: &'a [u8],
 }
 
-pub fn test_ls(archive: &'static [u8]) {
-	for f in iter(archive) {
-		println!(
-			"{}:{} - {:6} bytes {}",
-			f.hdr.owner(),
-			f.hdr.owner_group(),
-			f.hdr.size(),
-			f.hdr.name()
-		);
-	}
-}
-
 #[derive(Clone)]
 pub struct FileHdr<'a>(&'a [u8]);
 impl<'a> FileHdr<'a> {
@@ -119,8 +104,7 @@ impl<'a> FileHdr<'a> {
 	}
 	pub fn size(&self) -> u32 {
 		let sz = &self.0[124..124 + 11];
-		let n_sz = oct2bin(sz);
-		n_sz
+		oct2bin(sz)
 	}
 	pub fn is_ustar(&self) -> bool {
 		if let Ok(magic) = str::from_utf8(&self.0[257..(257 + 5)]) {
@@ -141,7 +125,7 @@ fn oct2bin(s: &[u8]) -> u32 {
 	let mut n: u32 = 0;
 	for u in s {
 		n *= 8;
-		let d = *u - ('0' as u8);
+		let d = *u - b'0';
 		n += d as u32;
 	}
 	n

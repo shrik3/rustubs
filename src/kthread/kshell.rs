@@ -24,7 +24,7 @@ fn event_loop(files: &Vec<File>) -> ! {
 		match k {
 			0x8 => {
 				// backspace
-				if let Some(_) = input_buffer.pop() {
+				if input_buffer.pop().is_some() {
 					back_space();
 				}
 			}
@@ -48,7 +48,7 @@ fn handle(cmd: &str, files: &Vec<File>) {
 	let tokens: Vec<&str> = cmd.split(' ').collect();
 	match tokens[0] {
 		"ls" => files.iter().for_each(|f| println!("{}", f.hdr.name())),
-		"cat" => {
+		"cat" | "readelf" => {
 			if tokens.len() < 2 {
 				println!("need file name");
 				return;

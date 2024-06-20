@@ -33,13 +33,13 @@ pub unsafe fn pmap_kernel_end() -> u64 {
 }
 
 #[inline]
-pub unsafe fn vmap_kernel_start() -> u64 {
-	pmap_kernel_start() + Mem::KERNEL_OFFSET
+pub fn vmap_kernel_start() -> u64 {
+	unsafe { pmap_kernel_start() + Mem::KERNEL_OFFSET }
 }
 
 #[inline]
-pub unsafe fn vmap_kernel_end() -> u64 {
-	pmap_kernel_end() + Mem::KERNEL_OFFSET
+pub fn vmap_kernel_end() -> u64 {
+	unsafe { pmap_kernel_end() + Mem::KERNEL_OFFSET }
 }
 // ABOVE ONLY VALID BEFORE DROPPING LOWER MEMORY MAPPING -----//
 

@@ -59,7 +59,7 @@ pub fn _print(args: fmt::Arguments) {
 pub fn _serial_print(args: fmt::Arguments) {
 	use core::fmt::Write;
 	unsafe {
-		(&mut *SERIAL_GLOBAL.get()).write_fmt(args).unwrap();
+		(*SERIAL_GLOBAL.get()).write_fmt(args).unwrap();
 	}
 }
 

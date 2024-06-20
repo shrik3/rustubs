@@ -20,9 +20,6 @@ const CGA_BUFFER_BYTE_SIZE: usize = MAX_COLS * MAX_ROWS * 2;
 const CGA_BUFFER_QWORD_SIZE: usize = CGA_BUFFER_BYTE_SIZE / 8;
 const CGA_BUFFER_QWORDS_PER_ROW: usize = MAX_COLS / 4;
 
-const IR_PORT: u16 = 0x3d4;
-const DR_PORT: u16 = 0x3d5;
-
 pub struct CGAScreen {
 	pub cga_mem: &'static mut [u8],
 	cursor_r: usize,
@@ -185,11 +182,11 @@ impl CGAScreen {
 		// io ports for instruction register and data register
 		let offset = cal_offset(row, col);
 		// set lower byte
-		Self::IR_PORT.outb(15 as u8);
+		Self::IR_PORT.outb(15_u8);
 		delay();
 		Self::DR_PORT.outb(offset as u8);
 		// set higher byte
-		Self::IR_PORT.outb(14 as u8);
+		Self::IR_PORT.outb(14_u8);
 		delay();
 		Self::DR_PORT.outb((offset >> 8) as u8);
 		self.cursor_r = row;
@@ -202,26 +199,26 @@ impl CGAScreen {
 		delay();
 		let mut d = Self::DR_PORT.inb();
 		delay();
-		d = d & 0xc0;
-		d = d | 0xe;
+		d &= 0xc0;
+		d |= 0xe;
 		Self::DR_PORT.outb(d);
 		delay();
 		Self::IR_PORT.outb(0x0b);
 		delay();
 		let mut d = Self::DR_PORT.inb();
-		d = d & 0xe0;
-		d = d | 0xf;
+		d &= 0xe0;
+		d |= 0xf;
 		Self::DR_PORT.outb(d);
 	}
 
 	#[allow(arithmetic_overflow)]
 	pub fn getpos_offset(&self) -> u32 {
 		// read higher byte
-		Self::IR_PORT.outb(14 as u8);
+		Self::IR_PORT.outb(14_u8);
 		let mut offset = Self::DR_PORT.inb();
-		offset = offset << 8;
+		offset <<= 8;
 		// read lower byte
-		Self::IR_PORT.outb(15 as u8);
+		Self::IR_PORT.outb(15_u8);
 		offset += Self::DR_PORT.inb();
 		offset as u32
 	}

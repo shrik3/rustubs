@@ -170,11 +170,11 @@ impl<T> L3GetRef<T> for L3SyncCell<T> {
 macro_rules! L3_CRITICAL{
 	($($s:stmt;)*) => {
 		{
-			let irq = crate::machine::interrupt::irq_save();
+			let irq = $crate::machine::interrupt::irq_save();
 			$(
 				$s
 			)*
-			crate::machine::interrupt::irq_restore(irq);
+			$crate::machine::interrupt::irq_restore(irq);
 		}
 	}
 }

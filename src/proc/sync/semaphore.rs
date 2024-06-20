@@ -148,9 +148,8 @@ impl<T> SleepSemaphore<T> {
 		L3_CRITICAL! {
 			unsafe {
 				let wq = self.wait_room.l3_get_ref_mut();
-				let tid = wq.pop_front();
-				if tid.is_some() {
-					tid.unwrap().get_task_ref_mut().wakeup();
+				if let Some(t) = wq.pop_front(){
+					t.get_task_ref_mut().wakeup();
 				}
 			};
 		};

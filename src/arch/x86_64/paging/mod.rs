@@ -120,7 +120,7 @@ pub fn map_page(pt_root: u64, va: u64, _flags: PTEFlags) -> bool {
 		let pte = &mut (*l1_tbl).entries[l1idx];
 		if pte.is_unused() || require_new {
 			let page = allocate_4k_zeroed();
-			pte.entry = defs::V2P(page as u64).unwrap() | flags;
+			pte.entry = defs::V2P(page).unwrap() | flags;
 		} else {
 			// TODO we need to free this frame
 			panic!("PTE already taken: {:#X}", pte.entry);

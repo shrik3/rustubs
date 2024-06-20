@@ -23,7 +23,7 @@ pub fn idt_init() {
 	println!("[init] idt: vectors_start: 0x{:x}", vectors_start as usize);
 
 	let gate_descriptors: &mut [GateDescriptor64] =
-		unsafe { slice::from_raw_parts_mut(idt as *mut GateDescriptor64, 256) };
+		unsafe { slice::from_raw_parts_mut(idt as *mut GateDescriptor64, IDT_CAPACITY) };
 
 	// write to idt
 	for i in 0..IDT_VALID {

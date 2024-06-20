@@ -90,8 +90,8 @@ pub fn start() {
 pub fn _print_init_mem_info() {
 	println!(
 		"[init] kernel mapped @ {:#X} - {:#X}",
-		unsafe { vmap_kernel_start() },
-		unsafe { vmap_kernel_end() },
+		vmap_kernel_start(),
+		vmap_kernel_end(),
 	);
 	println!(
 		"[init] BSS mapped    @ {:#X} - {:#X}",

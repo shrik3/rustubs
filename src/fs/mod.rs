@@ -20,34 +20,9 @@ pub fn get_archive<'a>() -> &'a [u8] {
 	ramfs
 }
 
-pub fn test_print_fs_raw() {
-	let len = ___RAMFS_END__ as usize - ___RAMFS_START__ as usize;
-	let ramfs: &'static [u8] =
-		unsafe { slice::from_raw_parts_mut(___RAMFS_START__ as *mut u8, len) };
-	ustar::test_ls(ramfs);
-}
-
 pub fn cat(f: &File) {
 	match str::from_utf8(f.file) {
-		Ok(s) => {
-			println!("{}", s)
-		}
-		_ => {
-			// print raw
-			// println!("{} is not a text file", f.hdr.name());
-			loader::cat_elf(f);
-		}
-	}
-}
-
-pub fn test_ls(archive: &[u8]) {
-	for f in ustar::iter(archive) {
-		println!(
-			"{}:{} - {:6} bytes {}",
-			f.hdr.owner(),
-			f.hdr.owner_group(),
-			f.hdr.size(),
-			f.hdr.name()
-		);
+		Ok(s) => println!("{}", s),
+		_ => loader::cat_elf(f),
 	}
 }

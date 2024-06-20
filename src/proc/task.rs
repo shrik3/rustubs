@@ -44,7 +44,7 @@ pub struct TaskId(u64);
 
 impl TaskId {
 	pub fn new(addr: u64) -> Self {
-		Self { 0: addr }
+		Self(addr)
 	}
 
 	pub fn get_task_ref(&self) -> &Task {
@@ -115,7 +115,7 @@ impl Task {
 	#[inline(always)]
 	fn get_init_kernel_sp(&self) -> u64 {
 		let mut sp = self.kernel_stack + Mem::KERNEL_STACK_SIZE - 1;
-		sp = sp & (!0b111);
+		sp &= !0b111;
 		sp
 	}
 
