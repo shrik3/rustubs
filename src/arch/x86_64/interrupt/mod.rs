@@ -158,7 +158,7 @@ pub fn irq_restore(was_enabled: bool) {
 /// initialize the idt and [pic_8259]
 pub fn init() {
 	// init idt
-	idt::idt_init();
+	idt::init();
 	// init pic
-	pic_8259::_init();
+	pic_8259::init();
 }

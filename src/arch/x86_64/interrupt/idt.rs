@@ -3,11 +3,11 @@ use core::arch::asm;
 use core::slice;
 // TODO use P2V for extern symbol addresses
 /// number of entries in IDT
-pub const IDT_CAPACITY: usize = 256;
+const IDT_CAPACITY: usize = 256;
 /// 32 exceptions + 16 irqs from PIC = 48 valid interrupts
-pub const IDT_VALID: usize = 48;
+const IDT_VALID: usize = 48;
 /// size of interrupt handler wrapper routine (vector)
-pub const VECTOR_SIZE: u64 = 16;
+const VECTOR_SIZE: u64 = 16;
 extern "C" {
 	fn vectors_start();
 	fn idt();
@@ -19,7 +19,7 @@ extern "C" {
 /// This also allows more flexibility for some interrupt handlers (e.g. when
 /// they needs a dedicated stack...)
 #[inline(always)]
-pub fn idt_init() {
+pub fn init() {
 	println!("[init] idt: vectors_start: 0x{:x}", vectors_start as usize);
 
 	let gate_descriptors: &mut [GateDescriptor64] =
@@ -54,7 +54,7 @@ pub fn idt_init() {
 /// ```
 #[repr(C)]
 #[repr(packed)]
-pub struct GateDescriptor64 {
+struct GateDescriptor64 {
 	pub offset_1: u16,
 	pub selector: u16,
 	pub ist: u8,
@@ -67,13 +67,13 @@ pub struct GateDescriptor64 {
 // TODO expand interface for idt entry, if needed.
 impl GateDescriptor64 {
 	#[inline(always)]
-	pub fn set_offset(&mut self, offset: u64) {
+	fn set_offset(&mut self, offset: u64) {
 		self.offset_1 = (offset & 0xffff) as u16;
 		self.offset_2 = ((offset & 0xffff0000) >> 16) as u16;
 		self.offset_3 = ((offset & 0xffffffff00000000) >> 32) as u32;
 	}
 	/// selector = 0; present; type = interrupt;
-	pub fn set_default_interrupt(&mut self, offset: u64) {
+	fn set_default_interrupt(&mut self, offset: u64) {
 		self.set_offset(offset);
 		self.selector = 0x8 * 2;
 		self.attrs = 0x8e;

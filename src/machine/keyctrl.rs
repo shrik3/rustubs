@@ -80,7 +80,7 @@ enum Prefix {
 }
 
 impl Prefix {
-	pub fn try_from_u8(val: u8) -> Option<Prefix> {
+	fn try_from_u8(val: u8) -> Option<Prefix> {
 		match val {
 			Defs::C_PREFIX1 => Some(Self::PREFIX1),
 			Defs::C_PREFIX2 => Some(Self::PREFIX2),
@@ -98,7 +98,7 @@ impl KeyState {
 		}
 	}
 
-	pub fn get_leds(&self) -> u8 {
+	fn get_leds(&self) -> u8 {
 		return self.modi.bits() & 0b111;
 	}
 }
@@ -142,7 +142,7 @@ impl KeyboardController {
 		}
 	}
 
-	pub fn update_state(&mut self, code: u8) {
+	fn update_state(&mut self, code: u8) {
 		// TODO investigate this code pattern: is there much runtime cost??
 		self.keystate.scan = Some(code);
 		if let Some(p) = Prefix::try_from_u8(code) {
@@ -216,13 +216,13 @@ impl KeyboardController {
 	}
 
 	#[inline(always)]
-	pub fn read_status(&self) -> Option<StatusReg> {
+	fn read_status(&self) -> Option<StatusReg> {
 		// TODO maybe there is a path which leads to invalid SR, e.g. timeout?
 		Some(StatusReg::from_bits_truncate(self.cport.inb()))
 	}
 
 	// this should be called by the interrupt handler prologue
-	pub fn fetch_key(&mut self) {
+	fn fetch_key(&mut self) {
 		// mask keyboard interrupts when polling.
 		let was_masked = Self::is_int_masked();
 		if !was_masked {
@@ -243,12 +243,12 @@ impl KeyboardController {
 
 	/// this is safe to be called from all sync levels
 	#[inline]
-	pub fn consume_key(&mut self) -> Option<Key> {
+	fn consume_key(&mut self) -> Option<Key> {
 		let res = self.gather.swap(Key::NONE_KEY, Ordering::Relaxed);
 		return Key::from_u32(res);
 	}
 
-	pub fn decode_key(&mut self) {
+	fn decode_key(&mut self) {
 		// the decode_key should not be called when there is no scancode.
 		// mask the breakbit
 		let s = self.keystate.scan.unwrap();
@@ -283,28 +283,12 @@ impl KeyboardController {
 		self.gather.store(k.to_u32(), Ordering::Relaxed);
 	}
 
-	pub fn cycle_repeat_rate() {
+	fn cycle_repeat_rate() {
 		todo!();
 	}
 
-	pub fn cycle_deley() {
+	fn cycle_deley() {
 		todo!();
-	}
-
-	/// unsafe: this function could block forever as it doesn't emply
-	/// timeout.
-	/// wait until the next OUTB; return true if get an ACK message
-	#[inline(always)]
-	unsafe fn __block_for_ack(&self) -> bool {
-		loop {
-			// if let Some(f)
-			let s = self.read_status().unwrap();
-			if s.contains(StatusReg::OUTB) {
-				break;
-			}
-		}
-		let msg = self.cport.inb();
-		return msg == Msg::ACK as u8;
 	}
 
 	#[inline(always)]
@@ -372,7 +356,7 @@ enum Cmd {
 
 bitflags! {
 #[derive(Debug)]
-pub struct StatusReg:u8 {
+struct StatusReg:u8 {
 	const NONE			= 0;
 	const OUTB			= 1 << 0;	// output buffer full (can read)
 	const INB			= 1 << 1;	// input buffer full (don't write yet)
@@ -392,7 +376,7 @@ enum Msg {
 	ACK = 0xfa,
 }
 
-pub struct Defs;
+struct Defs;
 impl Defs {
 	pub const CTRL: u16 = 0x64;
 	pub const DATA: u16 = 0x60;

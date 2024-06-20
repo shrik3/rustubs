@@ -21,7 +21,7 @@ impl PicDeviceInt {
 // 0x21: PIC1 DATA
 // 0xA0: PIC2 COMMAND (SLAVE)
 // 0xA1: PIC2 DATA
-pub fn _init() {
+pub fn init() {
 	// ICW1_ICW4 | ICW1_INIT
 	// start init sequence in cascade mode
 	outb(CTRL1, 0x11);

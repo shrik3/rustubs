@@ -21,7 +21,7 @@ pub struct CGAScreen {
 }
 
 #[inline(always)]
-pub fn cal_offset(row: usize, col: usize) -> usize {
+fn cal_offset(row: usize, col: usize) -> usize {
 	col + row * MAX_COLS
 }
 
