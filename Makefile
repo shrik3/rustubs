@@ -44,8 +44,12 @@ $(FSIMAGE): fs.ustar
 	@echo "---BUILDING RAMFS---"
 	@objcopy --input-target binary --output-target pe-x86-64 --binary-architecture i386 --rename-section .data=.fs $< $@
 
-fs.ustar:
+fs.ustar: progs
 	@tar -cvf $@ --format=ustar docs/* progs/hello
+
+.PHONY: progs
+progs:
+	@make -C progs all
 
 rebuild_fs:
 	@$(MAKE) -C progs
