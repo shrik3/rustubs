@@ -12,9 +12,7 @@ pub struct VMMan {
 
 impl VMMan {
 	pub fn new() -> Self {
-		Self {
-			vmas: Vec::<VMArea>::new(),
-		}
+		Self { vmas: Vec::<VMArea>::new() }
 	}
 }
 

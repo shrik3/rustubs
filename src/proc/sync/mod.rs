@@ -18,9 +18,7 @@ pub struct L2SyncQueue<T> {
 
 impl<T> L2SyncQueue<T> {
 	pub const fn new() -> Self {
-		Self {
-			queue: VecDeque::new(),
-		}
+		Self { queue: VecDeque::new() }
 	}
 }
 
@@ -135,9 +133,7 @@ pub trait IRQHandlerEpilogue {
 	fn get_gate() -> IRQGate {
 		IRQGate {
 			prologue: Self::do_prologue,
-			epilogue_entrant: Some(EpilogueEntrant {
-				epilogue: Self::do_epilogue,
-			}),
+			epilogue_entrant: Some(EpilogueEntrant { epilogue: Self::do_epilogue }),
 		}
 	}
 }

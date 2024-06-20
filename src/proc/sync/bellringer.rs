@@ -17,18 +17,13 @@ pub struct Sleeper {
 
 impl Sleeper {
 	pub fn new(tid: TaskId, ns: u64) -> Self {
-		Self {
-			tid,
-			until: time::nsec() + ns,
-		}
+		Self { tid, until: time::nsec() + ns }
 	}
 }
 
 impl BellRinger {
 	pub const fn new() -> Self {
-		Self {
-			bedroom: LinkedList::new(),
-		}
+		Self { bedroom: LinkedList::new() }
 	}
 
 	pub fn check_in(s: Sleeper) {

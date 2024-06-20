@@ -257,11 +257,7 @@ impl KeyboardController {
 		let p = self.keystate.prefix;
 
 		if c == 53 && p == Prefix::PREFIX1 {
-			let k = Key {
-				asc: b'/',
-				modi: m,
-				scan: s,
-			};
+			let k = Key { asc: b'/', modi: m, scan: s };
 			self.gather.store(k.to_u32(), Ordering::Relaxed);
 			return;
 		}
@@ -282,11 +278,7 @@ impl KeyboardController {
 			NORMAL_TAB[c as usize]
 		};
 
-		let k = Key {
-			asc,
-			modi: m,
-			scan: s,
-		};
+		let k = Key { asc, modi: m, scan: s };
 
 		self.gather.store(k.to_u32(), Ordering::Relaxed);
 	}

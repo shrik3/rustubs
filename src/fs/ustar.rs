@@ -28,10 +28,7 @@ pub struct UstarArchiveIter<'a> {
 
 /// gives you an ustar file iterator over an read only u8 slice archive
 pub fn iter(archive: &[u8]) -> UstarArchiveIter<'_> {
-	UstarArchiveIter {
-		archive,
-		iter_curr: 0,
-	}
+	UstarArchiveIter { archive, iter_curr: 0 }
 }
 
 impl<'a> Iterator for UstarArchiveIter<'a> {

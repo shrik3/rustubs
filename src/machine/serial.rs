@@ -9,9 +9,7 @@ pub struct SerialWritter {
 
 impl SerialWritter {
 	pub const fn new(port: u16) -> Self {
-		Self {
-			port: IOPort::new(port),
-		}
+		Self { port: IOPort::new(port) }
 	}
 
 	pub fn putchar(&self, ch: char) {

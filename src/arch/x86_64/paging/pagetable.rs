@@ -47,9 +47,7 @@ impl Pagetable {
 	#[inline]
 	pub const fn new() -> Self {
 		const EMPTY: PTE = PTE::new();
-		Pagetable {
-			entries: [EMPTY; Self::ENTRY_COUNT],
-		}
+		Pagetable { entries: [EMPTY; Self::ENTRY_COUNT] }
 	}
 
 	/// Clears all entries.
