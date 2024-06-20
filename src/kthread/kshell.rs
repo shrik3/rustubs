@@ -20,7 +20,7 @@ fn event_loop(files: &Vec<File>) -> ! {
 	let mut input_buffer = Vec::<u8>::new();
 	print!("$ ");
 	loop {
-		let k = read_key().get_ascii();
+		let k = read_key().asc;
 		match k {
 			0x8 => {
 				// backspace

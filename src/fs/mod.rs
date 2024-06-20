@@ -3,10 +3,8 @@
 // symbols provided by linker
 pub mod ustar;
 use crate::proc::loader;
-use alloc::vec::Vec;
 use core::slice;
 use core::str;
-use ustar::UstarArchiveIter;
 extern "C" {
 	fn ___RAMFS_START__();
 	fn ___RAMFS_END__();

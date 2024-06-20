@@ -1,5 +1,4 @@
 use bitflags::bitflags;
-use core::convert;
 use core::ffi::c_uchar;
 use core::mem::transmute;
 
@@ -30,18 +29,6 @@ impl Key {
 	}
 }
 
-impl convert::Into<char> for Key {
-	fn into(self) -> char {
-		self.asc as char
-	}
-}
-
-impl convert::Into<u8> for Key {
-	fn into(self) -> u8 {
-		self.asc
-	}
-}
-
 bitflags! {
 	/// Technically the *Lock are special keys, instead of Modifiers
 	/// but we don't need another type FWIW.
@@ -62,53 +49,12 @@ bitflags! {
 	}
 }
 
-#[allow(dead_code)]
 impl Key {
 	pub fn new() -> Self {
 		Self {
 			asc: 0,  // logically scan + modi.shift => asc
 			scan: 0, // scancode, "raw"
 			modi: Modifiers::NONE,
-		}
-	}
-	pub fn decode(&mut self) {
-		// decode  key
-	}
-	pub fn valid(self) -> bool {
-		self.scan != 0
-	}
-
-	pub fn invalidate(&mut self) {
-		self.scan = 0;
-	}
-
-	// setter and getter for ascii and scancode
-	pub fn set_ascii(&mut self, ascii: u8) {
-		self.asc = ascii;
-	}
-	pub fn get_ascii(self) -> u8 {
-		self.asc
-	}
-	pub fn set_scancode(&mut self, scancode: u8) {
-		self.scan = scancode;
-	}
-	pub fn get_scancode(self) -> u8 {
-		self.scan
-	}
-
-	// TODO the setters and getters should not be their own functions....
-
-	#[inline(always)]
-	pub fn mod_contains(&self, modi: Modifiers) -> bool {
-		self.modi.contains(modi)
-	}
-
-	#[inline(always)]
-	pub fn mod_set(&mut self, modi: Modifiers, pressed: bool) {
-		if pressed {
-			self.modi.insert(modi);
-		} else {
-			self.modi.remove(modi);
 		}
 	}
 }
@@ -124,8 +70,6 @@ pub enum Scan {
 	Div   = 8,
 }
 
-// Decoding tables ... this shit is so ugly, thanks to rust's strong typing system!!!
-// Also, this is a german layout keyboard
 // oh btw, the code translation is done by ChatGPT if it's wrong complain to the AI!
 #[rustfmt::skip]
 pub const NORMAL_TAB: [c_uchar; 100] = [

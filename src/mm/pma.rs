@@ -37,7 +37,6 @@ extern "C" {
 // }
 
 /// There should only be one global instance of this.
-#[allow(dead_code)]
 pub struct PageStackAllocator {
 	page_stack: &'static mut [u64],
 	size: usize,

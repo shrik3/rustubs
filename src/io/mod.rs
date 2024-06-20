@@ -8,7 +8,6 @@ use core::cell::SyncUnsafeCell;
 use core::fmt;
 use lazy_static::lazy_static;
 use spin::Mutex;
-// TODO I want my own locking primitive for practice, instead of stock spin lock
 lazy_static! {
 	pub static ref CGASCREEN_GLOBAL: Mutex<CGAScreen> = Mutex::new(CGAScreen::new());
 }

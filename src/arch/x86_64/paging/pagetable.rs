@@ -3,10 +3,8 @@
 //! [x86_64 crate](https://docs.rs/x86_64/latest/src/x86_64/addr.rs.html)
 //! see ATTRIBUTIONS
 
-use alloc::alloc::alloc;
-use bitflags::{bitflags, Flags};
+use bitflags::bitflags;
 
-use crate::{is_aligned_4k, mm::allocate_4k, P2V};
 #[repr(align(4096))]
 #[repr(C)]
 #[derive(Clone)]

@@ -1,7 +1,5 @@
 //! a very simple virtual memory manager
 
-use crate::fs::ustar::FileHdr;
-use crate::fs::File;
 use alloc::string::String;
 use alloc::vec::Vec;
 use bitflags::bitflags;

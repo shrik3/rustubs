@@ -2,16 +2,11 @@ use crate::machine::device_io::*;
 use crate::{arch::x86_64::misc::*, P2V};
 use core::{fmt, ptr, slice, str};
 
-// I would consider these cga parameters constant.
-// the scroll() and clear() works with the assumption
-// that the CGAScreen memory buffer is 64-bit aligned
-// luckily it is.
-// if any changes, you'd better hope the assumption still
-// holds
-// For each character, it takes 2 byte in the buffer
-// (one for char and one for attribute)
-// Therefore the MAX_COLS should be a multiple of 4
-// broken..
+// I would consider these cga parameters constant. the scroll() and clear() work
+// with the assumption that the CGAScreen memory buffer is 64-bit aligned
+// luckily it is. if any changes, you'd better hope the assumption still holds
+// For each character, it takes 2 byte in the buffer (one for char and one for
+// attribute) Therefore the MAX_COLS should be a multiple of 4 broken..
 //
 // TODO: clean me up
 const MAX_COLS: usize = 80;
@@ -20,23 +15,19 @@ const CGA_BUFFER_START: *mut u8 = P2V(0xb8000).unwrap() as *mut u8;
 const CGA_BUFFER_START_64: *mut u64 = P2V(0xb8000).unwrap() as *mut u64;
 const CGA_BUFFER_BYTE_SIZE: usize = MAX_COLS * MAX_ROWS * 2;
 
-// THESE TWO ARE USED TO DO BATCH OPERATIONS ON CGA BUFFER
-// MEMORY, HOPEFULLY MAKE IT FASTER.
-// I.E. SETTING 4 CHARACTERS AT ONCE.
+// THESE TWO ARE USED TO DO BATCH OPERATIONS ON CGA BUFFER MEMORY, HOPEFULLY
+// MAKE IT FASTER. I.E. SETTING 4 CHARACTERS AT ONCE.
 const CGA_BUFFER_QWORD_SIZE: usize = CGA_BUFFER_BYTE_SIZE / 8;
 const CGA_BUFFER_QWORDS_PER_ROW: usize = MAX_COLS / 4;
 
 const IR_PORT: u16 = 0x3d4;
 const DR_PORT: u16 = 0x3d5;
 
-#[allow(dead_code)]
 pub struct CGAScreen {
 	pub cga_mem: &'static mut [u8],
 	cursor_r: usize,
 	cursor_c: usize,
 	attr: u8,
-	iport: IOPort,
-	dport: IOPort,
 }
 
 #[inline(always)]
@@ -44,8 +35,9 @@ pub fn cal_offset(row: usize, col: usize) -> usize {
 	col + row * MAX_COLS
 }
 
-#[allow(dead_code)]
 impl CGAScreen {
+	const IR_PORT: IOPort = IOPort::new(0x3d4);
+	const DR_PORT: IOPort = IOPort::new(0x3d5);
 	pub fn new() -> Self {
 		let cga = Self {
 			cga_mem: unsafe {
@@ -54,8 +46,6 @@ impl CGAScreen {
 			cursor_r: 0,
 			cursor_c: 0,
 			attr: 0x0f,
-			iport: IOPort::new(IR_PORT),
-			dport: IOPort::new(DR_PORT),
 		};
 		cga.init_cursor();
 		return cga;
@@ -195,58 +185,45 @@ impl CGAScreen {
 		// io ports for instruction register and data register
 		let offset = cal_offset(row, col);
 		// set lower byte
-		self.iport.outb(15 as u8);
+		Self::IR_PORT.outb(15 as u8);
 		delay();
-		self.dport.outb(offset as u8);
+		Self::DR_PORT.outb(offset as u8);
 		// set higher byte
-		self.iport.outb(14 as u8);
-		self.dport.outb((offset >> 8) as u8);
+		Self::IR_PORT.outb(14 as u8);
+		delay();
+		Self::DR_PORT.outb((offset >> 8) as u8);
 		self.cursor_r = row;
 		self.cursor_c = col;
 	}
 
 	// make cursor blink (is this necessary??)
 	pub fn init_cursor(&self) {
-		self.iport.outb(0x0a);
+		Self::IR_PORT.outb(0x0a);
 		delay();
-		let mut d = self.dport.inb();
+		let mut d = Self::DR_PORT.inb();
 		delay();
 		d = d & 0xc0;
 		d = d | 0xe;
-		self.dport.outb(d);
+		Self::DR_PORT.outb(d);
 		delay();
-		self.iport.outb(0x0b);
+		Self::IR_PORT.outb(0x0b);
 		delay();
-		let mut d = self.dport.inb();
+		let mut d = Self::DR_PORT.inb();
 		d = d & 0xe0;
 		d = d | 0xf;
-		self.dport.outb(d);
-	}
-
-	pub fn getpos_xy(&self, row: &mut u32, col: &mut u32) {
-		let offset = self.getpos_offset();
-		*row = offset % MAX_COLS as u32;
-		*col = offset / MAX_COLS as u32;
+		Self::DR_PORT.outb(d);
 	}
 
 	#[allow(arithmetic_overflow)]
 	pub fn getpos_offset(&self) -> u32 {
 		// read higher byte
-		self.iport.outb(14 as u8);
-		let mut offset = self.dport.inb();
+		Self::IR_PORT.outb(14 as u8);
+		let mut offset = Self::DR_PORT.inb();
 		offset = offset << 8;
 		// read lower byte
-		self.iport.outb(15 as u8);
-		offset += self.dport.inb();
+		Self::IR_PORT.outb(15 as u8);
+		offset += Self::DR_PORT.inb();
 		offset as u32
-	}
-
-	pub fn show_corners(&mut self) {
-		// TODO replace hardcoded
-		self.show(0, 0, 0xda as char, self.attr);
-		self.show(0, 79, 0xbf as char, self.attr);
-		self.show(24, 0, 0xc0 as char, self.attr);
-		self.show(24, 79, 0xd9 as char, self.attr);
 	}
 
 	pub fn print(&mut self, s: &str) {

@@ -1,6 +1,5 @@
 //! this asume a read-only; in memory filesystem, and we assume the FS has a
 //! static lifetime . This makes slice type much easier.
-use alloc::vec::Vec;
 use core::iter::Iterator;
 use core::str;
 
