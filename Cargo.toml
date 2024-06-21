@@ -17,6 +17,7 @@ version = "1.4"
 features = ["spin_no_std"]
 
 [lib]
+# this is important for the no_std + linking
 crate-type = ["staticlib"]
 
 [profile.dev]
