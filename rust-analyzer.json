@@ -4,6 +4,6 @@
     "rust-analyzer.cargo.extraArgs": [
         "--target",
         "defs/x86_64-rustubs.json"
-    ]
-
+    ],
+    "rust-analyzer.check.command": "check"
 }
