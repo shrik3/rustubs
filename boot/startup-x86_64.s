@@ -53,8 +53,8 @@ startup:
 	; setup GDT by loading GDT descriptor
 	; see docs/x86_gdt.txt
 	lgdt    [gdt_80]
-	; use the 3rd gdt entry for protected mode segmentations
-	mov     ecx, 3 * 0x8
+	; set 32bit data segment
+	mov     ecx, 1 * 0x8
 	mov     ds, cx
 	mov     es, cx
 	mov     fs, cx
@@ -128,9 +128,8 @@ activate_long_mode:
 	mov     eax, cr0
 	or      eax, 1 << 31
 	mov     cr0, eax
-
-	; use the 2nd gdt entry (see definition below)
-	; jump to 64-bit code segment -> full activation of Long Mode
+	; points CS to the 64 bit code segment descriptor in GDT. This fully
+	; activates the long mode.
 	jmp     2 * 0x8 : longmode_start
 
 
@@ -217,39 +216,43 @@ clear_bss:
 [SECTION .data32]
 gdt:
 	; see docs/x86_gdt.txt
+	; see https://wiki.osdev.org/GDT_Tutorial
 
 	; GDT[0] should always be NULL descriptor
 	dw      0,0,0,0
 
-	; 32-bit code segment descriptor
-	; limit=0xFFFF, base=0
-	; Types: P|Ring0|Code/Data|Exec|NonConforming|Readable|NotAccessed
-	; Flags: 4K|32-bit|Not Long Mode
-	dw      0xFFFF
-	dw      0x0000
-	dw      0x9A00
-	dw      0x00CF
+	; 32bit kernel code segment doesn't need to be set, because we only stay
+	; briefly in 32bit mode and we only do short jumps. Relative addressing,
+	; as far as I understand it, is not affected by GDT
 
-	; 64-bit code segment descriptor
-	; limit=0xFFFF, base=0
-	; Types: P|Ring0|Code/Data|Exec|NonConforming|Readable|NotAccessed
-	; Flags: 4K|-|LongMode|-
-	dw      0xFFFF
-	dw      0x0000
-	dw      0x9A00
-	dw      0x00AF
-
-	; data segment descriptor
-	; limit=0xFFFF, base=0
-	; Types:  Present|Ring0|Code/Data|NoExec|GrowUp|Writable|NotAccessed
-	; Flags:  4K|32-bit|Not Long Mode
+	; 32/64bit kernel data: for data segments, 32 and 64 bit mode share the
+	; same flags, so we can reuse the same segment descriptor for both
+	; modes.
 	dw      0xFFFF
 	dw      0x0000
 	dw      0x9200
 	dw      0x00CF
+	; 64 bit kernel code
+	dw      0xFFFF
+	dw      0x0000
+	dw      0x9A00
+	dw      0x00AF
+	; 64 bit user code
+	dw      0xFFFF
+	dw      0x0000
+	dw      0xFA00
+	dw      0x00AF
+	; 64 bit user data (the same entry can also be used for 32 bit user data,
+	; but we never run user mode in 32bit
+	dw      0xFFFF
+	dw      0x0000
+	dw      0xF200
+	dw      0x00CF
+	; we don't have system segment and tss yet, so can't use
+	; SYSENTER/SYSEXIT routines.
 
 gdt_80:
-	dw      4*8 - 1   ; GDT limit=24, 4 GDT entries - 1
+	dw      5*8 - 1   ; GDT limit=24, 4 GDT entries - 1
 	dq      gdt       ; GDT address
 
 
