@@ -31,6 +31,8 @@ MAX_MEM: equ 512
 [EXTERN mb_info_pm_addr]
 [GLOBAL gdt]
 [GLOBAL gdt_80]
+[GLOBAL tss_desc]
+[GLOBAL tss0]
 ; functions from other parts of rustubs
 ; NOTE: this are all from 64bit code, so do not use them in 32bit assembly
 [EXTERN ___BSS_START__]
@@ -248,11 +250,13 @@ gdt:
 	dw      0x0000
 	dw      0xF200
 	dw      0x00CF
-	; we don't have system segment and tss yet, so can't use
-	; SYSENTER/SYSEXIT routines.
+tss_desc:
+	; reserved for tss descriptor; single cpu only
+	dw      0,0,0,0
+	dw      0,0,0,0
 
 gdt_80:
-	dw      5*8 - 1   ; GDT limit=24, 4 GDT entries - 1
+	dw      7*8 - 1   ; GDT limit=24, 4 GDT entries - 1
 	dq      gdt       ; GDT address
 
 
@@ -286,3 +290,7 @@ pt_end:
 ;free_page_stack:
 ;       resb   8388608
 ;       alignb 4096
+
+[SECTION .bss.tss]
+tss0:
+	resb 	104
