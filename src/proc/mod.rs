@@ -25,8 +25,4 @@ pub unsafe fn init() {
 		.l3_get_ref_mut()
 		.bedroom
 		.reserve(defs::Limits::SEM_WAIT_QUEUE_MIN_CAP);
-	keyctrl::KEY_BUFFER
-		.wait_room
-		.l3_get_ref_mut()
-		.reserve(defs::Limits::SEM_WAIT_QUEUE_MIN_CAP);
 }

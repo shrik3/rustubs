@@ -6,6 +6,7 @@ pub mod bellringer;
 pub mod irq;
 pub use irq::*;
 pub mod semaphore;
+use crate::black_magic::Empty;
 use alloc::collections::VecDeque;
 use core::cell::SyncUnsafeCell;
 use core::ops::{Deref, DerefMut};
@@ -13,7 +14,8 @@ use core::sync::atomic::{AtomicBool, Ordering};
 pub static EPILOGUE_QUEUE: L3Sync<EpilogueQueue> = L3Sync::new(EpilogueQueue::new());
 /// indicates whether a task is running in L2. Maybe make it L3SyncCell as well.
 static L2_AVAILABLE: AtomicBool = AtomicBool::new(true);
-
+/// RAII lock guard for the global L2 flag, the u64 is not to be used.
+static L2_GUARD: L2Sync<Empty> = L2Sync::new(Empty::new());
 type EpilogueQueue = L2SyncQueue<EpilogueEntrant>;
 
 /// the synchronized queue for Level 2 epilogues

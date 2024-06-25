@@ -1,10 +1,12 @@
 use crate::arch::x86_64::is_int_enabled;
 use crate::proc::sync::L3Sync;
-use crate::proc::task::{Task, TaskId};
+use crate::proc::task::{Task, TaskId, TaskState};
 use crate::{Scheduler, L3_CRITICAL};
 use alloc::collections::VecDeque;
 use core::sync::atomic::Ordering;
 use core::{cell::SyncUnsafeCell, sync::atomic::AtomicU64};
+
+use super::L2_GUARD;
 pub trait Semaphore<T, E>
 where
 	T: ResourceMan<E>,
@@ -19,11 +21,20 @@ where
 	fn is_empty(&self) -> bool;
 	/// must not block
 	fn is_full(&self) -> bool;
+	/// if the semaphore is also to be accessed in the epilogue level, the L2
+	/// lock is already acquired.
+	unsafe fn p_unguarded(&self) -> Option<E> {
+		return None;
+	}
+	#[allow(unused_variables)]
+	unsafe fn v_unguarded(&self, e: E) {}
 }
 
 /// wherever resoure management behind semaphore must provide get and insert
 /// function. They do not need to be atomic. Normaly they only needs to be
 /// wrappers for e.g. enque and deque.
+///
+/// TODO: implement a "reserve" optional "reserve" for ResourceMan<E>
 pub trait ResourceMan<E>
 where E: Copy + Clone
 {
@@ -46,14 +57,14 @@ where E: Copy + Clone
 }
 
 pub struct SpinSemaphore<T> {
-	reource_pool: SyncUnsafeCell<T>,
+	resource_pool: SyncUnsafeCell<T>,
 	sema: AtomicU64,
 }
 
 impl<T> SpinSemaphore<T> {
 	pub const fn new(t: T) -> Self {
 		Self {
-			reource_pool: SyncUnsafeCell::new(t),
+			resource_pool: SyncUnsafeCell::new(t),
 			sema: AtomicU64::new(0),
 		}
 	}
@@ -83,13 +94,13 @@ where
 			}
 		}
 
-		let thing = unsafe { &mut *self.reource_pool.get() }.get_resource();
+		let thing = unsafe { &mut *self.resource_pool.get() }.get_resource();
 		return thing;
 	}
 	fn v(&self, e: E) {
 		// it's important to enque BEFORE incrementing semaphore,
 		// so that the producer end could be lock free.
-		unsafe { &mut *self.reource_pool.get() }.insert_resource(e);
+		unsafe { &mut *self.resource_pool.get() }.insert_resource(e);
 		// is SeqCst too strong?
 		let _ = self.sema.fetch_add(1, Ordering::SeqCst);
 	}
@@ -103,56 +114,34 @@ where
 
 // sleeping SpinSemaphore is toddo
 pub struct SleepSemaphore<T> {
-	pub reource_pool: SyncUnsafeCell<T>,
+	pub resource_pool: SyncUnsafeCell<T>,
 	pub sema: AtomicU64,
 	// the wait_room must be synchronized at level 3 (or???)
 	// TODO make a type alias for VecDeque<TaskId>
-	pub wait_room: L3Sync<VecDeque<TaskId>>,
+	pub wait_room: SyncUnsafeCell<VecDeque<TaskId>>,
 }
 
 impl<T> SleepSemaphore<T> {
 	pub const fn new(t: T) -> Self {
 		Self {
-			reource_pool: SyncUnsafeCell::new(t),
+			resource_pool: SyncUnsafeCell::new(t),
 			sema: AtomicU64::new(0),
-			wait_room: L3Sync::new(VecDeque::new()),
+			wait_room: SyncUnsafeCell::new(VecDeque::new()),
 		}
 	}
 
-	fn wait(&self) {
-		L3_CRITICAL! {
-			unsafe {
-				let wq = self.wait_room.l3_get_ref_mut();
-				Task::current().unwrap().wait_in(wq);
-			};
-		}
+	unsafe fn wait(&self) {
+		let wq = &mut *self.wait_room.get();
+		Task::curr_wait_in(wq);
 		assert!(is_int_enabled());
 		unsafe { Scheduler::do_schedule_l2() };
 	}
 
-	fn wakeup_all(&self) {
-		L3_CRITICAL! {
-			unsafe {
-				let wq = self.wait_room.l3_get_ref_mut();
-				let mut tid;
-				loop {
-					tid = wq.pop_front();
-					if tid.is_none() {break;}
-					tid.unwrap().get_task_ref_mut().wakeup();
-				}
-			};
-		};
-	}
-
-	fn wakeup_one(&self) {
-		L3_CRITICAL! {
-			unsafe {
-				let wq = self.wait_room.l3_get_ref_mut();
-				if let Some(t) = wq.pop_front(){
-					t.get_task_ref_mut().wakeup();
-				}
-			};
-		};
+	unsafe fn wakeup_one(&self) {
+		let wq = &mut *self.wait_room.get();
+		if let Some(t) = wq.pop_front() {
+			t.get_task_ref_mut().wakeup();
+		}
 	}
 }
 
@@ -163,11 +152,19 @@ where
 	E: Copy + Clone,
 {
 	fn p(&self) -> Option<E> {
+		L2_GUARD.lock();
+		unsafe { return self.p_unguarded() };
+	}
+	fn v(&self, e: E) {
+		L2_GUARD.lock();
+		unsafe { self.v_unguarded(e) };
+	}
+	unsafe fn p_unguarded(&self) -> Option<E> {
 		let mut c: u64;
 		loop {
 			c = self.sema.load(Ordering::Relaxed);
 			if c == 0 {
-				self.wait();
+				unsafe { self.wait() };
 				continue;
 			}
 
@@ -180,11 +177,11 @@ where
 			}
 		}
 
-		let thing = unsafe { &mut *self.reource_pool.get() }.get_resource();
+		let thing = (&mut *self.resource_pool.get()).get_resource();
 		return thing;
 	}
-	fn v(&self, e: E) {
-		unsafe { &mut *self.reource_pool.get() }.insert_resource(e);
+	unsafe fn v_unguarded(&self, e: E) {
+		(&mut *self.resource_pool.get()).insert_resource(e);
 		let _ = self.sema.fetch_add(1, Ordering::SeqCst);
 		self.wakeup_one();
 	}

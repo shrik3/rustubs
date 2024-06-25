@@ -1,5 +1,6 @@
 use crate::arch::x86_64::arch_regs::Context64;
 use crate::arch::x86_64::{arch_regs, is_int_enabled};
+use crate::machine::interrupt::{irq_restore, irq_save};
 use crate::mm::vmm::{VMArea, VMMan, VMPerms, VMType};
 use crate::mm::KSTACK_ALLOCATOR;
 use crate::proc::sched::GLOBAL_SCHEDULER;
@@ -141,12 +142,13 @@ impl Task {
 	}
 
 	/// a task may be present in multiple wait rooms; this is logically not
-	/// possible at the moment, but would be necessary for stuffs like EPoll
-	/// unsafe because this must be used in L3 critical section
-	pub unsafe fn wait_in(&mut self, wait_room: &mut VecDeque<TaskId>) {
-		assert_ne!(self.state, TaskState::Wait);
-		self.state = TaskState::Wait;
-		wait_room.push_back(self.taskid());
+	/// possible at the moment, but would be necessary for stuffs like EPoll.
+	/// require manual attention for sync
+	pub unsafe fn curr_wait_in(wait_room: &mut VecDeque<TaskId>) {
+		let t = Task::current().unwrap();
+		assert_ne!(t.state, TaskState::Wait);
+		t.state = TaskState::Wait;
+		wait_room.push_back(t.taskid());
 	}
 
 	/// unsafe because this must be used in L3 critical section
@@ -157,8 +159,10 @@ impl Task {
 		}
 		// TODO: makesure you don't put a task in the run queue more than once.
 		self.state = TaskState::Run;
+		let irq = irq_save();
 		let sched = GLOBAL_SCHEDULER.l3_get_ref_mut();
 		sched.insert_task(self.taskid());
+		irq_restore(irq);
 	}
 
 	// TODO this is very similar to the semaphore wait ... maybe extract a trait

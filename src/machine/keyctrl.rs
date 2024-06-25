@@ -61,7 +61,7 @@ impl IRQHandlerEpilogue for KeyboardDriver {
 			// intentionally holding the lock forever. This could also starve
 			// the other threads because context swap can only happen in-between
 			// epilogue execution.
-			KEY_BUFFER.v(key);
+			KEY_BUFFER.v_unguarded(key);
 		}
 	}
 }
