@@ -85,6 +85,10 @@ impl<T> SleepSemaphore<T> {
 			t.get_task_ref_mut().wakeup();
 		}
 	}
+
+	pub unsafe fn get_pool_mut(&self) -> &mut T {
+		&mut (*self.resource_pool.get())
+	}
 }
 
 // like the spinning one, but sleep; perhaps consider reusing code..

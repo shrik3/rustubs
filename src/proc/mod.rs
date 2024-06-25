@@ -2,6 +2,7 @@
 
 use crate::arch::x86_64::is_int_enabled;
 use crate::defs;
+use crate::machine::keyctrl;
 use sync::bellringer;
 pub mod exec;
 pub mod loader;
@@ -25,4 +26,9 @@ pub fn init() {
 		.lock()
 		.bedroom
 		.reserve(defs::Limits::SEM_WAIT_QUEUE_MIN_CAP);
+	unsafe {
+		keyctrl::KEY_BUFFER
+			.get_pool_mut()
+			.reserve(defs::Limits::SEM_WAIT_QUEUE_MIN_CAP);
+	}
 }
