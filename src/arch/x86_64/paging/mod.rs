@@ -20,14 +20,14 @@ pub fn get_cr3() -> u64 {
 	unsafe {
 		asm!("mov {}, cr3", out(reg) cr3);
 	}
-	return cr3;
+	cr3
 }
 
 /// returns the identically mapped (+ kernel offset) virtual address of the page
 /// table
 #[inline]
 pub fn get_root() -> u64 {
-	return P2V(get_cr3()).unwrap();
+	P2V(get_cr3()).unwrap()
 }
 
 /// unsafe as it dereferences raw pointer pt_root. Must make sure it's a valid,

@@ -44,6 +44,8 @@ fn event_loop(files: &Vec<File>) -> ! {
 	}
 }
 
+// a known issue of this lint
+#[allow(clippy::ptr_arg)]
 fn handle(cmd: &str, files: &Vec<File>) {
 	let tokens: Vec<&str> = cmd.split(' ').collect();
 	match tokens[0] {

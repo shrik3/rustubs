@@ -28,7 +28,7 @@ impl PIT {
 		Self::CTRL_PORT.outb(0x34);
 		Self::DATA_PORT.outb((divider & 0xff) as u8);
 		Self::DATA_PORT.outb(((divider & 0xff00) >> 8) as u8);
-		return divider * Self::PIT_BASE_NS;
+		divider * Self::PIT_BASE_NS
 	}
 }
 

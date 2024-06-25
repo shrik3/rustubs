@@ -121,11 +121,11 @@ where
 			}
 		}
 
-		let thing = (&mut *self.resource_pool.get()).get_resource();
+		let thing = (*self.resource_pool.get()).get_resource();
 		return thing;
 	}
 	unsafe fn v_unguarded(&self, e: E) {
-		(&mut *self.resource_pool.get()).insert_resource(e);
+		(*self.resource_pool.get()).insert_resource(e);
 		let _ = self.sema.fetch_add(1, Ordering::SeqCst);
 		self.wakeup_one();
 	}

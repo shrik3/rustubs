@@ -19,5 +19,5 @@ pub fn get_fault_addr() -> u64 {
 	unsafe {
 		asm!("mov {}, cr2", out(reg) cr2);
 	}
-	return cr2;
+	cr2
 }

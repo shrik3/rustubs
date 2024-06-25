@@ -45,27 +45,27 @@ pub fn vmap_kernel_end() -> u64 {
 
 #[inline]
 pub fn bss_start() -> u64 {
-	return ___BSS_START__ as u64;
+	___BSS_START__ as u64
 }
 
 #[inline]
 pub fn bss_end() -> u64 {
-	return ___BSS_END__ as u64;
+	___BSS_END__ as u64
 }
 
 #[inline]
 pub fn roundup_4k(addr: u64) -> u64 {
-	return (addr + 0xfff) & !0xfff;
+	(addr + 0xfff) & !0xfff
 }
 
 #[inline]
 pub fn rounddown_4k(addr: u64) -> u64 {
-	return addr & !0xfff;
+	addr & !0xfff
 }
 
 #[inline]
 pub fn is_aligned_4k(addr: u64) -> bool {
-	return (addr & 0xfff) == 0;
+	(addr & 0xfff) == 0
 }
 
 /// memory definitions
@@ -78,21 +78,10 @@ pub mod Mem {
 	pub const PAGE_SIZE: u64 = 0x1000;
 	pub const PAGE_SHIFT: u64 = 12;
 	pub const PAGE_MASK: u64 = 0xfff;
-	pub const L0_SHIFT: u8 = 39;
-	pub const L0_MASK: u64 = 0x1ff << L0_SHIFT;
-	pub const L1_SHIFT: u8 = 30;
-	pub const L1_MASK: u64 = 0x1ff << L1_SHIFT;
-	pub const L2_SHIFT: u8 = 21;
-	pub const L2_MASK: u64 = 0x1ff << L2_SHIFT;
-	pub const L3_SHIFT: u8 = 12;
-	pub const L3_MASK: u64 = 0x1ff << L3_SHIFT;
 	// 64 GiB available memory
 	pub const MAX_PHY_MEM: u64 = 0x1000000000;
 	// we should have at least 64 MiB free physical memory (excluding the kernel it self)
 	pub const MIN_PHY_MEM: u64 = 64 * M;
-	// size of frame allocator bitmap: number of physical frames / 8 for 128M
-	// memory (37268) 4k pages, 37268 bits are needed, hence
-	// 4096 bytes, exactly one page!
 	pub const ID_MAP_START: u64 = 0xffff_8000_0000_0000;
 	pub const ID_MAP_END: u64 = 0xffff_8010_0000_0000;
 	// kernel image:0xffff_8020_0000_0000 ~ 0xffff_802f_0000_0000;

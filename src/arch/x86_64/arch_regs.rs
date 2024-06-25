@@ -63,5 +63,5 @@ pub fn get_sp() -> u64 {
 	unsafe {
 		asm!("mov {}, rsp", out(reg) sp);
 	}
-	return sp;
+	sp
 }

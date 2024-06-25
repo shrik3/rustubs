@@ -5,6 +5,20 @@
 #![no_main]
 #![feature(const_option)]
 #![feature(sync_unsafe_cell)]
+#![allow(clippy::fn_to_numeric_cast)]
+#![allow(clippy::missing_safety_doc)]
+#![allow(clippy::upper_case_acronyms)]
+// Some lints are created by the utterly deranged narcissistic soy devs who have
+// a bad take on "clean code". They have no idea what "clean" or "ergonomic" is.
+// These are the people who tell you to create a factory that creates a factory
+// which could produce more factories of factory because so that you can have a
+// nice abstraction of abstraction of abstractions.
+#![allow(clippy::new_without_default)]
+#![allow(clippy::needless_return)]
+#![allow(clippy::needless_range_loop)]
+// note: how can I get interior mutability (with mut ref) without
+// triggering clippy?
+#![allow(clippy::mut_from_ref)]
 pub mod arch;
 pub mod defs;
 #[macro_use]

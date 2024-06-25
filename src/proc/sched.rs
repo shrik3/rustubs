@@ -110,18 +110,16 @@ impl Scheduler {
 
 	// like do_schedule but we there is no running context to save
 	pub unsafe fn kickoff() {
-		let tid;
-		let first_task;
 		let irq = irq_save();
 		// must not lock the GLOBAL_SCHEDULER here because we never return.
 		// well, the "LEAVE_L2" call in the task entries logically release
 		// the GLOBAL_SCHEDULER but semantically that's too weird
 		let sched = GLOBAL_SCHEDULER.get_ref_mut_unguarded();
-		tid = sched
+		let tid = sched
 			.run_queue
 			.pop_front()
 			.expect("run queue empty, can't start");
-		first_task = tid.get_task_ref_mut();
+		let first_task = tid.get_task_ref_mut();
 		irq_restore(irq);
 		// kickoff simulates a do_schedule, so we need to enter l2 here.
 		// new tasks must leave l2 explicitly on their first run

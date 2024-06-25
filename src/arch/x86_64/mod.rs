@@ -18,5 +18,5 @@ pub fn read_rflags() -> u64 {
 
 pub fn is_int_enabled() -> bool {
 	let rf = read_rflags();
-	return (rf & RFLAGS_IF_MASK) != 0;
+	(rf & RFLAGS_IF_MASK) != 0
 }
