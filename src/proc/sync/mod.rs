@@ -8,6 +8,7 @@ pub use irq::*;
 pub mod semaphore;
 use alloc::collections::VecDeque;
 use core::cell::SyncUnsafeCell;
+use core::ops::{Deref, DerefMut};
 use core::sync::atomic::{AtomicBool, Ordering};
 pub static EPILOGUE_QUEUE: L3Sync<EpilogueQueue> = L3Sync::new(EpilogueQueue::new());
 /// indicates whether a task is running in L2. Maybe make it L3SyncCell as well.
@@ -53,8 +54,63 @@ pub fn LEAVE_L2_CLEAR_QUEUE() {
 	todo!();
 }
 
+/// RAII guard for L2Sync objects
+pub struct L2Guard<'a, T: 'a> {
+	lock: &'a L2Sync<T>,
+	// poison is implicit (using the L2_AVAILABLE flag)
+}
+
+impl<'a, T> Deref for L2Guard<'a, T> {
+	type Target = T;
+	fn deref(&self) -> &T {
+		unsafe { &*self.lock.data.get() }
+	}
+}
+
+impl<'a, T> DerefMut for L2Guard<'a, T> {
+	fn deref_mut(&mut self) -> &mut T {
+		unsafe { &mut *self.lock.data.get() }
+	}
+}
+
+impl<'a, T> Drop for L2Guard<'a, T> {
+	fn drop(&mut self) {
+		LEAVE_L2();
+	}
+}
+
+/// L2Sync objects are synchronized on the epilogue level. All L2Sync objects
+/// are guaranteed to be synchronized on the epilogue level.
+pub struct L2Sync<T> {
+	data: SyncUnsafeCell<T>,
+}
+
+impl<T> L2Sync<T> {
+	pub const fn new(data: T) -> Self {
+		Self { data: SyncUnsafeCell::new(data) }
+	}
+	pub fn lock(&self) -> L2Guard<T> {
+		ENTER_L2();
+		L2Guard { lock: self }
+	}
+
+	/// acquire mutable reference in L3 (with int disabled).
+	/// # safety
+	/// This breaks synchronization, the caller is responsible of checking the
+	/// global L2_AVAILABLE flag, and do other stuffs (like relaying) when
+	/// epilogue level is occupied.
+	pub unsafe fn l3_get_ref(&self) -> &T {
+		&*self.data.get()
+	}
+
+	pub unsafe fn l3_get_ref_mut(&self) -> &mut T {
+		&mut *self.data.get()
+	}
+}
+
 /// L3Sync is like RefCell, that has runtime borrow checking, instead of
-/// counting the reference numbers, we check that the interrupt must be disabled
+/// counting the reference numbers, we check that the interrupt must be
+/// disabled. Use case is the scheduler run queue and the epilogue queue
 ///
 /// TODO: implement reference counting to make sure the sync model is followed
 pub struct L3Sync<T> {
@@ -107,3 +163,4 @@ macro_rules! L3_CRITICAL{
 pub use L3_CRITICAL;
 
 use crate::arch::x86_64::is_int_enabled;
+use crate::proc::task::Task;
