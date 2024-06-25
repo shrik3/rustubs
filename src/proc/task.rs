@@ -1,6 +1,5 @@
 use crate::arch::x86_64::arch_regs::Context64;
 use crate::arch::x86_64::{arch_regs, is_int_enabled};
-use crate::machine::interrupt::{irq_restore, irq_save};
 use crate::mm::vmm::{VMArea, VMMan, VMPerms, VMType};
 use crate::mm::KSTACK_ALLOCATOR;
 use crate::proc::sched::GLOBAL_SCHEDULER;
@@ -14,7 +13,6 @@ use core::str::FromStr;
 /// currently only kernelSp and Context are important.
 /// the task struct will be placed on the starting addr (low addr) of the kernel stack.
 /// therefore we can retrive the task struct at anytime by masking the kernel stack
-/// NOTE: we don't use `repr(C)` or `repr(packed)` here
 /// NOTE: we assume all fields in [Task] are only modified by the task itself,
 /// i.e. no task should modify another task's state. (this may change though, in
 /// which case we will need some atomics)
@@ -109,12 +107,12 @@ impl Task {
 		self.context.rsp = sp;
 	}
 
-	/// get the top kernel stack to initialize stack pointer of new tasks.
-	/// Note that there are often alignment requirements of stack pointer. We do
+	/// get kernel stack top (high addr) to initialize the new task Note that
+	/// there are often alignment requirements of stack pointer. We do
 	/// 8 bytes here
 	#[inline(always)]
 	fn get_init_kernel_sp(&self) -> u64 {
-		let mut sp = self.kernel_stack + Mem::KERNEL_STACK_SIZE - 1;
+		let mut sp = self.kernel_stack + Mem::KERNEL_STACK_SIZE;
 		sp &= !0b111;
 		sp
 	}
@@ -164,7 +162,6 @@ impl Task {
 		sched.insert_task(self.taskid());
 	}
 
-	// TODO this is very similar to the semaphore wait ... maybe extract a trait
 	pub fn nanosleep(&mut self, ns: u64) {
 		assert!(self.state == TaskState::Run);
 		self.state = TaskState::Wait;

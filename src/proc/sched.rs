@@ -24,9 +24,6 @@ pub fn CLEAR_NEED_RESCHEDULE() -> bool {
 	NEED_RESCHEDULE.swap(false, Ordering::Relaxed)
 }
 
-// TODO the lifetime here is pretty much broken. Fix this later
-// the scheduler should be a per-cpu instance and it shall not lock.
-// Because the `do_schedule` does not return to release the lock
 pub struct Scheduler {
 	pub run_queue: VecDeque<TaskId>,
 	pub need_schedule: bool,
@@ -35,7 +32,6 @@ pub struct Scheduler {
 impl Scheduler {
 	pub const MIN_TASK_CAP: usize = 16;
 	pub const fn new() -> Self {
-		// btw. try_with_capacity is an unstable feature.
 		return Self {
 			run_queue: VecDeque::new(),
 			need_schedule: false,
@@ -48,9 +44,6 @@ impl Scheduler {
 	}
 
 	pub fn try_remove(&mut self, _tid: TaskId) {
-		// try to remove all occurence of tid in the run_queue maybe do
-		// something special if the task is in the wait queue but we are not
-		// there yet.
 		todo!("not implemented");
 	}
 

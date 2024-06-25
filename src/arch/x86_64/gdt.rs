@@ -4,7 +4,6 @@
 //! You need to suffer all this pain exists because intel/amd doens't want to
 //! ditch segmentation due to backward compatibility. THIS REALLY SUCKS.
 use crate::defs::P2V;
-use crate::io::*;
 use bit_field::BitField;
 use core::mem::size_of;
 use core::{arch::asm, slice::from_raw_parts_mut};

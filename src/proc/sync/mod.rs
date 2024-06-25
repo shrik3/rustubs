@@ -6,6 +6,7 @@ pub mod bellringer;
 pub mod irq;
 pub use irq::*;
 pub mod semaphore;
+use crate::arch::x86_64::is_int_enabled;
 use crate::black_magic::Empty;
 use core::cell::SyncUnsafeCell;
 use core::ops::{Deref, DerefMut};
@@ -67,8 +68,7 @@ impl<'a, T> Drop for L2Guard<'a, T> {
 	}
 }
 
-/// L2Sync objects are synchronized on the epilogue level. All L2Sync objects
-/// are guaranteed to be synchronized on the epilogue level.
+/// All L2Sync objects are guaranteed to be synchronized on the epilogue level.
 pub struct L2Sync<T> {
 	data: SyncUnsafeCell<T>,
 }
@@ -94,9 +94,8 @@ impl<T> L2Sync<T> {
 	}
 }
 
-/// L3Sync is like RefCell, that has runtime borrow checking, instead of
-/// counting the reference numbers, we check that the interrupt must be
-/// disabled. Use case is the scheduler run queue and the epilogue queue
+/// L3Sync is like RefCell, instead of counting the reference numbers, we check
+/// that the interrupt must be disabled. e.g. epilogue queue
 ///
 /// TODO: implement reference counting to make sure the sync model is followed
 pub struct L3Sync<T> {
@@ -131,6 +130,3 @@ impl<T> L3Sync<T> {
 		unsafe { &mut *self.data.get() }
 	}
 }
-
-use crate::arch::x86_64::is_int_enabled;
-use crate::proc::task::Task;

@@ -1,8 +1,8 @@
 //! process and synchronization model
 
+use crate::arch::x86_64::is_int_enabled;
+use crate::defs;
 use sync::bellringer;
-
-use crate::{arch::x86_64::is_int_enabled, defs, machine::keyctrl};
 pub mod exec;
 pub mod loader;
 pub mod sched;
