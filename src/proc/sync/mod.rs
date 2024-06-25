@@ -16,14 +16,13 @@ pub static EPILOGUE_QUEUE: L3Sync<EpilogueQueue> = L3Sync::new(EpilogueQueue::ne
 static L2_AVAILABLE: AtomicBool = AtomicBool::new(true);
 /// RAII lock guard for the global L2 flag, the u64 is not to be used.
 static L2_GUARD: L2Sync<Empty> = L2Sync::new(Empty::new());
-type EpilogueQueue = L2SyncQueue<EpilogueEntrant>;
 
 /// the synchronized queue for Level 2 epilogues
-pub struct L2SyncQueue<T> {
-	pub queue: VecDeque<T>,
+pub struct EpilogueQueue {
+	pub queue: VecDeque<EpilogueEntrant>,
 }
 
-impl<T> L2SyncQueue<T> {
+impl EpilogueQueue {
 	pub const fn new() -> Self {
 		Self { queue: VecDeque::new() }
 	}
