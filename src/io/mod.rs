@@ -1,5 +1,6 @@
 //! I/O with keyboard, cga screen and serial
 
+use crate::arch::x86_64::arch_regs::get_sp;
 use crate::machine::cgascr::CGAScreen;
 use crate::machine::key::Key;
 use crate::machine::keyctrl::KEY_BUFFER;
@@ -16,7 +17,7 @@ lazy_static! {
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-	println!("[{}] {}", Task::current().unwrap().pid, info);
+	println!("[{:X}] {}", get_sp(), info);
 	loop {}
 }
 
