@@ -57,8 +57,8 @@ pub unsafe extern "C" fn _entry() -> ! {
 	panic!("should not reach");
 }
 
-unsafe fn create_tasks() {
-	let sched = GLOBAL_SCHEDULER.l3_get_ref_mut();
+fn create_tasks() {
+	let mut sched = GLOBAL_SCHEDULER.lock();
 	sched.insert_task(Task::create_task(1, kthread::Idle::get_entry()));
 	sched.insert_task(Task::create_task(2, kthread::Meeseeks::get_entry()));
 	sched.insert_task(Task::create_task(3, kthread::Kshell::get_entry()));

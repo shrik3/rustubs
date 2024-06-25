@@ -151,7 +151,8 @@ impl Task {
 		wait_room.push_back(t.taskid());
 	}
 
-	/// unsafe because this must be used in L3 critical section
+	/// does not lock the GLOBAL_SCHEDULER, the caller is responsible of doing
+	/// that, e.g. call task.wakeup() from epilogue
 	pub unsafe fn wakeup(&mut self) {
 		if self.state != TaskState::Wait {
 			// already awake. why? I don't know.
@@ -159,10 +160,8 @@ impl Task {
 		}
 		// TODO: makesure you don't put a task in the run queue more than once.
 		self.state = TaskState::Run;
-		let irq = irq_save();
-		let sched = GLOBAL_SCHEDULER.l3_get_ref_mut();
+		let sched = GLOBAL_SCHEDULER.get_ref_mut_unguarded();
 		sched.insert_task(self.taskid());
-		irq_restore(irq);
 	}
 
 	// TODO this is very similar to the semaphore wait ... maybe extract a trait

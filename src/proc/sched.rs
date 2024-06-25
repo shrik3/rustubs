@@ -5,7 +5,7 @@ use crate::proc::task::*;
 use alloc::collections::VecDeque;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
-pub static GLOBAL_SCHEDULER: L3Sync<Scheduler> = L3Sync::new(Scheduler::new());
+pub static GLOBAL_SCHEDULER: L2Sync<Scheduler> = L2Sync::new(Scheduler::new());
 /// A global flag indicating whether reschedule is required.
 pub static NEED_RESCHEDULE: AtomicBool = AtomicBool::new(false);
 
@@ -79,7 +79,7 @@ impl Scheduler {
 			let r = irq_save();
 			// begin L3 critical section
 			// make sure we drop the mutable borrow before doing context swap
-			let sched = GLOBAL_SCHEDULER.l3_get_ref_mut();
+			let sched = GLOBAL_SCHEDULER.get_ref_mut_unguarded();
 			if sched.run_queue.is_empty() && me.state == TaskState::Run {
 				// I'm the only one, just return;
 				irq_restore(r);
@@ -118,7 +118,10 @@ impl Scheduler {
 		let tid;
 		let first_task;
 		L3_CRITICAL! {
-			let sched = GLOBAL_SCHEDULER.l3_get_ref_mut();
+			// must not lock the GLOBAL_SCHEDULER here because we never return.
+			// well, the "LEAVE_L2" call in the task entries logically release
+			// the GLOBAL_SCHEDULER but semantically that's too weird
+			let sched = GLOBAL_SCHEDULER.get_ref_mut_unguarded();
 			tid = sched
 				.run_queue
 				.pop_front()

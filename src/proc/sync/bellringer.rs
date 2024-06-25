@@ -40,7 +40,7 @@ impl BellRinger {
 			if x.until > now {
 				true
 			} else {
-				L3_CRITICAL! {x.tid.get_task_ref_mut().wakeup();}
+				x.tid.get_task_ref_mut().wakeup();
 				false
 			}
 		})

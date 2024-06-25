@@ -15,14 +15,14 @@ pub mod task;
 /// only do a implicit `reserve` here. Meaning if this is called _after_ the the
 /// queues receive elements, they will have more capacity than specified here.
 /// safety: this function assmues interrupt is disabled
-pub unsafe fn init() {
+pub fn init() {
 	assert!(!is_int_enabled());
 	sched::GLOBAL_SCHEDULER
-		.l3_get_ref_mut()
+		.lock()
 		.run_queue
 		.reserve(defs::Limits::SCHED_RUN_QUEUE_MIN_CAP);
 	bellringer::BELLRINGER
-		.get_ref_mut_unguarded()
+		.lock()
 		.bedroom
 		.reserve(defs::Limits::SEM_WAIT_QUEUE_MIN_CAP);
 }
