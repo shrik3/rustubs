@@ -1,3 +1,17 @@
+use crate::proc::sync::L3Sync;
+use alloc::collections::VecDeque;
+pub static EPILOGUE_QUEUE: L3Sync<EpilogueQueue> = L3Sync::new(EpilogueQueue::new());
+/// the synchronized queue for Level 2 epilogues
+pub struct EpilogueQueue {
+	pub queue: VecDeque<EpilogueEntrant>,
+}
+
+impl EpilogueQueue {
+	pub const fn new() -> Self {
+		Self { queue: VecDeque::new() }
+	}
+}
+
 #[derive(Copy, Clone)]
 pub struct IRQGate {
 	/// the "hardirq" part of the irq handler, it must not be interrupted.
