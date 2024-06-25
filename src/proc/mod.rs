@@ -1,6 +1,6 @@
 //! process and synchronization model
 
-use sync::{bellringer, L3_CRITICAL};
+use sync::bellringer;
 
 use crate::{arch::x86_64::is_int_enabled, defs, machine::keyctrl};
 pub mod exec;

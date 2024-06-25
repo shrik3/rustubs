@@ -132,21 +132,5 @@ impl<T> L3Sync<T> {
 	}
 }
 
-/// a handy function to wrap a (brief) block with `irq_save` and `irq_restore`
-/// this must be used with caution. See docs/sync_model for how this work.
-#[macro_export]
-macro_rules! L3_CRITICAL{
-	($($s:stmt;)*) => {
-		{
-			let irq = $crate::machine::interrupt::irq_save();
-			$(
-				$s
-			)*
-			$crate::machine::interrupt::irq_restore(irq);
-		}
-	}
-}
-pub use L3_CRITICAL;
-
 use crate::arch::x86_64::is_int_enabled;
 use crate::proc::task::Task;

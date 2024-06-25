@@ -1,7 +1,7 @@
 //! bellringer puts tasks to sleep and wake them when semptepber ends
 //! the bellringer is very much like a SleepSemaphore
 use crate::machine::time;
-use crate::proc::sync::{L2Sync, L3_CRITICAL};
+use crate::proc::sync::L2Sync;
 use crate::proc::task::TaskId;
 use alloc::collections::VecDeque;
 pub struct BellRinger {

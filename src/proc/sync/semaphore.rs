@@ -1,7 +1,7 @@
 use crate::arch::x86_64::is_int_enabled;
 use crate::proc::sync::L3Sync;
 use crate::proc::task::{Task, TaskId, TaskState};
-use crate::{Scheduler, L3_CRITICAL};
+use crate::Scheduler;
 use alloc::collections::VecDeque;
 use core::sync::atomic::Ordering;
 use core::{cell::SyncUnsafeCell, sync::atomic::AtomicU64};
