@@ -69,28 +69,27 @@ pub fn is_aligned_4k(addr: u64) -> bool {
 }
 
 /// memory definitions
-pub struct Mem;
-impl Mem {
+pub mod Mem {
 	// units
 	pub const K: u64 = 1024;
-	pub const M: u64 = 1024 * Mem::K;
-	pub const G: u64 = 1024 * Mem::M;
+	pub const M: u64 = 1024 * K;
+	pub const G: u64 = 1024 * M;
 	// 4 lv 4K paging
 	pub const PAGE_SIZE: u64 = 0x1000;
 	pub const PAGE_SHIFT: u64 = 12;
 	pub const PAGE_MASK: u64 = 0xfff;
 	pub const L0_SHIFT: u8 = 39;
-	pub const L0_MASK: u64 = 0x1ff << Mem::L0_SHIFT;
+	pub const L0_MASK: u64 = 0x1ff << L0_SHIFT;
 	pub const L1_SHIFT: u8 = 30;
-	pub const L1_MASK: u64 = 0x1ff << Mem::L1_SHIFT;
+	pub const L1_MASK: u64 = 0x1ff << L1_SHIFT;
 	pub const L2_SHIFT: u8 = 21;
-	pub const L2_MASK: u64 = 0x1ff << Mem::L2_SHIFT;
+	pub const L2_MASK: u64 = 0x1ff << L2_SHIFT;
 	pub const L3_SHIFT: u8 = 12;
-	pub const L3_MASK: u64 = 0x1ff << Mem::L3_SHIFT;
+	pub const L3_MASK: u64 = 0x1ff << L3_SHIFT;
 	// 64 GiB available memory
 	pub const MAX_PHY_MEM: u64 = 0x1000000000;
 	// we should have at least 64 MiB free physical memory (excluding the kernel it self)
-	pub const MIN_PHY_MEM: u64 = 64 * Self::M;
+	pub const MIN_PHY_MEM: u64 = 64 * M;
 	// size of frame allocator bitmap: number of physical frames / 8 for 128M
 	// memory (37268) 4k pages, 37268 bits are needed, hence
 	// 4096 bytes, exactly one page!
@@ -105,11 +104,18 @@ impl Mem {
 	// unlike the initial "thread" that has 64K stack, new tasks have 4 pages of
 	// kernel stack.
 	pub const KERNEL_STACK_SIZE: u64 = 0x4000;
-	pub const KERNEL_STACK_MASK: u64 = Self::KERNEL_STACK_SIZE - 1;
+	pub const KERNEL_STACK_MASK: u64 = KERNEL_STACK_SIZE - 1;
 	pub const KERNEL_STACK_TASK_MAGIC: u64 = 0x1A2B3C4D5E6F6969;
 	// user (psuedo)
 	pub const USER_STACK_START: u64 = 0x0000_7000_0000_0000;
-	pub const USER_STACK_SIZE: u64 = 8 * Self::M;
+	pub const USER_STACK_SIZE: u64 = 8 * M;
+}
+
+pub mod Limits {
+	// initialize some queue structs with a reserved capacity to avoid runtime
+	// allocation
+	pub const SEM_WAIT_QUEUE_MIN_CAP: usize = 16;
+	pub const SCHED_RUN_QUEUE_MIN_CAP: usize = 24;
 }
 
 /// convert VA <-> PA wrt. the kernel id mapping
