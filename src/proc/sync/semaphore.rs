@@ -76,7 +76,7 @@ impl<T> SleepSemaphore<T> {
 		let wq = &mut *self.wait_room.get();
 		Task::curr_wait_in(wq);
 		assert!(is_int_enabled());
-		unsafe { Scheduler::do_schedule_l2() };
+		Scheduler::yield_cpu();
 	}
 
 	unsafe fn wakeup_one(&self) {

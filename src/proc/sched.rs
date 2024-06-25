@@ -61,9 +61,8 @@ impl Scheduler {
 		Self::do_schedule();
 	}
 
-	pub unsafe fn do_schedule_coperative() {}
-
-	// pop front, push back
+	/// do_schedule is only called from epilogue level, so we don't need to lock
+	/// here. For cooperative scheduling call [yield_cpu] instead.
 	pub unsafe fn do_schedule() {
 		let me = Task::current().unwrap();
 		let next_task;
@@ -97,12 +96,15 @@ impl Scheduler {
 			);
 		}
 	}
-	/// guards do_schedule and makes sure it's also sequentialized at L2
-	/// unsafe because you must make sure interrupt is enabled when spinning
-	pub unsafe fn do_schedule_l2() {
+
+	/// guards do_schedule and makes sure it's also sequentialized at L2. Must
+	/// not call this in interrupt context
+	pub fn yield_cpu() {
 		assert!(is_int_enabled());
 		ENTER_L2();
-		Self::do_schedule();
+		unsafe {
+			Self::do_schedule();
+		}
 		LEAVE_L2();
 	}
 
