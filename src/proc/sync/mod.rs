@@ -9,7 +9,7 @@ pub mod semaphore;
 use alloc::collections::VecDeque;
 use core::cell::SyncUnsafeCell;
 use core::sync::atomic::{AtomicBool, Ordering};
-pub static EPILOGUE_QUEUE: L3SyncCell<EpilogueQueue> = L3SyncCell::new(EpilogueQueue::new());
+pub static EPILOGUE_QUEUE: L3Sync<EpilogueQueue> = L3Sync::new(EpilogueQueue::new());
 /// indicates whether a task is running in L2. Maybe make it L3SyncCell as well.
 static L2_AVAILABLE: AtomicBool = AtomicBool::new(true);
 
@@ -77,25 +77,40 @@ pub fn LEAVE_L2_CLEAR_QUEUE() {
 	todo!();
 }
 
-/// L3GetRef provides unsafe function `l3_get_ref` and `l3_get_ref_mut`, they
-/// can only be safely used in level 3
-pub trait L3GetRef<T> {
-	unsafe fn l3_get_ref(&self) -> &T;
-	unsafe fn l3_get_ref_mut(&self) -> &mut T;
+/// L3Sync is like RefCell, that has runtime borrow checking, instead of
+/// counting the reference numbers, we check that the interrupt must be disabled
+///
+/// TODO: implement reference counting to make sure the sync model is followed
+pub struct L3Sync<T> {
+	data: SyncUnsafeCell<T>,
 }
 
-/// L3SyncCell is a UnsafeCell. This abstracts global mutable states that can
-/// only be accessed in Level 3, i.e. kernel mode + interrupt disabled. One
-/// example is the run_queue of the global scheduler. in general for global
-/// mutable state we need to use interior mutability. e.g. using Mutex. However
-/// this is not desired in interrupt context.
-pub type L3SyncCell<T> = SyncUnsafeCell<T>;
-impl<T> L3GetRef<T> for L3SyncCell<T> {
-	unsafe fn l3_get_ref(&self) -> &T {
-		&*self.get()
+impl<T> L3Sync<T> {
+	pub const fn new(data: T) -> Self {
+		Self { data: SyncUnsafeCell::new(data) }
 	}
-	unsafe fn l3_get_ref_mut(&self) -> &mut T {
-		&mut *self.get()
+	/// get a readonly reference to the protected data. It should be fine to get
+	/// a read only ref without masking interrupts but we haven't implemented
+	/// reference counting yet so ...
+	pub fn l3_get_ref(&self) -> &T {
+		assert!(
+			!is_int_enabled(),
+			"trying to get a ref to L3 synced object with interrupt enabled"
+		);
+		unsafe { &*self.data.get() }
+	}
+	/// get a mutable reference to the protected data. will panic if called with
+	/// interrupt enabled
+	pub fn l3_get_ref_mut(&self) -> &mut T {
+		assert!(
+			!is_int_enabled(),
+			"trying to get a mut ref to L3 synced object with interrupt enabled"
+		);
+		unsafe { &mut *self.data.get() }
+	}
+	/// get a mutable reference without checking sync/borrow conditions.
+	pub unsafe fn l3_get_ref_mut_unchecked(&self) -> &mut T {
+		unsafe { &mut *self.data.get() }
 	}
 }
 
@@ -114,3 +129,5 @@ macro_rules! L3_CRITICAL{
 	}
 }
 pub use L3_CRITICAL;
+
+use crate::arch::x86_64::is_int_enabled;

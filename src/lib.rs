@@ -23,7 +23,6 @@ use arch::x86_64::interrupt::pic_8259::PicDeviceInt;
 use defs::*;
 use kthread::KThread;
 use machine::multiboot;
-use proc::sync::L3GetRef;
 use proc::task::Task;
 
 #[no_mangle]

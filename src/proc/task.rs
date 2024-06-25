@@ -4,7 +4,6 @@ use crate::mm::vmm::{VMArea, VMMan, VMPerms, VMType};
 use crate::mm::KSTACK_ALLOCATOR;
 use crate::proc::sched::GLOBAL_SCHEDULER;
 use crate::proc::sync::bellringer::{BellRinger, Sleeper};
-use crate::proc::sync::L3GetRef;
 use crate::{defs::*, Scheduler};
 use alloc::collections::VecDeque;
 use alloc::string::String;

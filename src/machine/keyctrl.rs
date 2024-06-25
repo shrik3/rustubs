@@ -15,7 +15,7 @@ use crate::io::*;
 use crate::machine::device_io::*;
 use crate::proc::sync::semaphore::{Semaphore, SleepSemaphore};
 use crate::proc::sync::IRQHandlerEpilogue;
-use crate::proc::sync::{L3GetRef, L3SyncCell};
+use crate::proc::sync::L3Sync;
 use alloc::collections::VecDeque;
 use bitflags::bitflags;
 use core::cmp::{Eq, PartialEq};
@@ -30,8 +30,7 @@ use super::key::Modifiers;
 /// this is the global keybard controller. It can only be used in prologue level,
 /// except for the `gather` field (consume_key is safe), which is atomic that can be safely used.
 /// (TODO maybe we can change this L3/L2 shared state abstraction)
-pub static KBCTL_GLOBAL: L3SyncCell<KeyboardController> =
-	L3SyncCell::new(KeyboardController::new());
+pub static KBCTL_GLOBAL: L3Sync<KeyboardController> = L3Sync::new(KeyboardController::new());
 pub static KEY_BUFFER: SleepSemaphore<VecDeque<Key>> = SleepSemaphore::new(VecDeque::new());
 
 pub struct KeyboardController {
@@ -55,7 +54,8 @@ impl IRQHandlerEpilogue for KeyboardDriver {
 	}
 	unsafe fn do_epilogue() {
 		assert!(is_int_enabled());
-		let k = KBCTL_GLOBAL.l3_get_ref_mut().consume_key();
+		// it's safe to do atomic operactions without locking
+		let k = KBCTL_GLOBAL.l3_get_ref_mut_unchecked().consume_key();
 		if let Some(key) = k {
 			// this is not ideal. starvation can happen if a thread is
 			// intentionally holding the lock forever. This could also starve

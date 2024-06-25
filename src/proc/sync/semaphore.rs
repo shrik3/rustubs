@@ -1,5 +1,5 @@
 use crate::arch::x86_64::is_int_enabled;
-use crate::proc::sync::{L3GetRef, L3SyncCell};
+use crate::proc::sync::L3Sync;
 use crate::proc::task::{Task, TaskId};
 use crate::{Scheduler, L3_CRITICAL};
 use alloc::collections::VecDeque;
@@ -107,7 +107,7 @@ pub struct SleepSemaphore<T> {
 	pub sema: AtomicU64,
 	// the wait_room must be synchronized at level 3 (or???)
 	// TODO make a type alias for VecDeque<TaskId>
-	pub wait_room: L3SyncCell<VecDeque<TaskId>>,
+	pub wait_room: L3Sync<VecDeque<TaskId>>,
 }
 
 impl<T> SleepSemaphore<T> {
@@ -115,7 +115,7 @@ impl<T> SleepSemaphore<T> {
 		Self {
 			reource_pool: SyncUnsafeCell::new(t),
 			sema: AtomicU64::new(0),
-			wait_room: L3SyncCell::new(VecDeque::new()),
+			wait_room: L3Sync::new(VecDeque::new()),
 		}
 	}
 

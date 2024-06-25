@@ -5,7 +5,7 @@ use crate::proc::task::*;
 use alloc::collections::VecDeque;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
-pub static GLOBAL_SCHEDULER: L3SyncCell<Scheduler> = L3SyncCell::new(Scheduler::new());
+pub static GLOBAL_SCHEDULER: L3Sync<Scheduler> = L3Sync::new(Scheduler::new());
 /// A global flag indicating whether reschedule is required.
 pub static NEED_RESCHEDULE: AtomicBool = AtomicBool::new(false);
 
