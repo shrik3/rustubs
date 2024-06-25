@@ -4,13 +4,22 @@ use crate::machine::cgascr::CGAScreen;
 use crate::machine::key::Key;
 use crate::machine::keyctrl::KEY_BUFFER;
 use crate::machine::serial::SerialWritter;
+use crate::proc::task::Task;
 use core::cell::SyncUnsafeCell;
 use core::fmt;
+use core::panic::PanicInfo;
 use lazy_static::lazy_static;
 use spin::Mutex;
 lazy_static! {
 	pub static ref CGASCREEN_GLOBAL: Mutex<CGAScreen> = Mutex::new(CGAScreen::new());
 }
+
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+	println!("[{}] {}", Task::current().unwrap().pid, info);
+	loop {}
+}
+
 /// the global serial writer, this is not synchronized. Used for debugging
 /// where locking is not available
 pub static SERIAL_GLOBAL: SyncUnsafeCell<SerialWritter> =
