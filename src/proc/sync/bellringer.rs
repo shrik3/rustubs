@@ -3,9 +3,9 @@
 use crate::machine::time;
 use crate::proc::sync::{L3GetRef, L3SyncCell, L3_CRITICAL};
 use crate::proc::task::TaskId;
-use alloc::collections::LinkedList;
+use alloc::collections::VecDeque;
 pub struct BellRinger {
-	bedroom: LinkedList<Sleeper>,
+	pub bedroom: VecDeque<Sleeper>,
 }
 pub static BELLRINGER: L3SyncCell<BellRinger> = L3SyncCell::new(BellRinger::new());
 
@@ -23,7 +23,7 @@ impl Sleeper {
 
 impl BellRinger {
 	pub const fn new() -> Self {
-		Self { bedroom: LinkedList::new() }
+		Self { bedroom: VecDeque::new() }
 	}
 
 	pub fn check_in(s: Sleeper) {
