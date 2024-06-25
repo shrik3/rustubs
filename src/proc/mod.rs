@@ -22,7 +22,7 @@ pub unsafe fn init() {
 		.run_queue
 		.reserve(defs::Limits::SCHED_RUN_QUEUE_MIN_CAP);
 	bellringer::BELLRINGER
-		.l3_get_ref_mut()
+		.get_ref_mut_unguarded()
 		.bedroom
 		.reserve(defs::Limits::SEM_WAIT_QUEUE_MIN_CAP);
 }

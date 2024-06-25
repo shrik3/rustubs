@@ -96,16 +96,14 @@ impl<T> L2Sync<T> {
 		L2Guard { lock: self }
 	}
 
-	/// acquire mutable reference in L3 (with int disabled).
-	/// # safety
 	/// This breaks synchronization, the caller is responsible of checking the
 	/// global L2_AVAILABLE flag, and do other stuffs (like relaying) when
 	/// epilogue level is occupied.
-	pub unsafe fn l3_get_ref(&self) -> &T {
+	pub unsafe fn get_ref_unguarded(&self) -> &T {
 		&*self.data.get()
 	}
 
-	pub unsafe fn l3_get_ref_mut(&self) -> &mut T {
+	pub unsafe fn get_ref_mut_unguarded(&self) -> &mut T {
 		&mut *self.data.get()
 	}
 }

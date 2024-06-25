@@ -1,13 +1,13 @@
 //! bellringer puts tasks to sleep and wake them when semptepber ends
 //! the bellringer is very much like a SleepSemaphore
 use crate::machine::time;
-use crate::proc::sync::{L3Sync, L3_CRITICAL};
+use crate::proc::sync::{L2Sync, L3_CRITICAL};
 use crate::proc::task::TaskId;
 use alloc::collections::VecDeque;
 pub struct BellRinger {
 	pub bedroom: VecDeque<Sleeper>,
 }
-pub static BELLRINGER: L3Sync<BellRinger> = L3Sync::new(BellRinger::new());
+pub static BELLRINGER: L2Sync<BellRinger> = L2Sync::new(BellRinger::new());
 
 #[derive(Copy, Clone, Debug)]
 pub struct Sleeper {
@@ -27,30 +27,22 @@ impl BellRinger {
 	}
 
 	pub fn check_in(s: Sleeper) {
-		L3_CRITICAL! {
-			let br =  BELLRINGER.l3_get_ref_mut();
-			br.bedroom.push_back(s);
-		}
+		BELLRINGER.lock().bedroom.push_back(s);
 	}
 	/// check the sleeper queue and wake up if timer is due.
-	/// We do this in timer interrupt epilogue
-	pub fn check_all() {
+	/// this is only to be called in epilogues
+	pub unsafe fn check_all() {
 		// there is much room for optimization here: the queue can be sorted and
 		// instead of absolute time we can store the differntial. But I'll keep
 		// it simple here.
 		let now = time::nsec();
-		L3_CRITICAL! {
-		let br =  BELLRINGER.l3_get_ref_mut();
-		unsafe {
-			br.bedroom.retain(|x| {
-				if x.until > now {
-					true
-				} else {
-					x.tid.get_task_ref_mut().wakeup();
-					false
-				}
-			})
-		};
-		} // end L3_CRITICAL
+		BELLRINGER.get_ref_mut_unguarded().bedroom.retain(|x| {
+			if x.until > now {
+				true
+			} else {
+				L3_CRITICAL! {x.tid.get_task_ref_mut().wakeup();}
+				false
+			}
+		})
 	}
 }
