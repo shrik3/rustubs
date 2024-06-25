@@ -7,7 +7,7 @@ ARCH = x86_64
 NASMFLAGS = -w-zeroing -f elf64
 LINKER_SCRIPT = ./defs/$(ARCH)-hm-linker.ld
 CARGO_XBUILD_TARGET = ./defs/$(ARCH)-rustubs.json
-CARGO_XBUILD_FLAGS =
+CARGO_XBUILD_FLAGS ?=
 RUSTC_FLAGS := -C code-model=large
 LDFLAGS = -no-warn-rwx-segment -static
 # ASSEMBLY SOURCE AND OBJECTS
@@ -110,11 +110,17 @@ docs:
 test:
 	@echo "---BUILD DIR---"
 	@echo $(BUILD)
+	@echo "---VPATH"
+	@echo $(VPATH)
 	@echo "---ASM SRC---"
 	@echo $(ASM_SOURCES)
 	@echo "---ASM OBJ---"
 	@echo $(ASM_OBJECTS)
 	@echo "---ASM OBJ PREFIXED"
 	@echo $(ASMOBJ_PREFIXED)
+	@echo "---RUSTC TARGET"
+	@echo $(CARGO_XBUILD_TARGET)
+	@echo "---RUST OBJ"
+	@echo $(RUST_OBJECT)
 
 .PHONY: clean qemu test

@@ -10,7 +10,9 @@ extern "C" {
 }
 
 /// multiboot magic value, it must be 0x2BAD8002. This value is set at runtime
-/// by init asm code
+/// by init asm code. CARE: the release build will not treat these as volatile
+/// and they may hardcode the initial value (0) because they sees "static const
+/// zero". Therefore when reading them must do a volatile read.
 #[no_mangle]
 pub static mb_magic: u64 = 0;
 /// _physical_ address of multiboot info block. This value is set at run time by

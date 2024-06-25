@@ -1,10 +1,12 @@
 //! provide functions to parse information provided by grub multiboot
 //! see docs/multiboot.txt
 
+use crate::black_magic::flush;
 use crate::defs::{mb_info_pm_addr, mb_magic};
 use crate::P2V;
 use core::fmt;
 use core::ops::Range;
+use core::ptr::read_volatile;
 use lazy_static::lazy_static;
 lazy_static! {
 	/// reference to the multiboot info blob provided by the bootloader. This
@@ -16,8 +18,9 @@ lazy_static! {
 	/// startup code), hence we can't define mbinfo slice as constant during
 	/// compile or linking time. lalazy_static initialize the static constants
 	/// the first time they are accessed.
-	pub static ref MBOOTINFO: &'static MultibootInfo =
-		unsafe { &*(P2V(mb_info_pm_addr).unwrap() as *const MultibootInfo) };
+	pub static ref MBOOTINFO: &'static MultibootInfo = unsafe {
+		&*(P2V(flush(&mb_info_pm_addr)).unwrap() as *const MultibootInfo)
+	};
 }
 
 pub fn get_mb_info() -> Option<&'static MultibootInfo> {
@@ -30,10 +33,10 @@ pub fn get_mb_info() -> Option<&'static MultibootInfo> {
 /// this must be called before any MB info fields are used: the mb_magic should
 /// be correctly set and all reserved bits in mbinfo flags should be 0.
 pub fn check() -> bool {
-	if mb_magic != 0x2BADB002 {
+	if flush(&mb_magic) != 0x2BADB002 {
 		return false;
 	};
-	if P2V(mb_info_pm_addr).is_none() {
+	if P2V(flush(&mb_info_pm_addr)).is_none() {
 		return false;
 	}
 	// must check magic before checking flags

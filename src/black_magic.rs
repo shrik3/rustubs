@@ -12,3 +12,10 @@ impl Empty {
 		Self {}
 	}
 }
+
+/// flush a volatile variable: rust doesn't have a volatile keyword. When a
+/// "const static" variable is expected to be written externally the optimized
+/// code may go wrong.
+pub fn flush<T>(thing: &T) -> T {
+	unsafe { core::ptr::read_volatile(thing as *const T) }
+}
