@@ -9,10 +9,12 @@ pub mod semaphore;
 use alloc::collections::VecDeque;
 use core::cell::SyncUnsafeCell;
 use core::sync::atomic::{AtomicBool, Ordering};
-pub static EPILOGUE_QUEUE: L3SyncCell<L2SyncQueue<EpilogueEntrant>> =
-	L3SyncCell::new(L2SyncQueue::new());
+pub static EPILOGUE_QUEUE: L3SyncCell<EpilogueQueue> = L3SyncCell::new(EpilogueQueue::new());
 /// indicates whether a task is running in L2. Maybe make it L3SyncCell as well.
 static L2_AVAILABLE: AtomicBool = AtomicBool::new(true);
+
+type EpilogueQueue = L2SyncQueue<EpilogueEntrant>;
+
 /// the synchronized queue for Level 2 epilogues
 pub struct L2SyncQueue<T> {
 	pub queue: VecDeque<T>,
