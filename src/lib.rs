@@ -36,16 +36,14 @@ fn panic(info: &PanicInfo) -> ! {
 }
 
 #[no_mangle]
-pub extern "C" fn _entry() -> ! {
+pub unsafe extern "C" fn _entry() -> ! {
 	// initialize cga display
 	io::set_attr(0x1f);
 	io::reset_screen();
 	// check mbi now. This will be later used to initilize the allocator
 	assert!(multiboot::check(), "bad multiboot info from grub!");
 	// promote gdt to high memory mapping
-	unsafe {
-		arch::x86_64::gdt::init();
-	}
+	arch::x86_64::gdt::init();
 	// initialize the idt and re-program the pic. Must do this before enabling
 	// irq also must initialize the idt before mm, because the later may trigger
 	// page faults, which is fatal and we want to catch them during system
@@ -54,11 +52,14 @@ pub extern "C" fn _entry() -> ! {
 	// initialize memory manager
 	mm::init();
 	// point of no return: low memory can no longer be accessed after this point
-	unsafe { mm::drop_init_mapping() };
+	mm::drop_init_mapping();
+	// initialize proc and sync primitives
+	proc::init();
 	// initialize interrupt timer to roughly ... 50 hz
 	let _interval = interrupt::pit::PIT::set_interval(20000);
 	pic_8259::allow(PicDeviceInt::KEYBOARD);
 	pic_8259::allow(PicDeviceInt::TIMER);
+	// interrupt should be enabled at the end
 	interrupt::interrupt_enable();
 	// run kernel threads
 	start();

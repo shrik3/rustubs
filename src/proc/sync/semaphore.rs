@@ -103,11 +103,11 @@ where
 
 // sleeping SpinSemaphore is toddo
 pub struct SleepSemaphore<T> {
-	reource_pool: SyncUnsafeCell<T>,
-	sema: AtomicU64,
+	pub reource_pool: SyncUnsafeCell<T>,
+	pub sema: AtomicU64,
 	// the wait_room must be synchronized at level 3 (or???)
 	// TODO make a type alias for VecDeque<TaskId>
-	wait_room: L3SyncCell<VecDeque<TaskId>>,
+	pub wait_room: L3SyncCell<VecDeque<TaskId>>,
 }
 
 impl<T> SleepSemaphore<T> {
