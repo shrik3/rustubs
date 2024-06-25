@@ -62,7 +62,7 @@ impl Scheduler {
 	}
 
 	/// do_schedule is only called from epilogue level, so we don't need to lock
-	/// here. For cooperative scheduling call [yield_cpu] instead.
+	/// here. For cooperative scheduling call [Self::yield_cpu] instead.
 	pub unsafe fn do_schedule() {
 		let me = Task::current().unwrap();
 		let next_task;

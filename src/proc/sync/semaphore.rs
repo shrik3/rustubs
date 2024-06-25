@@ -32,8 +32,6 @@ where
 /// wherever resoure management behind semaphore must provide get and insert
 /// function. They do not need to be atomic. Normaly they only needs to be
 /// wrappers for e.g. enque and deque.
-///
-/// TODO: implement a "reserve" optional "reserve" for ResourceMan<E>
 pub trait ResourceMan<E>
 where E: Copy + Clone
 {
