@@ -26,14 +26,14 @@ pub fn IS_L2_AVAILABLE() -> bool {
 #[inline(always)]
 pub fn ENTER_L2() {
 	let r = L2_AVAILABLE.compare_exchange(true, false, Ordering::Relaxed, Ordering::Relaxed);
-	assert_eq!(r, Ok(true));
+	debug_assert_eq!(r, Ok(true));
 }
 
 #[inline(always)]
 #[allow(non_snake_case)]
 pub fn LEAVE_L2() {
 	let r = L2_AVAILABLE.compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed);
-	assert_eq!(r, Ok(false));
+	debug_assert_eq!(r, Ok(false));
 }
 
 /// also clear the epilogue queue before really leaving.
@@ -110,7 +110,7 @@ impl<T> L3Sync<T> {
 	/// a read only ref without masking interrupts but we haven't implemented
 	/// reference counting yet so ...
 	pub fn l3_get_ref(&self) -> &T {
-		assert!(
+		debug_assert!(
 			!is_int_enabled(),
 			"trying to get a ref to L3 synced object with interrupt enabled"
 		);
@@ -119,7 +119,7 @@ impl<T> L3Sync<T> {
 	/// get a mutable reference to the protected data. will panic if called with
 	/// interrupt enabled
 	pub fn l3_get_ref_mut(&self) -> &mut T {
-		assert!(
+		debug_assert!(
 			!is_int_enabled(),
 			"trying to get a mut ref to L3 synced object with interrupt enabled"
 		);

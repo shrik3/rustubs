@@ -24,7 +24,7 @@ extern "C" {
 pub unsafe fn init() {
 	let gdtd = unsafe { &mut *(gdt_80 as *mut GDTDescriptor) };
 	// sanity check
-	assert!(gdtd.table_size == 7 * 8 - 1);
+	debug_assert!(gdtd.table_size == 7 * 8 - 1);
 	gdtd.table_addr = P2V(gdt as u64).unwrap();
 	unsafe { asm!("lgdt [{}]", in (reg) P2V(gdt_80 as u64).unwrap()) }
 	// set up tss

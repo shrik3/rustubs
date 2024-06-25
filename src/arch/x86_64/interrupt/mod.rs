@@ -71,7 +71,7 @@ unsafe fn handle_irq(nr: u16) {
 		irq_restore(r);
 
 		if let Some(e) = epi {
-			assert!(is_int_enabled());
+			debug_assert!(is_int_enabled());
 			e.call();
 		}
 		// This is a linearization point where we may do rescheduling

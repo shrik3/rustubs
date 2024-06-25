@@ -52,7 +52,7 @@ impl Scheduler {
 	pub unsafe fn try_reschedule() {
 		// this assert doesn't check if you own the L2, but at least a sanity
 		// check.
-		assert!(is_int_enabled());
+		debug_assert!(is_int_enabled());
 		// TODO maybe refine memory ordering here
 		let r = NEED_RESCHEDULE.compare_exchange(true, false, Ordering::Relaxed, Ordering::Relaxed);
 		if r != Ok(true) {
@@ -79,7 +79,7 @@ impl Scheduler {
 			}
 			next_tid = sched.run_queue.pop_front().expect("no runnable task");
 			next_task = next_tid.get_task_ref_mut();
-			assert_eq!(next_task.state, TaskState::Run);
+			debug_assert_eq!(next_task.state, TaskState::Run);
 			if me.state == TaskState::Run {
 				sched.run_queue.push_back(me.taskid());
 			}
@@ -100,7 +100,7 @@ impl Scheduler {
 	/// guards do_schedule and makes sure it's also sequentialized at L2. Must
 	/// not call this in interrupt context
 	pub fn yield_cpu() {
-		assert!(is_int_enabled());
+		debug_assert!(is_int_enabled());
 		ENTER_L2();
 		unsafe {
 			Self::do_schedule();

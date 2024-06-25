@@ -49,11 +49,11 @@ pub struct KeyboardDriver {}
 
 impl IRQHandlerEpilogue for KeyboardDriver {
 	unsafe fn do_prologue() {
-		assert!(!is_int_enabled());
+		debug_assert!(!is_int_enabled());
 		KBCTL_GLOBAL.l3_get_ref_mut().fetch_key();
 	}
 	unsafe fn do_epilogue() {
-		assert!(is_int_enabled());
+		debug_assert!(is_int_enabled());
 		// it's safe to do atomic operactions without locking
 		let k = KBCTL_GLOBAL.l3_get_ref_mut_unchecked().consume_key();
 		if let Some(key) = k {

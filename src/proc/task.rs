@@ -144,7 +144,7 @@ impl Task {
 	/// require manual attention for sync
 	pub unsafe fn curr_wait_in(wait_room: &mut VecDeque<TaskId>) {
 		let t = Task::current().unwrap();
-		assert_ne!(t.state, TaskState::Wait);
+		debug_assert_ne!(t.state, TaskState::Wait);
 		t.state = TaskState::Wait;
 		wait_room.push_back(t.taskid());
 	}
@@ -163,10 +163,10 @@ impl Task {
 	}
 
 	pub fn nanosleep(&mut self, ns: u64) {
-		assert!(self.state == TaskState::Run);
+		debug_assert!(self.state == TaskState::Run);
 		self.state = TaskState::Wait;
 		BellRinger::check_in(Sleeper::new(self.taskid(), ns));
-		assert!(is_int_enabled());
+		debug_assert!(is_int_enabled());
 		Scheduler::yield_cpu();
 	}
 
