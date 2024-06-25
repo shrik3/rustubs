@@ -62,7 +62,7 @@ $(BUILD)/_%.o : %.s | $(BUILD)
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
 	$(VERBOSE) nasm $(NASMFLAGS) -o $@ $<
 
-rust_kernel: check
+rust_kernel:
 	@echo "---BUILDING RUST KERNEL-------"
 	$(VERBOSE) RUSTFLAGS="$(RUSTC_FLAGS)" cargo build --target $(CARGO_XBUILD_TARGET) $(CARGO_XBUILD_FLAGS)
 
@@ -79,8 +79,9 @@ $(BUILD):
 
 .PHONY: check
 check:
-	@echo "---CHECKING FORMATTING--------"
+	@echo "---CHECKING FORMAT AND LINTS--"
 	@cargo +nightly fmt --all -- --check -l
+	@cargo +nightly clippy --target defs/x86_64-rustubs.json
 
 clean:
 	cargo clean

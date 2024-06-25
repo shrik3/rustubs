@@ -130,6 +130,15 @@ Please take a look at the CI manifest:
 
 ## Contributing
 
+NOTE: before submitting code, check linter and code format by running
+`make check`, or add this to your git pre-commit hook e.g.
+```sh
+if ! make check; then
+    echo "ERROR: linter or formatting error. Make sure your code passes rustfmt and clippy"
+    exit 1
+fi
+```
+
 Anyone can contribute to rustubs. Please refer to
 [the contribution guidelines](https://git.sr.ht/~shrik3/rustubs/tree/master/item/CONTRIBUTING.md)
 
