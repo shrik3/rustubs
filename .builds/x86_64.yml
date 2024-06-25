@@ -17,6 +17,9 @@ tasks:
       cd rustubs
       rustup default nightly
       rustup component add rust-src
+  - check: |
+      cd rustubs
+      make check
   - build: |
       cd rustubs
       mkdir build
