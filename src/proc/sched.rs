@@ -108,7 +108,7 @@ impl Scheduler {
 	/// unsafe because you must make sure interrupt is enabled when spinning
 	pub unsafe fn do_schedule_l2() {
 		assert!(is_int_enabled());
-		SPIN_ENTER_L2();
+		ENTER_L2();
 		Self::do_schedule();
 		LEAVE_L2();
 	}

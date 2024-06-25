@@ -46,30 +46,6 @@ pub fn LEAVE_L2() {
 	assert_eq!(r, Ok(false));
 }
 
-/// MUST NOT CALL THIS WHEN INT IS DISABLED
-#[allow(non_snake_case)]
-#[inline(always)]
-pub fn SPIN_ENTER_L2() {
-	let mut retry_count: u32 = 0;
-	loop {
-		// this for debugging only
-		if retry_count > 1000 {
-			panic!("can't enter L2, probably live lock")
-		}
-		retry_count += 1;
-		// looks like a tas lock?
-		let r = L2_AVAILABLE.load(Ordering::Relaxed);
-		if !r {
-			continue;
-		}
-		let cmpxhg =
-			L2_AVAILABLE.compare_exchange(true, false, Ordering::Relaxed, Ordering::Relaxed);
-		if let Ok(true) = cmpxhg {
-			return;
-		}
-	}
-}
-
 /// also clear the epilogue queue before really leaving.
 #[inline(always)]
 #[allow(non_snake_case)]
