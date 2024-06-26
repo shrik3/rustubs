@@ -44,9 +44,12 @@ impl<'a> Iterator for UstarArchiveIter<'a> {
 			return None;
 		}
 		let file_sz = hdr.size() as usize;
+		// file_start skips over the header (whose size is 512).
+		// file_end is non-inclusive
+		let file_start = self.iter_curr + 512;
 		let ret = Some(UstarFile {
 			hdr: hdr.clone(),
-			file: &self.archive[(self.iter_curr + 512)..(self.iter_curr + 512 + file_sz)],
+			file: &self.archive[file_start..(file_start + file_sz)],
 		});
 		self.iter_curr += (((file_sz + 511) / 512) + 1) * 512;
 		return ret;

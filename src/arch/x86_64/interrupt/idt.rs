@@ -7,7 +7,7 @@ const IDT_CAPACITY: usize = 256;
 /// 32 exceptions + 16 irqs from PIC = 48 valid interrupts
 const IDT_VALID: usize = 48;
 /// size of interrupt handler wrapper routine (vector)
-const VECTOR_SIZE: u64 = 16;
+const VECTOR_SIZE: usize = 16;
 extern "C" {
 	fn vectors_start();
 	fn idt();
@@ -22,17 +22,18 @@ extern "C" {
 pub fn init() {
 	println!("[init] idt: vectors_start: 0x{:x}", vectors_start as usize);
 
-	let gate_descriptors: &mut [GateDescriptor64] =
-		unsafe { slice::from_raw_parts_mut(idt as *mut GateDescriptor64, IDT_CAPACITY) };
+	let gate_descriptors: &mut [GateDescriptor64] = unsafe {
+		slice::from_raw_parts_mut(idt as *mut GateDescriptor64, IDT_CAPACITY)
+	};
 
 	// write to idt
 	for i in 0..IDT_VALID {
-		let offset: u64 = vectors_start as u64 + (i as u64 * VECTOR_SIZE);
-		gate_descriptors[i].set_default_interrupt(offset);
+		let offset = vectors_start as usize + (i * VECTOR_SIZE);
+		gate_descriptors[i].set_default_interrupt(offset as u64);
 	}
-	let offset_inv: u64 = vectors_start as u64 + (IDT_VALID as u64 * VECTOR_SIZE);
+	let offset_inv: usize = vectors_start as usize + (IDT_VALID * VECTOR_SIZE);
 	for i in IDT_VALID..IDT_CAPACITY {
-		gate_descriptors[i].set_default_interrupt(offset_inv);
+		gate_descriptors[i].set_default_interrupt(offset_inv as u64);
 	}
 	// set idtr
 	unsafe { asm! ("lidt [{}]", in(reg) idt_descr) }
