@@ -16,7 +16,8 @@ pub use ustar::UstarFile as File;
 /// get an raw archive of the fstar fs slice
 pub fn get_archive<'a>() -> &'a [u8] {
 	let len = ___RAMFS_END__ as usize - ___RAMFS_START__ as usize;
-	let ramfs: &[u8] = unsafe { slice::from_raw_parts_mut(___RAMFS_START__ as *mut u8, len) };
+	let ramfs: &[u8] =
+		unsafe { slice::from_raw_parts_mut(___RAMFS_START__ as *mut u8, len) };
 	ramfs
 }
 

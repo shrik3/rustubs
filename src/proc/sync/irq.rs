@@ -1,6 +1,7 @@
 use crate::proc::sync::L3Sync;
 use alloc::collections::VecDeque;
-pub static EPILOGUE_QUEUE: L3Sync<EpilogueQueue> = L3Sync::new(EpilogueQueue::new());
+pub static EPILOGUE_QUEUE: L3Sync<EpilogueQueue> =
+	L3Sync::new(EpilogueQueue::new());
 /// the synchronized queue for Level 2 epilogues
 pub struct EpilogueQueue {
 	pub queue: VecDeque<EpilogueEntrant>,
@@ -72,7 +73,9 @@ pub trait IRQHandlerEpilogue {
 	fn get_gate() -> IRQGate {
 		IRQGate {
 			prologue: Self::do_prologue,
-			epilogue_entrant: Some(EpilogueEntrant { epilogue: Self::do_epilogue }),
+			epilogue_entrant: Some(EpilogueEntrant {
+				epilogue: Self::do_epilogue,
+			}),
 		}
 	}
 }

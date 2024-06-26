@@ -54,7 +54,12 @@ impl Scheduler {
 		// check.
 		debug_assert!(is_int_enabled());
 		// TODO maybe refine memory ordering here
-		let r = NEED_RESCHEDULE.compare_exchange(true, false, Ordering::Relaxed, Ordering::Relaxed);
+		let r = NEED_RESCHEDULE.compare_exchange(
+			true,
+			false,
+			Ordering::Relaxed,
+			Ordering::Relaxed,
+		);
 		if r != Ok(true) {
 			return;
 		}

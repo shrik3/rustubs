@@ -53,7 +53,11 @@ pub unsafe fn map_vma(pt_root: u64, vma: &VMArea, do_copy: bool) -> bool {
 			let sz = (vma.vm_range.end - vma.vm_range.start) as usize;
 			sprintln!("copy from {:p} to {:#X}", &f[0], vma.vm_range.start);
 			unsafe {
-				ptr::copy_nonoverlapping(&f[0] as *const u8, vma.vm_range.start as *mut u8, sz)
+				ptr::copy_nonoverlapping(
+					&f[0] as *const u8,
+					vma.vm_range.start as *mut u8,
+					sz,
+				)
 			}
 			return true;
 		}

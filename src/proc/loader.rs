@@ -68,7 +68,9 @@ pub fn load(file: &fs::File) -> Option<u64> {
 			},
 			tag: String::from_str("USER BITS").unwrap(),
 			user_perms: VMPerms::all(),
-			backing: VMType::FILE(unsafe { black_magic::make_static(&file.file[fstart..fend]) }),
+			backing: VMType::FILE(unsafe {
+				black_magic::make_static(&file.file[fstart..fend])
+			}),
 		};
 		let res = unsafe { map_vma(pt_root, &vma, true) };
 		if !res {

@@ -86,7 +86,10 @@ impl Task {
 	/// unsafe because you have to make sure the stack pointer is valid
 	/// i.e. allocated through KStackAllocator.
 	#[inline(always)]
-	pub unsafe fn settle_on_stack<'a>(stack_addr: u64, t: Task) -> &'a mut Task {
+	pub unsafe fn settle_on_stack<'a>(
+		stack_addr: u64,
+		t: Task,
+	) -> &'a mut Task {
 		ptr::write_volatile(stack_addr as *mut Task, t);
 		return &mut *(stack_addr as *mut Task);
 	}

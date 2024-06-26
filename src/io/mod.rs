@@ -12,7 +12,8 @@ use core::panic::PanicInfo;
 use lazy_static::lazy_static;
 use spin::Mutex;
 lazy_static! {
-	pub static ref CGASCREEN_GLOBAL: Mutex<CGAScreen> = Mutex::new(CGAScreen::new());
+	pub static ref CGASCREEN_GLOBAL: Mutex<CGAScreen> =
+		Mutex::new(CGAScreen::new());
 }
 
 #[panic_handler]

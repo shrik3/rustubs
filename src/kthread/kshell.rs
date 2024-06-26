@@ -56,7 +56,8 @@ fn handle(cmd: &str, files: &Vec<File>) {
 				return;
 			}
 			let file_name = tokens[1];
-			if let Some(file) = files.iter().find(|f| f.hdr.name() == file_name) {
+			if let Some(file) = files.iter().find(|f| f.hdr.name() == file_name)
+			{
 				cat(file)
 			} else {
 				println!("{}: no such file or directory", file_name,);

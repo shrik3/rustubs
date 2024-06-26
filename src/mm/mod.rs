@@ -20,7 +20,8 @@ use spin::Mutex;
 static ALLOCATOR: LockedHeap = LockedHeap::empty();
 
 lazy_static! {
-	pub static ref KSTACK_ALLOCATOR: Mutex<KStackAllocator> = Mutex::new(KStackAllocator::new());
+	pub static ref KSTACK_ALLOCATOR: Mutex<KStackAllocator> =
+		Mutex::new(KStackAllocator::new());
 }
 
 /// half measure: simply initialize the linkedlist allocator
@@ -67,7 +68,7 @@ pub fn init() {
 		}
 	}
 
-	let pr = &largest_phy_range.expect("Can't find any available physical block");
+	let pr = &largest_phy_range.expect("Can't find usable physical block");
 	assert!((pr.end - pr.start) >= Mem::MIN_PHY_MEM, "TO LITTLE RAM ...");
 	// init heap allocator on id map
 	unsafe {
@@ -139,7 +140,8 @@ impl KStackAllocator {
 	}
 }
 
-const LAYOUT_4K_ALIGNED: Layout = unsafe { Layout::from_size_align_unchecked(0x1000, 0x1000) };
+const LAYOUT_4K_ALIGNED: Layout =
+	unsafe { Layout::from_size_align_unchecked(0x1000, 0x1000) };
 /// allocate 4k aligned memory.
 /// TODO create a buffer (like in KStackAllocator) for performance.
 pub fn allocate_4k() -> u64 {

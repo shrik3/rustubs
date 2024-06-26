@@ -49,7 +49,11 @@ impl fmt::Debug for VMArea {
 		write!(
 			f,
 			"{:016X}-{:016X} {:?} - {:?} - {}",
-			self.vm_range.start, self.vm_range.end, self.user_perms, self.backing, self.tag
+			self.vm_range.start,
+			self.vm_range.end,
+			self.user_perms,
+			self.backing,
+			self.tag
 		)
 	}
 }

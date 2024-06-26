@@ -17,7 +17,8 @@ impl PIT {
 	const PIT_BASE_NS: u64 = 838;
 	// max is around 54918 us (54 ms)
 	pub fn set_interval(us: u64) -> u64 {
-		let mut divider = (us * 1000 + Self::PIT_BASE_NS / 2) / Self::PIT_BASE_NS;
+		let mut divider =
+			(us * 1000 + Self::PIT_BASE_NS / 2) / Self::PIT_BASE_NS;
 		if divider == 0 {
 			panic!("how on earth can you make a zero divider?")
 		}

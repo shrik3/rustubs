@@ -30,8 +30,10 @@ use super::key::Modifiers;
 /// this is the global keybard controller. It can only be used in prologue level,
 /// except for the `gather` field (consume_key is safe), which is atomic that can be safely used.
 /// (TODO maybe we can change this L3/L2 shared state abstraction)
-pub static KBCTL_GLOBAL: L3Sync<KeyboardController> = L3Sync::new(KeyboardController::new());
-pub static KEY_BUFFER: SleepSemaphore<VecDeque<Key>> = SleepSemaphore::new(VecDeque::new());
+pub static KBCTL_GLOBAL: L3Sync<KeyboardController> =
+	L3Sync::new(KeyboardController::new());
+pub static KEY_BUFFER: SleepSemaphore<VecDeque<Key>> =
+	SleepSemaphore::new(VecDeque::new());
 
 pub struct KeyboardController {
 	keystate: KeyState,
@@ -164,13 +166,19 @@ impl KeyboardController {
 		let mut should_decode_ascii = false;
 		let code = self.keystate.scan.unwrap();
 		match code {
-			Defs::C_SHIFT_L | Defs::C_SHIFT_R => self.keystate.modi.insert(Modifiers::SHIFT),
+			Defs::C_SHIFT_L | Defs::C_SHIFT_R => {
+				self.keystate.modi.insert(Modifiers::SHIFT)
+			}
 			Defs::C_ALT => match self.keystate.prefix {
-				Prefix::PREFIX1 => self.keystate.modi.insert(Modifiers::ALT_RIGHT),
+				Prefix::PREFIX1 => {
+					self.keystate.modi.insert(Modifiers::ALT_RIGHT)
+				}
 				_ => self.keystate.modi.insert(Modifiers::ALT_LEFT),
 			},
 			Defs::C_CTRL => match self.keystate.prefix {
-				Prefix::PREFIX1 => self.keystate.modi.insert(Modifiers::CTRL_RIGHT),
+				Prefix::PREFIX1 => {
+					self.keystate.modi.insert(Modifiers::CTRL_RIGHT)
+				}
 				_ => self.keystate.modi.insert(Modifiers::CTRL_LEFT),
 			},
 			Defs::C_CAPSLOCK => self.toggle_lock(Modifiers::CAPSLOCK),
@@ -202,13 +210,19 @@ impl KeyboardController {
 		// we only care about release events for shift/alt/ctrl
 		let code = self.keystate.scan.unwrap() & !Defs::BREAK_BIT;
 		match code {
-			Defs::C_SHIFT_L | Defs::C_SHIFT_R => self.keystate.modi.remove(Modifiers::SHIFT),
+			Defs::C_SHIFT_L | Defs::C_SHIFT_R => {
+				self.keystate.modi.remove(Modifiers::SHIFT)
+			}
 			Defs::C_ALT => match self.keystate.prefix {
-				Prefix::PREFIX1 => self.keystate.modi.remove(Modifiers::ALT_RIGHT),
+				Prefix::PREFIX1 => {
+					self.keystate.modi.remove(Modifiers::ALT_RIGHT)
+				}
 				_ => self.keystate.modi.remove(Modifiers::ALT_LEFT),
 			},
 			Defs::C_CTRL => match self.keystate.prefix {
-				Prefix::PREFIX1 => self.keystate.modi.remove(Modifiers::CTRL_RIGHT),
+				Prefix::PREFIX1 => {
+					self.keystate.modi.remove(Modifiers::CTRL_RIGHT)
+				}
 				_ => self.keystate.modi.remove(Modifiers::CTRL_LEFT),
 			},
 			_ => {}
@@ -262,14 +276,20 @@ impl KeyboardController {
 			return;
 		}
 
-		let asc = if m.contains(Modifiers::NUMLOCK) && p == Prefix::NONE && (71..=83).contains(&c) {
+		let asc = if m.contains(Modifiers::NUMLOCK)
+			&& p == Prefix::NONE
+			&& (71..=83).contains(&c)
+		{
 			ASC_NUM_TAB[c as usize - 71]
 		} else if m.contains(Modifiers::ALT_RIGHT) {
 			ALT_TAB[c as usize]
 		} else if m.contains(Modifiers::SHIFT) {
 			SHIFT_TAB[c as usize]
 		} else if m.contains(Modifiers::CAPSLOCK) {
-			if (16..=26).contains(&c) || (30..=40).contains(&c) || (44..=50).contains(&c) {
+			if (16..=26).contains(&c)
+				|| (30..=40).contains(&c)
+				|| (44..=50).contains(&c)
+			{
 				SHIFT_TAB[c as usize]
 			} else {
 				NORMAL_TAB[c as usize]

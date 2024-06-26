@@ -31,7 +31,10 @@ impl CGAScreen {
 	pub fn new() -> Self {
 		let cga = Self {
 			cga_mem: unsafe {
-				slice::from_raw_parts_mut(CGA_BUFFER_START as *mut u8, 2 * MAX_COLS * MAX_ROWS)
+				slice::from_raw_parts_mut(
+					CGA_BUFFER_START as *mut u8,
+					2 * MAX_COLS * MAX_ROWS,
+				)
 			},
 			cursor_r: 0,
 			cursor_c: 0,
@@ -111,7 +114,11 @@ impl CGAScreen {
 			return;
 		}
 		unsafe {
-			slice::from_raw_parts_mut((CGA_BUFFER_START + line * 160) as *mut u64, 20).fill(base);
+			slice::from_raw_parts_mut(
+				(CGA_BUFFER_START + line * 160) as *mut u64,
+				20,
+			)
+			.fill(base);
 		}
 	}
 

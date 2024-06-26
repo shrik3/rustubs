@@ -112,9 +112,12 @@ where
 				continue;
 			}
 
-			let r = self
-				.sema
-				.compare_exchange(c, c - 1, Ordering::Acquire, Ordering::Relaxed);
+			let r = self.sema.compare_exchange(
+				c,
+				c - 1,
+				Ordering::Acquire,
+				Ordering::Relaxed,
+			);
 			match r {
 				Ok(_) => break,
 				Err(_) => continue,
