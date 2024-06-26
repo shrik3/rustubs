@@ -163,6 +163,9 @@ the problems, while not mandatory, please kindly refer to the source in the
 
 ## Code Style
 
+(I may have strong opinions and you don't have to follow, if you have a
+good counter point)
+
 Please refer only to the quoted sections when guidelines are sourced from
 outside documents as some rules of the source material may conflict with other
 rules set out in this document.
@@ -170,9 +173,27 @@ rules set out in this document.
 When updating an existing file, respect the existing coding style unless there
 is a good reason not to do so.
 
+### Clippy
+Linter rules are written by human, and not all rules are good rules, for example
+- `clippy::needless_return`: implicit returns are handy in trivial getter/setter
+  functions, and very helpful in closures. It doesn't mean you have to follow
+  all clippy suggestions, for example:
+  ```
+  --> src/arch/x86_64/interrupt/idt.rs:29:11
+29 |     for i in 0..IDT_VALID {
+   = note: `#[warn(clippy::needless_range_loop)]` on by default
+help: consider using an iterator and enumerate()
+29 |     for (i, <item>) in gate_descriptors.iter_mut().enumerate().take(IDT_VALID) {
+  ```
+  I know, raw loops are error prone, but IMHO the suggested "object oriented"
+  approatch is just way worse, especially when writing low level code.
+- Some rules are simply wrong (e.g. it suggests replacing `&Vec<T>` with `&[T]`
+  in function arguments: they are not the same!)
+
 ### Indentation
 
-We use *hard tabs* for indentations with tabwidth == 4 (TODO: consider using 8)
+Despite the rustfmt defaults and recommendations, we use **hard tabs** for
+indentations with **tabwidth == 4**
 
 ### Breaking long lines and strings
 
