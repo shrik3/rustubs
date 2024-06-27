@@ -44,17 +44,17 @@ pub fn init() {
 		if mblock.mtype != multiboot::MultibootMmap::MTYPE_RAM {
 			continue;
 		}
-		if mblock.get_end() <= unsafe { pmap_kernel_start() } {
+		if mblock.get_end() <= ExternSyms::___KERNEL_PM_START__ as u64 {
 			continue;
 		}
 		// TODO early break if the array is already full
 		let mut r = mblock.get_range();
-		if r.contains(&unsafe { pmap_kernel_end() }) {
+		if r.contains(&(ExternSyms::___KERNEL_PM_END__ as u64)) {
 			assert!(
-				r.contains(&unsafe { pmap_kernel_start() }),
+				r.contains(&(ExternSyms::___KERNEL_PM_START__ as u64)),
 				"FATAL: kernel physical map cross physical blocks, how?"
 			);
-			r.start = unsafe { pmap_kernel_end() };
+			r.start = ExternSyms::___KERNEL_PM_END__ as u64;
 		}
 		// TODO this is pretty ugly, consider 1. impl length() for Range and 2.
 		// take reference instead of copy.

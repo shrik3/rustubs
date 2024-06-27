@@ -1,14 +1,5 @@
 //! system level definitions
 
-// all extern symbols should be named here and only here. For sanity checks they
-// must not be used directly, especially for dereferencing.
-extern "C" {
-	fn ___KERNEL_PM_START__();
-	fn ___KERNEL_PM_END__();
-	fn ___BSS_START__();
-	fn ___BSS_END__();
-}
-
 /// multiboot magic value, it must be 0x2BAD8002. This value is set at runtime
 /// by init asm code. CARE: the release build will not treat these as volatile
 /// and they may hardcode the initial value (0) because they sees "static const
@@ -20,40 +11,6 @@ pub static mb_magic: u64 = 0;
 /// converted to the virtual mapping via P2V before dereferencing.
 #[no_mangle]
 pub static mb_info_pm_addr: u64 = 0;
-
-// ANY ADDRESS FROM PHYSICAL MAPPING IS UNSAFE BECAUSE THE LOW MEMORY MAPPING
-// WILL BE DROPPED FOR USERSPACE
-// TODO: create VMAs in the MM struct
-#[inline]
-pub unsafe fn pmap_kernel_start() -> u64 {
-	___KERNEL_PM_START__ as u64
-}
-
-#[inline]
-pub unsafe fn pmap_kernel_end() -> u64 {
-	___KERNEL_PM_END__ as u64
-}
-
-#[inline]
-pub fn vmap_kernel_start() -> u64 {
-	unsafe { pmap_kernel_start() + Mem::KERNEL_OFFSET }
-}
-
-#[inline]
-pub fn vmap_kernel_end() -> u64 {
-	unsafe { pmap_kernel_end() + Mem::KERNEL_OFFSET }
-}
-// ABOVE ONLY VALID BEFORE DROPPING LOWER MEMORY MAPPING -----//
-
-#[inline]
-pub fn bss_start() -> u64 {
-	___BSS_START__ as u64
-}
-
-#[inline]
-pub fn bss_end() -> u64 {
-	___BSS_END__ as u64
-}
 
 #[inline]
 pub fn roundup_4k(addr: u64) -> u64 {
@@ -100,6 +57,35 @@ pub mod Mem {
 	// user (psuedo)
 	pub const USER_STACK_START: u64 = 0x0000_7000_0000_0000;
 	pub const USER_STACK_SIZE: u64 = 8 * M;
+}
+
+// TODO use a consistent naming convention for extern symbols
+pub mod ExternSyms {
+	extern "C" {
+		pub fn ___KERNEL_PM_START__();
+		pub fn ___KERNEL_PM_END__();
+		pub fn ___BSS_START__();
+		pub fn ___BSS_END__();
+		pub fn ___RAMFS_START__();
+		pub fn ___RAMFS_END__();
+		/// a chunk (8M) of reserved memory, optionally used by the stack based
+		/// physical frame allocator. This naive pma is deprecated, and you must not
+		/// use this symbol unless you adjust the startup code to reserve
+		/// memory of cooresponding size and alignment. This is deprecated
+		pub fn ___FREE_PAGE_STACK__();
+	}
+	#[cfg(target_arch = "x86_64")]
+	pub use crate::arch::x86_64::ExternSyms::*;
+}
+
+#[cfg(target_arch = "x86_64")]
+pub mod HWDefs {
+	/// number of entries in IDT
+	pub const IDT_CAPACITY: usize = 256;
+	/// 32 exceptions + 16 irqs from PIC = 48 valid interrupts
+	pub const IDT_VALID: usize = 48;
+	/// size of interrupt handler wrapper routine (vector)
+	pub const VECTOR_SIZE: usize = 16;
 }
 
 pub mod Limits {

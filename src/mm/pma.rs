@@ -21,15 +21,6 @@
 use crate::defs::*;
 use core::ops::Range;
 use core::slice;
-
-extern "C" {
-	/// a chunk (8M) of reserved memory, optionally used by the stack based
-	/// physical frame allocator. This naive pma is deprecated, and you must not
-	/// use this symbol unless you adjust the startup code to reserve
-	/// memory of cooresponding size and alignment
-	fn ___FREE_PAGE_STACK__();
-}
-
 // disabled for now
 // lazy_static! {
 // 	pub static ref GLOBAL_PMA: Mutex<pma::PageStackAllocator> =
@@ -52,7 +43,8 @@ impl PageStackAllocator {
 		let ps = Self {
 			page_stack: unsafe {
 				slice::from_raw_parts_mut(
-					P2V(___FREE_PAGE_STACK__ as u64).unwrap() as *mut u64,
+					P2V(ExternSyms::___FREE_PAGE_STACK__ as u64).unwrap()
+						as *mut u64,
 					Self::STACK_SIZE,
 				)
 			},

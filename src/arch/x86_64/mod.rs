@@ -7,6 +7,15 @@ pub mod paging;
 use core::arch::asm;
 
 pub const RFLAGS_IF_MASK: u64 = 1 << 9;
+
+pub mod ExternSyms {
+	extern "C" {
+		pub fn vectors_start();
+		pub fn idt();
+		pub fn idt_descr();
+	}
+}
+
 #[inline]
 pub fn read_rflags() -> u64 {
 	let rflags;

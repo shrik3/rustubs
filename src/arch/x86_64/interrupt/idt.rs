@@ -1,18 +1,8 @@
+use crate::defs::HWDefs::*;
 use crate::io::*;
+use crate::ExternSyms::{idt, idt_descr, vectors_start};
 use core::arch::asm;
 use core::slice;
-// TODO use P2V for extern symbol addresses
-/// number of entries in IDT
-const IDT_CAPACITY: usize = 256;
-/// 32 exceptions + 16 irqs from PIC = 48 valid interrupts
-const IDT_VALID: usize = 48;
-/// size of interrupt handler wrapper routine (vector)
-const VECTOR_SIZE: usize = 16;
-extern "C" {
-	fn vectors_start();
-	fn idt();
-	fn idt_descr();
-}
 
 /// initialize the idt: we reserved space for idt in assembly code (and linker
 /// script) we write contents to them now. One purpose is to save binary space.

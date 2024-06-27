@@ -2,14 +2,10 @@
 
 // symbols provided by linker
 pub mod ustar;
+use crate::defs::ExternSyms::{___RAMFS_END__, ___RAMFS_START__};
 use crate::proc::loader;
 use core::slice;
 use core::str;
-extern "C" {
-	fn ___RAMFS_START__();
-	fn ___RAMFS_END__();
-}
-
 pub use ustar::iter;
 pub use ustar::UstarFile as File;
 
