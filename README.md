@@ -195,32 +195,3 @@ I feel necessary to go through the painful part.
 
 **Your code sucks**
 yes.
-
-## Documentation Sources
-
-x86_64 calling conventions
-https://aaronbloomfield.github.io/pdr/book/x86-64bit-ccc-chapter.pdf
-
-Rust inline asm
-https://rust-lang.github.io/rfcs/2873-inline-asm.html
-
-asm Syntax : (we use nasm in assembly and .intel_syntax noprefix in rust asm)
-https://en.wikipedia.org/wiki/X86_assembly_language#Syntax
-
-naming conventions
-https://rust-lang.github.io/api-guidelines/naming.html
-
-Makefile Cheatsheet:
-https://devhints.io/makefile
-
-AT Keyboard Controller:
-https://homepages.cwi.nl/~aeb/linux/kbd/scancodes-8.html
-
-PS/2 Keyboard Controller:
-https://wiki.osdev.org/PS/2_Keyboard
-
-TU Dresden OSC labs (the baseline for this project):
-https://tu-dresden.de/ing/informatik/sya/professur-fuer-betriebssysteme/studium/vorlesungen/betriebssystembau/lab-tasks
-
-Unwinding the stack the hard way
-https://lesenechal.fr/en/linux/unwinding-the-stack-the-hard-way
