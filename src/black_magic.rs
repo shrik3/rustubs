@@ -6,8 +6,8 @@ pub unsafe fn make_static(r: &[u8]) -> &'static [u8] {
 }
 
 // an empty struct
-pub struct Empty {}
-impl Empty {
+pub struct Void;
+impl Void {
 	pub const fn new() -> Self { Self {} }
 }
 

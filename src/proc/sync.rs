@@ -6,7 +6,7 @@ pub mod bellringer;
 pub mod irq;
 pub mod semaphore;
 use crate::arch::x86_64::is_int_enabled;
-use crate::black_magic::Empty;
+use crate::black_magic::Void;
 use core::cell::SyncUnsafeCell;
 use core::ops::{Deref, DerefMut};
 use core::sync::atomic::{AtomicBool, Ordering};
@@ -14,7 +14,7 @@ pub use irq::*;
 /// indicates whether a task is running in L2. Maybe make it L3SyncCell as well.
 static L2_AVAILABLE: AtomicBool = AtomicBool::new(true);
 /// RAII lock guard for the global L2 flag, the u64 is not to be used.
-static L2_GUARD: L2Sync<Empty> = L2Sync::new(Empty::new());
+static L2_GUARD: L2Sync<Void> = L2Sync::new(Void::new());
 
 #[inline(always)]
 #[allow(non_snake_case)]
