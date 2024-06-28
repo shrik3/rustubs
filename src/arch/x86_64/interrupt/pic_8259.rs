@@ -1,6 +1,6 @@
-// For now, the PIC is stateless, i.e. we don'e need a struct for it.
-// Perhaps I need a Mutex handle later...
 use crate::arch::x86_64::io_port::*;
+// code from: https://wiki.osdev.org/8259_PIC#Code_Examples
+// data and control ports of PIC1 (master) and PIC2 (slave)
 const IMR1: u16 = 0x21;
 const IMR2: u16 = 0xa1;
 const CTRL1: u16 = 0x20;
@@ -13,14 +13,6 @@ impl PicDeviceInt {
 	pub const KEYBOARD: u8 = 1;
 }
 
-// code and text from: https://wiki.osdev.org/8259_PIC#Code_Examples
-// reprogram the PIC; _init must be called before interrupt is enabled.
-// TODO: turn pic into a singleton struct
-// TODO: replace these hardcoded ....
-// 0x20: PIC1 COMMAND (MASTER)
-// 0x21: PIC1 DATA
-// 0xA0: PIC2 COMMAND (SLAVE)
-// 0xA1: PIC2 DATA
 pub fn init() {
 	// ICW1_ICW4 | ICW1_INIT
 	// start init sequence in cascade mode

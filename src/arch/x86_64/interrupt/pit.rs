@@ -45,7 +45,5 @@ impl IRQHandlerEpilogue for PIT {
 		}
 		let _ = SET_NEED_RESCHEDULE();
 	}
-	unsafe fn do_epilogue() {
-		BellRinger::check_all();
-	}
+	unsafe fn do_epilogue() { BellRinger::check_all(); }
 }

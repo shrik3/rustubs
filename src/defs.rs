@@ -13,19 +13,13 @@ pub static mb_magic: u64 = 0;
 pub static mb_info_pm_addr: u64 = 0;
 
 #[inline]
-pub fn roundup_4k(addr: u64) -> u64 {
-	(addr + 0xfff) & !0xfff
-}
+pub fn roundup_4k(addr: u64) -> u64 { (addr + 0xfff) & !0xfff }
 
 #[inline]
-pub fn rounddown_4k(addr: u64) -> u64 {
-	addr & !0xfff
-}
+pub fn rounddown_4k(addr: u64) -> u64 { addr & !0xfff }
 
 #[inline]
-pub fn is_aligned_4k(addr: u64) -> bool {
-	(addr & 0xfff) == 0
-}
+pub fn is_aligned_4k(addr: u64) -> bool { (addr & 0xfff) == 0 }
 
 /// memory definitions
 pub mod Mem {

@@ -1,3 +1,4 @@
+use super::L2_GUARD;
 use crate::arch::x86_64::is_int_enabled;
 use crate::proc::task::{Task, TaskId};
 use crate::Scheduler;
@@ -5,7 +6,6 @@ use alloc::collections::VecDeque;
 use core::sync::atomic::Ordering;
 use core::{cell::SyncUnsafeCell, sync::atomic::AtomicU64};
 
-use super::L2_GUARD;
 pub trait Semaphore<T, E>
 where
 	T: ResourceMan<E>,
@@ -22,9 +22,7 @@ where
 	fn is_full(&self) -> bool;
 	/// if the semaphore is also to be accessed in the epilogue level, the L2
 	/// lock is already acquired.
-	unsafe fn p_unguarded(&self) -> Option<E> {
-		return None;
-	}
+	unsafe fn p_unguarded(&self) -> Option<E> { return None; }
 	#[allow(unused_variables)]
 	unsafe fn v_unguarded(&self, e: E) {}
 }
@@ -42,9 +40,7 @@ where E: Copy + Clone
 impl<E> ResourceMan<E> for VecDeque<E>
 where E: Copy + Clone
 {
-	fn get_resource(&mut self) -> Option<E> {
-		self.pop_front()
-	}
+	fn get_resource(&mut self) -> Option<E> { self.pop_front() }
 	fn insert_resource(&mut self, e: E) -> bool {
 		self.push_back(e);
 		// well, it seems that the vectorDeque has no failing case for
@@ -89,7 +85,6 @@ impl<T> SleepSemaphore<T> {
 	}
 }
 
-// like the spinning one, but sleep; perhaps consider reusing code..
 impl<T, E> Semaphore<T, E> for SleepSemaphore<T>
 where
 	T: ResourceMan<E>,
@@ -132,10 +127,6 @@ where
 		let _ = self.sema.fetch_add(1, Ordering::SeqCst);
 		self.wakeup_one();
 	}
-	fn is_empty(&self) -> bool {
-		todo!()
-	}
-	fn is_full(&self) -> bool {
-		todo!()
-	}
+	fn is_empty(&self) -> bool { todo!() }
+	fn is_full(&self) -> bool { todo!() }
 }

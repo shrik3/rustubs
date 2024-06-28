@@ -17,11 +17,9 @@ use core::arch::asm;
 extern "C" fn trap_gate(nr: u16, fp: u64) {
 	// cpu automatically masks interrupts so we are already in L3
 	if nr < 0x20 {
-		// handle exception
 		handle_exception(nr, fp);
 	} else {
 		unsafe { handle_irq(nr) };
-		// handle irq
 	}
 
 	interrupt_enable();
@@ -74,8 +72,8 @@ unsafe fn handle_irq(nr: u16) {
 			debug_assert!(is_int_enabled());
 			e.call();
 		}
-		// This is a linearization point where we may do rescheduling
-		// unlike OOStuBS, we don't do rescheduling in the epilogues. this
+		// This is a linearization point where we may do rescheduling unlike
+		// OOStuBS, we don't do rescheduling in the device epilogues. this
 		// decouples the scheduler from the timer interrupt driver, also has
 		// better "real-time" guarantee: rescheduling will not be delayed by
 		// more than one epilogue execution; OOStuBS doesn't have the delay
@@ -107,32 +105,21 @@ fn handle_exception(nr: u16, fp: u64) {
 	let frame = unsafe { &mut *(fp as *mut TrapFrame) };
 	match nr {
 		INT::PAGEFAULT => {
-			// Pagefault
 			let fault_address = fault::get_fault_addr();
 			fault::page_fault_handler(frame, fault_address)
 		}
 		_ => {
 			sprint!("[trap {}] {:#X?}", nr, frame);
-			unsafe {
-				asm!("hlt");
-			}
+			unsafe { asm!("hlt") };
 		}
 	}
 }
 
 #[inline(always)]
-pub fn interrupt_enable() {
-	unsafe {
-		asm!("sti");
-	}
-}
+pub fn interrupt_enable() { unsafe { asm!("sti") }; }
 
 #[inline(always)]
-pub fn interrupt_disable() {
-	unsafe {
-		asm!("cli");
-	}
-}
+pub fn interrupt_disable() { unsafe { asm!("cli") }; }
 
 #[inline]
 /// irq_save() disables all interrupts and returns the previous state
@@ -146,9 +133,9 @@ pub fn irq_save() -> bool {
 }
 
 #[inline]
-/// irq_restore only re-enable irq if was_enabled==true.
-/// it will not disable irq regardless the was_enabled value. This function
-/// should only be called to restore irq based on previous irq_save();
+/// irq_restore only re-enable irq if was_enabled==true. it will not disable irq
+/// regardless the was_enabled value. This function should only be called to
+/// restore irq based on previous irq_save();
 pub fn irq_restore(was_enabled: bool) {
 	if was_enabled {
 		interrupt_enable();
@@ -157,8 +144,6 @@ pub fn irq_restore(was_enabled: bool) {
 
 /// initialize the idt and [pic_8259]
 pub fn init() {
-	// init idt
 	idt::init();
-	// init pic
 	pic_8259::init();
 }

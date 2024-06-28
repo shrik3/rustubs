@@ -26,6 +26,7 @@ pub fn init() {
 		.lock()
 		.bedroom
 		.reserve(defs::Limits::SEM_WAIT_QUEUE_MIN_CAP);
+	// semaphore has no "lock"
 	unsafe {
 		keyctrl::KEY_BUFFER
 			.get_pool_mut()

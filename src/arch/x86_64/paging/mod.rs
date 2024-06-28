@@ -17,21 +17,18 @@ pub use pagetable::*;
 #[inline]
 pub fn get_cr3() -> u64 {
 	let cr3: u64;
-	unsafe {
-		asm!("mov {}, cr3", out(reg) cr3);
-	}
+	unsafe { asm!("mov {}, cr3", out(reg) cr3) };
 	cr3
 }
 
 /// returns the identically mapped (+ kernel offset) virtual address of the page
 /// table
 #[inline]
-pub fn get_root() -> u64 {
-	P2V(get_cr3()).unwrap()
-}
+pub fn get_root() -> u64 { P2V(get_cr3()).unwrap() }
 
 /// unsafe as it dereferences raw pointer pt_root. Must make sure it's a valid,
 /// 4k aligned _virtual_ address.
+// TODO use Result type instead of bool so that we can do early return with ?..
 pub unsafe fn map_vma(pt_root: u64, vma: &VMArea, do_copy: bool) -> bool {
 	// create mappings in pagetable
 	let flags = PTEFlags::PRESENT | PTEFlags::WRITABLE | PTEFlags::USER;

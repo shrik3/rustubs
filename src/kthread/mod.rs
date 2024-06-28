@@ -20,9 +20,7 @@ pub trait KThread {
 		LEAVE_L2();
 		Self::entry();
 	}
-	fn get_entry() -> u64 {
-		Self::_entry as u64
-	}
+	fn get_entry() -> u64 { Self::_entry as u64 }
 }
 
 pub struct Idle {}

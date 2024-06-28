@@ -1,7 +1,5 @@
-use core::arch::asm;
-
-// put a few cycles of delay after IO ops
 use super::misc::delay;
+use core::arch::asm;
 
 #[inline(always)]
 pub fn inw(p: u16) -> u16 {

@@ -19,9 +19,7 @@ pub mod ExternSyms {
 #[inline]
 pub fn read_rflags() -> u64 {
 	let rflags;
-	unsafe {
-		asm!("pushfq; pop {}", out(reg) rflags);
-	}
+	unsafe { asm!("pushfq; pop {}", out(reg) rflags) };
 	rflags
 }
 

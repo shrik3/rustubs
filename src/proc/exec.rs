@@ -21,7 +21,6 @@ pub fn exec(file_name: &str) {
 		println!("error: no such file {}", file_name);
 		return;
 	}
-	// file is valid
 	let f = file.unwrap();
 	let entry = load(&f);
 	if entry.is_none() {

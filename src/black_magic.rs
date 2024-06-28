@@ -8,9 +8,7 @@ pub unsafe fn make_static(r: &[u8]) -> &'static [u8] {
 // an empty struct
 pub struct Empty {}
 impl Empty {
-	pub const fn new() -> Self {
-		Self {}
-	}
+	pub const fn new() -> Self { Self {} }
 }
 
 /// flush a volatile variable: rust doesn't have a volatile keyword. When a

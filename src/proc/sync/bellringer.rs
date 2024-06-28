@@ -4,10 +4,11 @@ use crate::machine::time;
 use crate::proc::sync::L2Sync;
 use crate::proc::task::TaskId;
 use alloc::collections::VecDeque;
+
+pub static BELLRINGER: L2Sync<BellRinger> = L2Sync::new(BellRinger::new());
 pub struct BellRinger {
 	pub bedroom: VecDeque<Sleeper>,
 }
-pub static BELLRINGER: L2Sync<BellRinger> = L2Sync::new(BellRinger::new());
 
 #[derive(Copy, Clone, Debug)]
 pub struct Sleeper {
@@ -22,13 +23,10 @@ impl Sleeper {
 }
 
 impl BellRinger {
-	pub const fn new() -> Self {
-		Self { bedroom: VecDeque::new() }
-	}
+	pub const fn new() -> Self { Self { bedroom: VecDeque::new() } }
 
-	pub fn check_in(s: Sleeper) {
-		BELLRINGER.lock().bedroom.push_back(s);
-	}
+	pub fn check_in(s: Sleeper) { BELLRINGER.lock().bedroom.push_back(s); }
+
 	/// check the sleeper queue and wake up if timer is due.
 	/// this is only to be called in epilogues
 	pub unsafe fn check_all() {

@@ -100,9 +100,7 @@ impl KeyState {
 		}
 	}
 
-	fn get_leds(&self) -> u8 {
-		return self.modi.bits() & 0b111;
-	}
+	fn get_leds(&self) -> u8 { return self.modi.bits() & 0b111; }
 }
 
 impl KeyboardController {
@@ -299,7 +297,6 @@ impl KeyboardController {
 		};
 
 		let k = Key { asc, modi: m, scan: s };
-
 		self.gather.store(k.to_u32(), Ordering::Relaxed);
 	}
 
@@ -333,28 +330,20 @@ impl KeyboardController {
 	}
 }
 
-// x86 and arm has different interrupt controller
+// pic_8259 is x86 only
 #[cfg(target_arch = "x86_64")]
 impl KeyboardController {
 	#[inline(always)]
-	fn disable_keyboard_int() {
-		pic_8259::forbid(PD::KEYBOARD);
-	}
+	fn disable_keyboard_int() { pic_8259::forbid(PD::KEYBOARD); }
 
 	#[inline(always)]
-	fn enable_keyboard_int() {
-		pic_8259::allow(PD::KEYBOARD);
-	}
+	fn enable_keyboard_int() { pic_8259::allow(PD::KEYBOARD); }
 
 	#[inline(always)]
-	fn is_int_masked() -> bool {
-		pic_8259::is_masked(PD::KEYBOARD)
-	}
+	fn is_int_masked() -> bool { pic_8259::is_masked(PD::KEYBOARD) }
 }
 
 // for whatever reason the PS/2 keyboard controls the "shutdown"...
-// TODO use a "target feature" for machine functions like this.
-// TODO "reboot controler" needs better abstraction, maybe a trait.
 impl KeyboardController {
 	pub unsafe fn reboot(&self) {
 		// what ever magic it is, tell BIOS this is an intentional reset and don't

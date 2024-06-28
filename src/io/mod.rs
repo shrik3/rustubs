@@ -5,9 +5,8 @@ use crate::machine::cgascr::CGAScreen;
 use crate::machine::key::Key;
 use crate::machine::keyctrl::KEY_BUFFER;
 use crate::machine::serial::SerialWritter;
-use crate::proc::task::Task;
 use core::cell::SyncUnsafeCell;
-use core::fmt;
+use core::fmt::{Arguments, Write};
 use core::panic::PanicInfo;
 use lazy_static::lazy_static;
 use spin::Mutex;
@@ -62,39 +61,29 @@ pub fn read_key() -> Key {
 	KEY_BUFFER.p().unwrap()
 }
 
-pub fn _print(args: fmt::Arguments) {
-	use core::fmt::Write;
+pub fn _print(args: Arguments) {
 	CGASCREEN_GLOBAL.lock().write_fmt(args).unwrap();
 }
 
-pub fn _serial_print(args: fmt::Arguments) {
-	use core::fmt::Write;
+pub fn _serial_print(args: Arguments) {
 	unsafe {
 		(*SERIAL_GLOBAL.get()).write_fmt(args).unwrap();
 	}
 }
 
 /// [clear_screen] removes the content but doesn't reset the cursor
-pub fn clear_screen() {
-	CGASCREEN_GLOBAL.lock().clear();
-}
+pub fn clear_screen() { CGASCREEN_GLOBAL.lock().clear(); }
 
 /// [reset_screen] also resets the cursor
-pub fn reset_screen() {
-	CGASCREEN_GLOBAL.lock().reset();
-}
+pub fn reset_screen() { CGASCREEN_GLOBAL.lock().reset(); }
 
-pub fn back_space() {
-	CGASCREEN_GLOBAL.lock().backspace();
-}
+pub fn back_space() { CGASCREEN_GLOBAL.lock().backspace(); }
 
 pub fn print_help(s: &str, attr: u8) {
 	CGASCREEN_GLOBAL.lock().print_at_bottom(s, attr);
 }
 
-pub fn set_attr(attr: u8) {
-	CGASCREEN_GLOBAL.lock().setattr(attr);
-}
+pub fn set_attr(attr: u8) { CGASCREEN_GLOBAL.lock().setattr(attr); }
 
 pub fn print_welcome() {
 	println!("--RuStuBs--");

@@ -14,19 +14,18 @@ pub struct Key {
 
 impl Key {
 	pub const NONE_KEY: u32 = 0xff00_0000;
-	pub fn to_u32(&self) -> u32 {
-		unsafe { transmute::<Key, u32>(*self) }
-	}
+
+	pub fn to_u32(&self) -> u32 { unsafe { transmute::<Key, u32>(*self) } }
+
 	pub fn from_u32(k: u32) -> Option<Self> {
 		if Self::is_none(k) {
-			return None;
+			None
 		} else {
-			return Some(unsafe { transmute::<u32, Self>(k) });
+			Some(unsafe { transmute::<u32, Self>(k) })
 		}
 	}
-	pub fn is_none(k: u32) -> bool {
-		k & Self::NONE_KEY != 0
-	}
+
+	pub fn is_none(k: u32) -> bool { k & Self::NONE_KEY != 0 }
 }
 
 bitflags! {

@@ -8,30 +8,20 @@ pub struct EpilogueQueue {
 }
 
 impl EpilogueQueue {
-	pub const fn new() -> Self {
-		Self { queue: VecDeque::new() }
-	}
+	pub const fn new() -> Self { Self { queue: VecDeque::new() } }
 }
 
+/// describes a device interrupt handler routine. This is used to register a
+/// device driver to an interrupt line (see plugbox). Device drivers code should
+/// implement the [IRQHandler] or [IRQHandlerEpilogue] trait.
 #[derive(Copy, Clone)]
 pub struct IRQGate {
-	/// the "hardirq" part of the irq handler, it must not be interrupted.
-	/// unsafe: **must guarantee the prologue is called with irq disabled**
-	/// the prologue should be short and bounded. It must not block.
 	prologue: unsafe fn(),
-	/// the "softirq" part of the irq handler, it allows interrupts but all
-	/// epilogues must be linearized, therefore an **context swap must not
-	/// happen when there is a running epilogue**. For this reason , this
-	/// function is unsafe. optional. If present the require_epilogue function
-	/// should return true.
-	/// the performance difference? the require_epilogue function?
 	epilogue_entrant: Option<EpilogueEntrant>,
 }
 
 impl IRQGate {
-	pub unsafe fn call_prologue(&self) {
-		(self.prologue)();
-	}
+	pub unsafe fn call_prologue(&self) { (self.prologue)(); }
 	/// the epilogue function should never be directly called from the IRQGate.
 	/// Instead you need to get an epilogue entrant, and insert it into the
 	/// epilogue queue, so that the execution of epilogues are synchronized.
@@ -52,13 +42,16 @@ pub struct EpilogueEntrant {
 impl EpilogueEntrant {
 	/// call the actuall epilogue routine. unsafe because this must be
 	/// synchronized in L2
-	pub unsafe fn call(&self) {
-		(self.epilogue)();
-	}
+	pub unsafe fn call(&self) { (self.epilogue)(); }
 }
 
+/// device driver trait that has only prologue
 pub trait IRQHandler {
+	/// the "hardirq" part of the irq handler, it must not be interrupted.
+	/// unsafe: **must guarantee the prologue is called with irq disabled**
+	/// the prologue should be short and bounded. It must not block.
 	unsafe fn do_prologue();
+	/// returns an IRQGate to be registered with the plugbox
 	fn get_gate() -> IRQGate {
 		IRQGate {
 			prologue: Self::do_prologue,
@@ -67,8 +60,13 @@ pub trait IRQHandler {
 	}
 }
 
+/// device driver trait with both prologue and epilogue
 pub trait IRQHandlerEpilogue {
+	/// same as in [IRQHandler]
 	unsafe fn do_prologue();
+	/// the "softirq" part of the irq handler, it allows interrupts but all
+	/// epilogues must be linearized, therefore an **context swap must not
+	/// happen when there is a running epilogue**.
 	unsafe fn do_epilogue();
 	fn get_gate() -> IRQGate {
 		IRQGate {

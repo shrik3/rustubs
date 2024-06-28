@@ -113,7 +113,7 @@ impl Scheduler {
 		LEAVE_L2();
 	}
 
-	// like do_schedule but we there is no running context to save
+	/// like do_schedule but we there is no running context to save
 	pub unsafe fn kickoff() {
 		let irq = irq_save();
 		// must not lock the GLOBAL_SCHEDULER here because we never return.

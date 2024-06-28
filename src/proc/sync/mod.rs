@@ -4,13 +4,13 @@
 #![doc = include_str!("../../../docs/sync_model.md")]
 pub mod bellringer;
 pub mod irq;
-pub use irq::*;
 pub mod semaphore;
 use crate::arch::x86_64::is_int_enabled;
 use crate::black_magic::Empty;
 use core::cell::SyncUnsafeCell;
 use core::ops::{Deref, DerefMut};
 use core::sync::atomic::{AtomicBool, Ordering};
+pub use irq::*;
 /// indicates whether a task is running in L2. Maybe make it L3SyncCell as well.
 static L2_AVAILABLE: AtomicBool = AtomicBool::new(true);
 /// RAII lock guard for the global L2 flag, the u64 is not to be used.
@@ -61,21 +61,15 @@ pub struct L2Guard<'a, T: 'a> {
 
 impl<'a, T> Deref for L2Guard<'a, T> {
 	type Target = T;
-	fn deref(&self) -> &T {
-		unsafe { &*self.lock.data.get() }
-	}
+	fn deref(&self) -> &T { unsafe { &*self.lock.data.get() } }
 }
 
 impl<'a, T> DerefMut for L2Guard<'a, T> {
-	fn deref_mut(&mut self) -> &mut T {
-		unsafe { &mut *self.lock.data.get() }
-	}
+	fn deref_mut(&mut self) -> &mut T { unsafe { &mut *self.lock.data.get() } }
 }
 
 impl<'a, T> Drop for L2Guard<'a, T> {
-	fn drop(&mut self) {
-		LEAVE_L2();
-	}
+	fn drop(&mut self) { LEAVE_L2(); }
 }
 
 /// All L2Sync objects are guaranteed to be synchronized on the epilogue level.
@@ -95,9 +89,7 @@ impl<T> L2Sync<T> {
 	/// This breaks synchronization, the caller is responsible of checking the
 	/// global L2_AVAILABLE flag, and do other stuffs (like relaying) when
 	/// epilogue level is occupied.
-	pub unsafe fn get_ref_unguarded(&self) -> &T {
-		&*self.data.get()
-	}
+	pub unsafe fn get_ref_unguarded(&self) -> &T { &*self.data.get() }
 
 	pub unsafe fn get_ref_mut_unguarded(&self) -> &mut T {
 		&mut *self.data.get()

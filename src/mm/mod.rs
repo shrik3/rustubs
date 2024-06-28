@@ -1,5 +1,8 @@
 //! memory management unit
 
+mod pma;
+pub mod vmm;
+
 use crate::arch::x86_64::paging::{get_root, Pagetable};
 use crate::defs::*;
 use crate::machine::multiboot;
@@ -7,13 +10,8 @@ use alloc::alloc::{alloc, alloc_zeroed, dealloc, Layout};
 use alloc::vec::Vec;
 use core::arch::asm;
 use core::ops::Range;
-use linked_list_allocator::LockedHeap;
-
-// this mod is deprecated.
-mod pma;
-pub mod vmm;
-
 use lazy_static::lazy_static;
+use linked_list_allocator::LockedHeap;
 use spin::Mutex;
 
 #[global_allocator]
@@ -47,7 +45,6 @@ pub fn init() {
 		if mblock.get_end() <= ExternSyms::___KERNEL_PM_START__ as u64 {
 			continue;
 		}
-		// TODO early break if the array is already full
 		let mut r = mblock.get_range();
 		if r.contains(&(ExternSyms::___KERNEL_PM_END__ as u64)) {
 			assert!(
@@ -56,8 +53,7 @@ pub fn init() {
 			);
 			r.start = ExternSyms::___KERNEL_PM_END__ as u64;
 		}
-		// TODO this is pretty ugly, consider 1. impl length() for Range and 2.
-		// take reference instead of copy.
+		// TODO this is pretty ugly...
 		match largest_phy_range {
 			None => largest_phy_range = Some(r),
 			Some(ref lr) => {
@@ -82,12 +78,6 @@ pub fn init() {
 		P2V(pr.start).unwrap(),
 		P2V(pr.end).unwrap()
 	);
-}
-
-/// populate the physical frame pool. This conflicts with the kernel heap allocator (kmalloc),
-/// which operates on the id map regions.
-pub fn _init_pma() {
-	todo!()
 }
 
 /// wrapper around the global allocator with caching
@@ -152,9 +142,7 @@ pub fn allocate_4k_zeroed() -> u64 {
 }
 
 /// invalidate a single page mapping in tlb
-pub fn invlpg(va: u64) {
-	unsafe { asm!("invlpg [{0}]", in(reg) va) };
-}
+pub fn invlpg(va: u64) { unsafe { asm!("invlpg [{0}]", in(reg) va) }; }
 
 /// flush the whole tlb
 pub fn flush_tlb() {

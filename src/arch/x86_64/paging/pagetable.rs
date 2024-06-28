@@ -1,7 +1,5 @@
-//! basic paging support.
-//! code derived from the
+//! basic paging support. code derived from the
 //! [x86_64 crate](https://docs.rs/x86_64/latest/src/x86_64/addr.rs.html)
-//! see ATTRIBUTIONS
 
 use bitflags::bitflags;
 
@@ -94,19 +92,13 @@ impl Pagetable {
 
 impl PTE {
 	#[inline]
-	pub const fn new() -> Self {
-		PTE { entry: 0 }
-	}
+	pub const fn new() -> Self { PTE { entry: 0 } }
 
 	#[inline]
-	pub const fn is_unused(&self) -> bool {
-		self.entry == 0
-	}
+	pub const fn is_unused(&self) -> bool { self.entry == 0 }
 
 	#[inline]
-	pub fn set_unused(&mut self) {
-		self.entry = 0;
-	}
+	pub fn set_unused(&mut self) { self.entry = 0; }
 
 	#[inline]
 	pub const fn flags(&self) -> PTEFlags {
@@ -115,9 +107,7 @@ impl PTE {
 	}
 
 	#[inline]
-	pub const fn addr(&self) -> u64 {
-		self.entry & 0x000f_ffff_ffff_f000
-	}
+	pub const fn addr(&self) -> u64 { self.entry & 0x000f_ffff_ffff_f000 }
 
 	#[inline]
 	pub fn set(&mut self, pa: u64, flags: PTEFlags) {
@@ -131,14 +121,8 @@ pub fn p4idx(addr: u64) -> u16 {
 	((addr >> 12 >> 9 >> 9 >> 9) & ID_MASK) as u16
 }
 #[inline]
-pub fn p3idx(addr: u64) -> u16 {
-	((addr >> 12 >> 9 >> 9) & ID_MASK) as u16
-}
+pub fn p3idx(addr: u64) -> u16 { ((addr >> 12 >> 9 >> 9) & ID_MASK) as u16 }
 #[inline]
-pub fn p2idx(addr: u64) -> u16 {
-	((addr >> 12 >> 9) & ID_MASK) as u16
-}
+pub fn p2idx(addr: u64) -> u16 { ((addr >> 12 >> 9) & ID_MASK) as u16 }
 #[inline]
-pub fn p1idx(addr: u64) -> u16 {
-	((addr >> 12) & ID_MASK) as u16
-}
+pub fn p1idx(addr: u64) -> u16 { ((addr >> 12) & ID_MASK) as u16 }

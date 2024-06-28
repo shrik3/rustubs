@@ -21,9 +21,7 @@ pub struct CGAScreen {
 }
 
 #[inline(always)]
-fn cal_offset(row: usize, col: usize) -> usize {
-	col + row * MAX_COLS
-}
+fn cal_offset(row: usize, col: usize) -> usize { col + row * MAX_COLS }
 
 impl CGAScreen {
 	const IR_PORT: IOPort = IOPort::new(0x3d4);
@@ -239,9 +237,7 @@ impl CGAScreen {
 		self.cursor_c = orig_c;
 	}
 
-	pub fn setattr(&mut self, attr: u8) {
-		self.attr = attr;
-	}
+	pub fn setattr(&mut self, attr: u8) { self.attr = attr; }
 }
 
 impl fmt::Write for CGAScreen {

@@ -8,13 +8,9 @@ pub struct SerialWritter {
 }
 
 impl SerialWritter {
-	pub const fn new(port: u16) -> Self {
-		Self { port: IOPort::new(port) }
-	}
+	pub const fn new(port: u16) -> Self { Self { port: IOPort::new(port) } }
 
-	pub fn putchar(&self, ch: char) {
-		self.port.outb(ch as u8);
-	}
+	pub fn putchar(&self, ch: char) { self.port.outb(ch as u8); }
 
 	pub fn print(&self, s: &str) {
 		for c in s.bytes() {

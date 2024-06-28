@@ -41,9 +41,7 @@ pub struct Task {
 pub struct TaskId(u64);
 
 impl TaskId {
-	pub fn new(addr: u64) -> Self {
-		Self(addr)
-	}
+	pub fn new(addr: u64) -> Self { Self(addr) }
 
 	pub fn get_task_ref(&self) -> &Task {
 		return unsafe { &*(self.0 as *mut Task) };
@@ -74,22 +72,13 @@ extern "C" {
 	pub fn context_swap_to(to_ctx: u64);
 }
 
+// NOTE Task struct is manually placed on the stack, new() or default() is not
+// provided.
 impl Task {
-	/// TODO implement a proper ::new. For now use settle_on_stack instead
-	pub fn new(_id: u32, _kstack: u64, _func_ptr: u64) -> Self {
-		panic!(
-			"never ever try to manually create a task struct\n
-			gather the parts and call Task::settle_on_stack() instead"
-		)
-	}
-
 	/// unsafe because you have to make sure the stack pointer is valid
 	/// i.e. allocated through KStackAllocator.
 	#[inline(always)]
-	pub unsafe fn settle_on_stack<'a>(
-		stack_addr: u64,
-		t: Task,
-	) -> &'a mut Task {
+	unsafe fn settle_on_stack<'a>(stack_addr: u64, t: Task) -> &'a mut Task {
 		ptr::write_volatile(stack_addr as *mut Task, t);
 		return &mut *(stack_addr as *mut Task);
 	}
@@ -97,10 +86,8 @@ impl Task {
 	/// settle_on_stack and prepare_context must be called before switching to
 	/// the task. TODO: combine them into one single API
 	#[inline(always)]
-	pub fn prepare_context(&mut self, entry: u64) {
-		// this is like OOStuBS "toc_settle"
+	fn prepare_context(&mut self, entry: u64) {
 		let mut sp = self.get_init_kernel_sp();
-		// FIXME this is ugly
 		unsafe {
 			sp -= 8;
 			*(sp as *mut u64) = 0;
@@ -138,9 +125,7 @@ impl Task {
 	}
 
 	#[inline]
-	pub fn taskid(&self) -> TaskId {
-		TaskId::new(self as *const _ as u64)
-	}
+	pub fn taskid(&self) -> TaskId { TaskId::new(self as *const _ as u64) }
 
 	/// a task may be present in multiple wait rooms; this is logically not
 	/// possible at the moment, but would be necessary for stuffs like EPoll.

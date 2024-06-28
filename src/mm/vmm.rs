@@ -11,9 +11,7 @@ pub struct VMMan {
 }
 
 impl VMMan {
-	pub fn new() -> Self {
-		Self { vmas: Vec::<VMArea>::new() }
-	}
+	pub fn new() -> Self { Self { vmas: Vec::<VMArea>::new() } }
 }
 
 bitflags! {

@@ -6,7 +6,6 @@ use crate::defs::{mb_info_pm_addr, mb_magic};
 use crate::P2V;
 use core::fmt;
 use core::ops::Range;
-use core::ptr::read_volatile;
 use lazy_static::lazy_static;
 lazy_static! {
 	/// reference to the multiboot info blob provided by the bootloader. This
@@ -72,9 +71,7 @@ impl MultibootMmap {
 			end: self.addr + self.len,
 		}
 	}
-	pub fn get_end(&self) -> u64 {
-		return self.addr + self.len;
-	}
+	pub fn get_end(&self) -> u64 { return self.addr + self.len; }
 }
 
 #[repr(C)]
@@ -122,12 +119,8 @@ pub struct MultibootInfoMem {
 /// In this case the MultibootInfoMem members are aligned to 4 bytes (u32) which should be fine,
 /// but the compiler doesn't agree ... pffff it needs to be smarter
 impl MultibootInfoMem {
-	pub fn lower(&self) -> u32 {
-		self.mem_lower
-	}
-	pub fn upper(&self) -> u32 {
-		self.mem_upper
-	}
+	pub fn lower(&self) -> u32 { self.mem_lower }
+	pub fn upper(&self) -> u32 { self.mem_upper }
 }
 
 #[repr(C)]
@@ -148,9 +141,7 @@ pub struct MultibootInfo {
 // TODO: expand MultibootInfo struct defs if needed.
 impl MultibootInfo {
 	// private function. Don't use it outside the module.
-	fn get_flags(&self) -> MultibootInfoFlags {
-		return self.flags;
-	}
+	fn get_flags(&self) -> MultibootInfoFlags { return self.flags; }
 
 	pub unsafe fn get_mem(&self) -> Option<MultibootInfoMem> {
 		if self.get_flags().contains(MultibootInfoFlags::MEM) {
