@@ -91,7 +91,8 @@ clean:
 	rm -f $(FSIMAGE) fs.ustar
 
 qemu: bootdisk.iso
-	qemu-system-x86_64 -drive file=./bootdisk.iso,format=raw -k en-us -serial mon:stdio
+	# qemu-system-x86_64 -drive file=./bootdisk.iso,format=raw -k en-us -serial mon:stdio
+	qemu-system-x86_64 -accel tcg  -machine q35 -drive file=./bootdisk.iso,format=raw -k en-us -serial mon:stdio -monitor unix:qemu-monitor-socket,server,nowait
 
 gdb:
 	gdb -x /tmp/gdbcommands.$(shell id -u) build/kernel
