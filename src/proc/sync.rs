@@ -59,16 +59,16 @@ pub struct L2Guard<'a, T: 'a> {
 	// poison is implicit (using the L2_AVAILABLE flag)
 }
 
-impl<'a, T> Deref for L2Guard<'a, T> {
+impl<T> Deref for L2Guard<'_, T> {
 	type Target = T;
 	fn deref(&self) -> &T { unsafe { &*self.lock.data.get() } }
 }
 
-impl<'a, T> DerefMut for L2Guard<'a, T> {
+impl<T> DerefMut for L2Guard<'_, T> {
 	fn deref_mut(&mut self) -> &mut T { unsafe { &mut *self.lock.data.get() } }
 }
 
-impl<'a, T> Drop for L2Guard<'a, T> {
+impl<T> Drop for L2Guard<'_, T> {
 	fn drop(&mut self) { LEAVE_L2(); }
 }
 

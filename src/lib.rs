@@ -3,7 +3,6 @@
 #![allow(non_snake_case)]
 #![no_std]
 #![no_main]
-#![feature(const_option)]
 #![feature(sync_unsafe_cell)]
 #![allow(clippy::fn_to_numeric_cast)]
 #![allow(clippy::missing_safety_doc)]

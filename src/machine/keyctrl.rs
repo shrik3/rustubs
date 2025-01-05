@@ -46,7 +46,6 @@ pub struct KeyboardController {
 
 /// we have a global controller, but we can't use it as the "driver" because
 /// drivers should be stateless.
-
 pub struct KeyboardDriver {}
 
 impl IRQHandlerEpilogue for KeyboardDriver {
